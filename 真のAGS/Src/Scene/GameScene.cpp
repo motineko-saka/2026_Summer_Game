@@ -65,8 +65,8 @@ void GameScene::Init(void)
 	enemyManager_ = new EnemyManager(player1_);
 	enemyManager_->Init();
 
-	//object_ = new Object(WORLD::LEFT);
-	//object_->Init();
+	object_ = new Object(WORLD::LEFT);
+	object_->Init();
 
 	const ColliderBase* stageCollider =
 		stage_->GetOwnCollider(static_cast<int>(Stage::COLLIDER_TYPE::MODEL));
@@ -126,7 +126,8 @@ void GameScene::DrawPlayer1Screen(void)
 	skyDome_->Draw();
 	player1_->Draw();
 	player2_->Draw(); // ƒvƒŒƒCƒ„[2‚à•`‰æ(“¯‚¶¢ŠE‚É‚¢‚éê‡)
-	//object_->Draw();
+	object_->SetWorld(WORLD::LEFT);
+	object_->Draw();
 	enemyManager_->Draw();
 }
 
@@ -140,6 +141,8 @@ void GameScene::DrawPlayer2Screen(void)
 	skyDome_->Draw();
 	player1_->Draw(); // ƒvƒŒƒCƒ„[1‚à•`‰æ(“¯‚¶¢ŠE‚É‚¢‚éê‡)
 	player2_->Draw();
+	object_->SetWorld(WORLD::RIGHT);
+	object_->Draw();
 	enemyManager_->Draw();
 }
 

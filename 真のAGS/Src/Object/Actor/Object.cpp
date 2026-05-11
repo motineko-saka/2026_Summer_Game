@@ -18,7 +18,7 @@ Object::~Object()
 
 void Object::Update(void)
 {
-	if (InputManager::GetInstance().IsTrgDown(KEY_INPUT_SPACE))
+	if (InputManager::GetInstance().IsTrgDown(KEY_INPUT_C))
 	{
 		viewWorld_ = (viewWorld_ == GameScene::WORLD::LEFT) ? GameScene::WORLD::RIGHT : GameScene::WORLD::LEFT;
 	}
@@ -26,7 +26,10 @@ void Object::Update(void)
 
 void Object::Draw(void)
 {
-	ActorBase::Draw();
+	if (viewWorld_ == world_)
+	{
+		ActorBase::Draw();
+	}
 }
 
 void Object::Release(void)
@@ -36,7 +39,7 @@ void Object::Release(void)
 
 void Object::InitLoad(void)
 {
-	transform_.SetModel(resMng_.Load(ResourceManager::SRC::MAIN_STAGE).handleId_);
+	transform_.SetModel(resMng_.Load(ResourceManager::SRC::CUBE).handleId_);
 }
 
 void Object::InitTransform(void)
@@ -47,7 +50,7 @@ void Object::InitTransform(void)
 
 	transform_.quaRotLocal = Quaternion::Identity();
 
-	transform_.pos = { 0.0f, 80.0f, 0.0f };
+	transform_.pos = { 0.0f, 80.0f, -10.0f };
 	transform_.Update();
 }
 

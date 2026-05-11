@@ -74,6 +74,10 @@ void ResourceManager::Init(void)
 	// Ž‹–ì
 	res = new RES(RES_T::MODEL, PATH_MDL + "Enemy/Robot/Cone.mv1");
 	resourcesMap_.emplace(SRC::VIEW_RANGE, res);
+
+	// ” 
+	res = new RES(RES_T::MODEL, PATH_MDL + "Cube.mv1");
+	resourcesMap_.emplace(SRC::CUBE, res);
 }
 
 void ResourceManager::Release(void)
