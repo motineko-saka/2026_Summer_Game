@@ -1,26 +1,28 @@
 #pragma once
-#include "ActorBase.h"
+#include <string>
+#include "../ActorBase.h"
 
-class Stage : public ActorBase
+class StageBase : public ActorBase
 {
-public:
-
 	// 衝突判定種別
 	enum class COLLIDER_TYPE
 	{
-		MODEL = 0,
+		LINE,
+		MODEL,
+		CAPSULE,
 		MAX,
+		VIEW_RANGE,
 	};
 
-	Stage(void);
-	virtual ~Stage(void);
+	StageBase();
+	virtual ~StageBase(void);
 
 	void Update(void)override;
 	void Draw(void)override;
 	void Release(void)override;
 
 	// 除外フレーム名称
-	const std::vector<std::string> EXCLUDE_FRAME_NAMES = {"Mush", "Grass",};
+	const std::vector<std::string> EXCLUDE_FRAME_NAMES = { "Mush", "Grass", };
 
 protected:
 
@@ -38,15 +40,13 @@ protected:
 
 	// 初期化後の個別処理
 	void InitPost(void)override;
-
 private:
-
 	static constexpr VECTOR STAGE_DEFAULT_POS = { 0.0f, -100.0f, 0.0f };
 
 	static constexpr VECTOR STAGE_DEFAULT_SCALE = { 1.0f,1.0f,1.0f };
 
 	// 対象フレーム
-	const std::vector<std::string> TARGET_FRAME_NAMES = 
+	const std::vector<std::string> TARGET_FRAME_NAMES =
 	{
 	"Ground",
 	};

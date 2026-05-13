@@ -5,7 +5,7 @@
 #include "../Manager/ResourceManager.h"
 #include "../Manager/EnemyManager.h"
 #include "../Manager/Resource.h"
-#include "../Object/Actor/Stage.h"
+#include "../Object/Actor/Stage/Stage.h"
 #include "../Object/Actor/SkyDome.h"
 #include "../Object/Actor/Charactor/Player.h"
 #include "../Object/Actor/Charactor/Enemy/EnemyRat.h"

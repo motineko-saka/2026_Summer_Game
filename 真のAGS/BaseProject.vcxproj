@@ -52,7 +52,9 @@
     <ClCompile Include="Src\Scene\TitleScene.cpp" />
     <ClCompile Include="Src\Utility\AsoUtility.cpp" />
     <ClCompile Include="Src\Utility\MatrixUtility.cpp" />
-    <ClCompile Include="Src\Object\Actor\Stage.cpp" />
+    <ClCompile Include="Src\Object\Actor\Stage\Stage.cpp" />
+    <ClCompile Include="Src\Object\Actor\Stage\StageBase.cpp" />
+    <ClCompile Include="Src\Object\Actor\Stage\StageManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Src\Object\Actor\Object.h" />
@@ -88,7 +90,9 @@
     <ClInclude Include="Src\Scene\TitleScene.h" />
     <ClInclude Include="Src\Utility\AsoUtility.h" />
     <ClInclude Include="Src\Utility\MatrixUtility.h" />
-    <ClInclude Include="Src\Object\Actor\Stage.h" />
+    <ClInclude Include="Src\Object\Actor\Stage\Stage.h" />
+    <ClInclude Include="Src\Object\Actor\Stage\StageBase.h" />
+    <ClInclude Include="Src\Object\Actor\Stage\StageManager.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

@@ -1,8 +1,9 @@
-#include "../../Utility/AsoUtility.h"
-#include "../../Manager/ResourceManager.h"
-#include "../../Manager/Resource.h"
-#include "../../Manager/SceneManager.h"
-#include "../Collider/ColliderModel.h"
+#include "../../../Utility/AsoUtility.h"
+#include "../../../Manager/ResourceManager.h"
+#include "../../../Manager/Resource.h"
+#include "../../../Manager/SceneManager.h"
+#include "../../Collider/ColliderModel.h"
+#include "StageBase.h"
 #include "Stage.h"
 
 Stage::Stage(void)
@@ -17,6 +18,7 @@ Stage::~Stage(void)
 
 void Stage::Update(void)
 {
+	ActorBase::Update();
 }
 
 void Stage::Draw(void)
@@ -32,7 +34,6 @@ void Stage::Release(void)
 void Stage::InitLoad(void)
 {
 	transform_.SetModel(resMng_.Load(ResourceManager::SRC::MAIN_STAGE).handleId_);
-	
 }
 
 void Stage::InitTransform(void)

@@ -4,7 +4,7 @@
 #include "../Manager/InputManager.h"
 #include "../Manager/SceneManager.h"
 #include "../Manager/Camera.h"
-#include "../Object/Actor/Stage.h"
+#include "../Object/Actor/Stage/Stage.h"
 #include "../Object/Collider/ColliderModel.h"
 #include "DebugScene.h"
 

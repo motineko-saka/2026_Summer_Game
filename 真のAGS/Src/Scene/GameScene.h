@@ -39,8 +39,10 @@ public:
 	void Release(void) override;
 
 private:
+	constexpr static int STAGE_NUM = 2;
 
 	Stage* stage_;
+	std::vector<Stage*> stages_;
 	SkyDome* skyDome_;
 
 	// ƒvƒŒƒCƒ„[1
