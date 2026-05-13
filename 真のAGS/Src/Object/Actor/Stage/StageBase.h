@@ -4,6 +4,7 @@
 
 class StageBase : public ActorBase
 {
+public:
 	// 衝突判定種別
 	enum class COLLIDER_TYPE
 	{
@@ -27,7 +28,7 @@ class StageBase : public ActorBase
 protected:
 
 	// リソースロード
-	void InitLoad(void)override;
+	void InitLoad(void)override = 0;
 
 	// 大きさ、回転、座標の初期化
 	void InitTransform(void) override;

@@ -2,7 +2,7 @@
 #include <DxLib.h>
 #include "StageBase.h"
 
-class Stage : public StageBase
+class AnswerStage : public StageBase
 {
 public:
 
@@ -13,11 +13,11 @@ public:
 		MAX,
 	};
 
-	Stage(void);
-	~Stage(void) override;
+	AnswerStage(void);
+	~AnswerStage(void) override;
 
 	// 除外フレーム名称
-	const std::vector<std::string> EXCLUDE_FRAME_NAMES = {"Mush", "Grass",};
+	const std::vector<std::string> EXCLUDE_FRAME_NAMES = { "Mush", "Grass", };
 
 protected:
 
@@ -26,6 +26,9 @@ protected:
 
 	// 大きさ、回転、座標の初期化
 	void InitTransform(void) override;
+
+	// 衝突判定の初期化
+	void InitCollider(void) override;
 
 	// アニメーションの初期化
 	void InitAnimation(void) override;
@@ -40,7 +43,7 @@ private:
 	static constexpr VECTOR STAGE_DEFAULT_SCALE = { 1.0f,1.0f,1.0f };
 
 	// 対象フレーム
-	const std::vector<std::string> TARGET_FRAME_NAMES = 
+	const std::vector<std::string> TARGET_FRAME_NAMES =
 	{
 	"Ground",
 	};
