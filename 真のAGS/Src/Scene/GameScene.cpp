@@ -39,7 +39,7 @@ void GameScene::Init(void)
 	// 画面サイズの取得
 	GetScreenState(&screenWidth_, &screenHeight_, nullptr);
 
-	// 分割画面用のスクリーンを作成(左右分割)
+	// 分割画面用のスクリーン作成(左右画面)
 	int halfWidth = screenWidth_ / 2;
 	screenHandle1_ = MakeScreen(halfWidth, screenHeight_, TRUE);
 	screenHandle2_ = MakeScreen(halfWidth, screenHeight_, TRUE);
@@ -49,7 +49,6 @@ void GameScene::Init(void)
 	player1_->Init();
 
 	// プレイヤー2(プレイヤー1を複製)
-	//player2_ = player1_->Clone(Player::PLAYER_NO::PLAYER2);
 	player2_ = new Player(Player::PLAYER_NO::PLAYER2);
 	player2_->Init();
 
@@ -65,7 +64,8 @@ void GameScene::Init(void)
 	enemyManager_ = new EnemyManager(player1_);
 	enemyManager_->Init();
 
-	object_ = new Object(WORLD::LEFT);
+	// オブジェクト作成
+	object_ = new Object(GameScene::WORLD::LEFT);
 	object_->Init();
 
 	const ColliderBase* stageCollider =
@@ -79,6 +79,12 @@ void GameScene::Init(void)
 
 	// ステージモデルのコライダーをエネミーに登録
 	enemyManager_->AddHitCollider(stageCollider);
+
+	// オブジェクトのモデルコライダーをプレイヤーに登録
+	const ColliderBase* objectCollider =
+		object_->GetOwnCollider(static_cast<int>(Object::COLLIDER_TYPE::MODEL));
+	player1_->AddHitCollider(objectCollider);
+	player2_->AddHitCollider(objectCollider);
 
 	// プレイヤー1のコライダーをエネミーに登録
 	enemyManager_->AddHitCollider(player1_->GetOwnCollider(static_cast<int>(CharactorBase::COLLIDER_TYPE::CAPSULE)));
@@ -114,6 +120,7 @@ void GameScene::Update(void)
 	enemyManager_->Update();
 	camera1_->Update();
 	camera2_->Update();
+	object_->Update();
 }
 
 void GameScene::DrawPlayer1Screen(void)
@@ -165,10 +172,10 @@ void GameScene::Draw(void)
 	ClearDrawScreen();
 
 	// 左半分にプレイヤー1の画面
-	DrawExtendGraph(0, 0, halfWidth, screenHeight_, screenHandle1_, TRUE);
+	DrawExtendGraph(0, 0, halfWidth, screenHeight_, screenHandle1_, true);
 
 	// 右半分にプレイヤー2の画面
-	DrawExtendGraph(halfWidth, 0, screenWidth_, screenHeight_, screenHandle2_, TRUE);
+	DrawExtendGraph(halfWidth, 0, screenWidth_, screenHeight_, screenHandle2_, true);
 
 	// デバッグ表示
 	DrawFormatString(0, 0, GetColor(255, 255, 255), "P1角度:(%.1f, %.1f, %.1f)",

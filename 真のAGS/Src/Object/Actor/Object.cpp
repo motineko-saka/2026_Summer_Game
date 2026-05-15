@@ -5,11 +5,14 @@
 #include "../../Manager/SceneManager.h"
 #include "../../Application.h"
 #include "../Collider/ColliderLine.h"
+#include "../Collider/ColliderCapsule.h"
+#include "../Collider/ColliderModel.h"
 #include "../../Manager/InputManager.h"
 
 Object::Object(GameScene::WORLD world)
 {
 	viewWorld_ = world;
+	world_ = world;
 }
 
 Object::~Object()
@@ -56,11 +59,12 @@ void Object::InitTransform(void)
 
 void Object::InitCollider(void)
 {
-	// 主に地面との衝突で使用する線分コライダ
-	ColliderLine* colLine = new ColliderLine(
-		ColliderBase::TAG::STAGE, &transform_,
-		COL_LINE_START_LOCAL_POS, COL_LINE_END_LOCAL_POS);
-	ownColliders_.emplace(static_cast<int>(COLLIDER_TYPE::LINE), colLine);
+	MV1SetupCollInfo(transform_.modelId);
+
+	// モデルのコライダ
+	ColliderModel* colModel =
+		new ColliderModel(ColliderBase::TAG::OBJECT, &transform_);
+	ownColliders_.emplace(static_cast<int>(COLLIDER_TYPE::MODEL), colModel);
 }
 
 void Object::InitAnimation(void)

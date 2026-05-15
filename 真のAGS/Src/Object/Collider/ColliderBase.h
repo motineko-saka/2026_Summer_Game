@@ -22,6 +22,7 @@ public:
 	{
 		STAGE,
 		PLAYER,
+		OBJECT,
 		CAMERA,
 		ENEMY,
 		VIEW_RANGE,

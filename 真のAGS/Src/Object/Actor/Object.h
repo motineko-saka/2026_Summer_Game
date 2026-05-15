@@ -25,6 +25,9 @@ public:
 
 	void SetWorld(GameScene::WORLD world) { world_ = world; }
 
+	// プレイヤーから押される処理
+	void Push(const VECTOR& direction, float speed);
+
 protected:
 
 	// リソースロード
@@ -41,13 +44,29 @@ protected:
 
 	// 初期化後の個別処理
 	void InitPost(void)override;
+
 private:
-	// 衝突判定用線分開始
+	// 衝突判定用ライン開始
 	static constexpr VECTOR COL_LINE_START_LOCAL_POS = { 0.0f, 80.0f, 0.0f };
 
-	// 衝突判定用線分終了
+	// 衝突判定用ライン終了
 	static constexpr VECTOR COL_LINE_END_LOCAL_POS = { 0.0f, -10.0f, 0.0f };
+
+	// 衝突判定用カプセル上部座標
+	static constexpr VECTOR COL_CAPSULE_TOP_LOCAL_POS = { 0.0f, 60.0f, 0.0f };
+
+	// 衝突判定用カプセル下部座標
+	static constexpr VECTOR COL_CAPSULE_DOWN_LOCAL_POS = { 0.0f, 10.0f, 0.0f };
+
+	// 衝突判定用カプセルの半径
+	static constexpr float COL_CAPSULE_RADIUS = 30.0f;
+
+	// オブジェクトの押される抵抗力（0.0～1.0）
+	static constexpr float PUSH_RESISTANCE = 0.5f;
 
 	GameScene::WORLD world_;
 	GameScene::WORLD viewWorld_;
+
+	// 押されて移動する量
+	VECTOR pushPow_;
 };
