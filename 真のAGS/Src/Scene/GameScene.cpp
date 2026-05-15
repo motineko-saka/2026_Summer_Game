@@ -69,19 +69,6 @@ void GameScene::Init(void)
 	object_ = new Object(GameScene::WORLD::LEFT);
 	object_->Init();
 
-<<<<<<< HEAD
-	const ColliderBase* stageCollider =
-		stage_->GetOwnCollider(static_cast<int>(Stage::COLLIDER_TYPE::MODEL));
-
-	// ステージモデルのコライダーをプレイヤー1に登録
-	player1_->AddHitCollider(stageCollider);
-
-	// ステージモデルのコライダーをプレイヤー2に登録
-	player2_->AddHitCollider(stageCollider);
-
-	// ステージモデルのコライダーをエネミーに登録
-	enemyManager_->AddHitCollider(stageCollider);
-
 	// オブジェクトのモデルコライダーをプレイヤーに登録
 	const ColliderBase* objectCollider =
 		object_->GetOwnCollider(static_cast<int>(Object::COLLIDER_TYPE::MODEL));
@@ -91,8 +78,6 @@ void GameScene::Init(void)
 	// プレイヤー1のコライダーをエネミーに登録
 	enemyManager_->AddHitCollider(player1_->GetOwnCollider(static_cast<int>(CharactorBase::COLLIDER_TYPE::CAPSULE)));
 
-=======
->>>>>>> 299a2a4da06e82a39494e4e37574630b5067dc01
 	// カメラ1の作成(プレイヤー1用)
 	camera1_ = new Camera();
 	camera1_->Init();
