@@ -119,7 +119,7 @@ void GameScene::Update(void)
 	auto const& ins = InputManager::GetInstance();
 	if (ins.IsTrgDown(KEY_INPUT_SPACE))
 	{
-		sceMng_.ChangeScene(SceneManager::SCENE_ID::TITLE);
+		sceMng_.ChangeScene(SceneManager::SCENE_ID::GAMECLEAR);
 	}
 
 	stageManager_->Update();

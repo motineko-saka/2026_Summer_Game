@@ -24,6 +24,7 @@ public:
 		NONE,
 		TITLE,
 		GAME,
+		GAMECLEAR,
 		DEBUG,
 	};
 	

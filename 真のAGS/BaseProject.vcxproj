@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Src\Scene\GameClearScene.cpp" />
     <ClCompile Include="Src\Object\Actor\Stage\AnswerStage.cpp" />
     <ClCompile Include="Src\Object\Actor\Object.cpp" />
     <ClCompile Include="Src\Manager\EnemyManager.cpp" />
@@ -58,6 +59,7 @@
     <ClCompile Include="Src\Manager\StageManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Src\Scene\GameClearScene.h" />
     <ClInclude Include="Src\Object\Actor\Stage\AnswerStage.h" />
     <ClInclude Include="Src\Object\Actor\Object.h" />
     <ClInclude Include="Src\Manager\EnemyManager.h" />

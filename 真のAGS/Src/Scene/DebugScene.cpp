@@ -14,9 +14,11 @@ DebugScene::DebugScene(void)
 	stage_(nullptr)
 {
 }
+
 DebugScene::~DebugScene(void)
 {
 }
+
 void DebugScene::Init(void)
 {
 	// ステージ生成
@@ -27,6 +29,7 @@ void DebugScene::Init(void)
 	Camera* camera = sceMng_.GetCamera();
 	camera->ChangeMode(Camera::MODE::FREE);
 }
+
 void DebugScene::Update(void)
 {
 	// ステージ更新
