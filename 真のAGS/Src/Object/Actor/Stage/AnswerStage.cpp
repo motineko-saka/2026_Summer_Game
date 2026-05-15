@@ -3,24 +3,24 @@
 #include "../../../Manager/Resource.h"
 #include "../../../Manager/SceneManager.h"
 #include "../../Collider/ColliderModel.h"
-#include "Stage.h"
+#include "AnswerStage.h"
 
-Stage::Stage(void)
+AnswerStage::AnswerStage(void)
 	:
 	StageBase()
 {
 }
 
-Stage::~Stage(void)
+AnswerStage::~AnswerStage(void)
 {
 }
 
-void Stage::InitLoad(void)
+void AnswerStage::InitLoad(void)
 {
 	transform_.SetModel(resMng_.Load(ResourceManager::SRC::MAIN_STAGE).handleId_);
 }
 
-void Stage::InitTransform(void)
+void AnswerStage::InitTransform(void)
 {
 	transform_.scl = STAGE_DEFAULT_SCALE;
 	transform_.quaRot = Quaternion::Identity();
@@ -28,13 +28,18 @@ void Stage::InitTransform(void)
 	transform_.quaRotLocal = Quaternion::Identity();
 
 	transform_.pos = STAGE_DEFAULT_POS;
+	transform_.pos.y -= 200.0f;
 	transform_.Update();
 }
 
-void Stage::InitAnimation(void)
+void AnswerStage::InitCollider(void)
 {
 }
 
-void Stage::InitPost(void)
+void AnswerStage::InitAnimation(void)
+{
+}
+
+void AnswerStage::InitPost(void)
 {
 }

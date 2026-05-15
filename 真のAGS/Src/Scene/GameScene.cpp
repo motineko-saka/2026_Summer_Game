@@ -4,6 +4,7 @@
 #include "../Manager/Camera.h"
 #include "../Manager/ResourceManager.h"
 #include "../Manager/EnemyManager.h"
+#include "../Manager/StageManager.h"
 #include "../Manager/Resource.h"
 #include "../Object/Actor/Stage/Stage.h"
 #include "../Object/Actor/SkyDome.h"
@@ -15,7 +16,7 @@
 
 GameScene::GameScene(void)
 	:
-	stage_(nullptr),
+	stageManager_(nullptr),
 	skyDome_(nullptr),
 	player1_(nullptr),
 	player2_(nullptr),
@@ -53,8 +54,8 @@ void GameScene::Init(void)
 	player2_->Init();
 
 	// ステージ
-	stage_ = new Stage();
-	stage_->Init();
+	stageManager_ = new StageManager();
+	stageManager_->InitStage();
 
 	// スカイドーム(プレイヤー1用)
 	skyDome_ = new SkyDome(player1_->GetTransform());
@@ -68,6 +69,7 @@ void GameScene::Init(void)
 	object_ = new Object(GameScene::WORLD::LEFT);
 	object_->Init();
 
+<<<<<<< HEAD
 	const ColliderBase* stageCollider =
 		stage_->GetOwnCollider(static_cast<int>(Stage::COLLIDER_TYPE::MODEL));
 
@@ -89,19 +91,41 @@ void GameScene::Init(void)
 	// プレイヤー1のコライダーをエネミーに登録
 	enemyManager_->AddHitCollider(player1_->GetOwnCollider(static_cast<int>(CharactorBase::COLLIDER_TYPE::CAPSULE)));
 
+=======
+>>>>>>> 299a2a4da06e82a39494e4e37574630b5067dc01
 	// カメラ1の作成(プレイヤー1用)
 	camera1_ = new Camera();
 	camera1_->Init();
 	camera1_->SetFollow(&player1_->GetTransform());
 	camera1_->ChangeMode(Camera::MODE::FOLLOW);
-	camera1_->AddHitCollider(stageCollider);
 
 	// カメラ2の作成(プレイヤー2用)
 	camera2_ = new Camera();
 	camera2_->Init();
 	camera2_->SetFollow(&player2_->GetTransform());
 	camera2_->ChangeMode(Camera::MODE::FOLLOW);
-	camera2_->AddHitCollider(stageCollider);
+
+	for(const auto& stage : stageManager_->GetStage())
+	{
+		const ColliderBase* stageCollider =
+			stage->GetOwnCollider(static_cast<int>(Stage::COLLIDER_TYPE::MODEL));
+
+		// ステージモデルのコライダーをプレイヤー1に登録
+		player1_->AddHitCollider(stageCollider);
+
+		// ステージモデルのコライダーをプレイヤー2に登録
+		player2_->AddHitCollider(stageCollider);
+
+		// ステージモデルのコライダーをエネミーに登録
+		enemyManager_->AddHitCollider(stageCollider);
+
+		// ステージモデルのコライダーをカメラに登録
+		camera1_->AddHitCollider(stageCollider);
+		camera2_->AddHitCollider(stageCollider);
+	}
+
+	// プレイヤー1のコライダーをエネミーに登録
+	enemyManager_->AddHitCollider(player1_->GetOwnCollider(static_cast<int>(CharactorBase::COLLIDER_TYPE::CAPSULE)));
 }
 
 void GameScene::Update(void)
@@ -113,7 +137,7 @@ void GameScene::Update(void)
 		sceMng_.ChangeScene(SceneManager::SCENE_ID::TITLE);
 	}
 
-	stage_->Update();
+	stageManager_->Update();
 	skyDome_->Update();
 	player1_->Update();
 	player2_->Update();
@@ -129,7 +153,7 @@ void GameScene::DrawPlayer1Screen(void)
 	camera1_->SetBeforeDraw();
 
 	// 3D描画
-	stage_->Draw();
+	stageManager_->Draw();
 	skyDome_->Draw();
 	player1_->Draw();
 	player2_->Draw(); // プレイヤー2も描画(同じ世界にいる場合)
@@ -144,7 +168,7 @@ void GameScene::DrawPlayer2Screen(void)
 	camera2_->SetBeforeDraw();
 
 	// 3D描画
-	stage_->Draw();
+	stageManager_->Draw();
 	skyDome_->Draw();
 	player1_->Draw(); // プレイヤー1も描画(同じ世界にいる場合)
 	player2_->Draw();
@@ -191,8 +215,8 @@ void GameScene::Draw(void)
 
 void GameScene::Release(void)
 {
-	stage_->Release();
-	delete stage_;
+	stageManager_->Release();
+	delete stageManager_;
 
 	skyDome_->Release();
 	delete skyDome_;

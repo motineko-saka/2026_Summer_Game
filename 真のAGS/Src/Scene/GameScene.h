@@ -1,7 +1,7 @@
 #pragma once
 #include "SceneBase.h"
 #include "../Object/Common/Transform.h"
-class Stage;
+class StageManager;
 class SkyDome;
 class Player;
 class EnemyManager;
@@ -39,10 +39,8 @@ public:
 	void Release(void) override;
 
 private:
-	constexpr static int STAGE_NUM = 2;
+	StageManager* stageManager_;
 
-	Stage* stage_;
-	std::vector<Stage*> stages_;
 	SkyDome* skyDome_;
 
 	// ƒvƒŒƒCƒ„[1

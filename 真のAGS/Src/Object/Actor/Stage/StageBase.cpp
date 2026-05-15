@@ -31,10 +31,6 @@ void StageBase::Release(void)
 	ActorBase::Release();
 }
 
-void StageBase::InitLoad(void)
-{
-}
-
 void StageBase::InitTransform(void)
 {
 }

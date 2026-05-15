@@ -1,5 +1,7 @@
 #pragma once
-#include "StageBase.h"
+#include "../Object/Actor/Stage/StageBase.h"
+#include <vector>
+
 class StageManager
 {
 public:
@@ -10,7 +12,7 @@ public:
 	~StageManager(void);
 
 	// ‰Šú‰»
-	void Init(void);
+	void InitStage(void);
 
 	// XV
 	void Update(void);
@@ -20,7 +22,11 @@ public:
 
 	// ‰ğ•ú
 	void Release(void);
+
+	const std::vector<StageBase*>& GetStage() const { return stages_; }
 private:
-	StageBase* stage_;
+	constexpr static int STAGE_NUM = 2;
+
+	std::vector<StageBase*> stages_;
 };
 
