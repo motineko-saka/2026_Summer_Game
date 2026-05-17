@@ -8,6 +8,7 @@
 #include "../../../Manager/Resource.h"
 #include "../../../Manager/ResourceManager.h"
 #include "CharactorBase.h"
+#include "../Object.h"
 
 CharactorBase::CharactorBase(void)
 	:
@@ -134,32 +135,38 @@ void CharactorBase::Collision(void)
 
 void CharactorBase::CollisionCapsule(void)
 {
-	// カプセルコライダ
 	int capsuleType = static_cast<int>(COLLIDER_TYPE::CAPSULE);
-
-	// カプセルコライダが無ければ処理を抜ける
 	if (ownColliders_.count(capsuleType) == 0) return;
 
-	// カプセルコライダ情報
 	ColliderCapsule* colliderCapsule =
 		dynamic_cast<ColliderCapsule*>(ownColliders_.at(capsuleType));
 	if (colliderCapsule == nullptr) return;
 
-	// 登録されている衝突物を全てチェック
 	for (const auto& hitCol : hitColliders_)
 	{
-		// モデル以外は処理を飛ばす
 		if (hitCol->GetShape() != ColliderBase::SHAPE::MODEL) continue;
-
-		// 派生クラスへキャスト
 		const ColliderModel* colliderModel =
 			dynamic_cast<const ColliderModel*>(hitCol);
-
 		if (colliderModel == nullptr) continue;
 
+		// プレイヤーの押し戻し
 		colliderCapsule->PushBackAlongNormal(colliderModel, transform_, CNT_TRY_COLLISION,
 			COLLISION_BACK_DIS, true, false);
 
+		// プレイヤーが進行方向に入力していて、かつ本当に衝突している時だけ押す
+		if (!AsoUtility::EqualsVZero(moveDir_) && colliderCapsule->IsHit(colliderModel, true, false)) {
+			// ここで「本当に衝突している時だけ押す」＝カプセルがモデルの内部に入った時だけ
+			Transform* objTransform = const_cast<Transform*>(colliderModel->GetFollow());
+			if (objTransform)
+			{
+				VECTOR pushDir = VNorm(moveDir_);
+				float pushAmount = 5.0f;
+				objTransform->pos.x += pushDir.x * pushAmount;
+				objTransform->pos.y += pushDir.y * pushAmount;
+				objTransform->pos.z += pushDir.z * pushAmount;
+				objTransform->Update();
+			}
+		}
 	}
 }
 
@@ -244,37 +251,8 @@ void CharactorBase::DrawShadow(void)
 
 	if (colliderLine_ == nullptr) return;
 
-	//// モデルコライダ
-	//int ModelType = static_cast<int>(COLLIDER_TYPE::MODEL);
-
-	//// モデルコライダが無ければ処理を抜ける
-	//if (ownColliders_.count(ModelType) == 0) return;
-
-	//// モデルコライダ情報
-	//ColliderModel* colliderModel_ =
-	//	dynamic_cast<ColliderModel*>(ownColliders_.at(ModelType));
-
-	//if (colliderModel_ == nullptr) return;
-
-	//// 線分の始点と終点を取得
-	//VECTOR s = colliderLine_->GetPosStart();
-	//VECTOR e = colliderLine_->GetPosEnd();
-
 	// 登録されている衝突物を全てチェック
-	for (const auto& hitCol : hitColliders_){
-
-	//// 影を落とすモデルの数だけ繰り返し
-	//for (j = 0; j < stg.CollObjNum + 1; j++)
-	//{
-		// チェックするモデルは、jが0の時はステージモデル、1以上の場合はコリジョンモデル
-		/*if (j == 0)
-		{
-			ModelHandle = stg.ModelHandle;
-		}
-		else
-		{
-			ModelHandle = stg.CollObjModelHandle[j - 1];
-		}*/
+	for (const auto& hitCol : hitColliders_) {
 
 		// ステージ以外は処理を飛ばす
 		if (hitCol->GetTag() != ColliderBase::TAG::STAGE) continue;
@@ -287,7 +265,7 @@ void CharactorBase::DrawShadow(void)
 		ModelHandle = colliderModel->GetFollow()->modelId;
 
 		// プレイヤーの直下に存在する地面のポリゴンを取得
-		HitResDim = MV1CollCheck_Capsule(ModelHandle, -1, transform_.pos, 
+		HitResDim = MV1CollCheck_Capsule(ModelHandle, -1, transform_.pos,
 			VAdd(transform_.pos, VGet(0.0f, -PLAYER_SHADOW_HEIGHT, 0.0f)), PLAYER_SHADOW_SIZE);
 
 		// 頂点データで変化が無い部分をセット
@@ -298,7 +276,7 @@ void CharactorBase::DrawShadow(void)
 		Vertex[1] = Vertex[0];
 		Vertex[2] = Vertex[0];
 
-		// 球の直下に存在するポリゴンの数だけ繰り返し
+		// 球の直下に存在する地面の数だけ繰り返し
 		HitRes = HitResDim.Dim;
 		for (i = 0; i < HitResDim.HitNum; i++, HitRes++)
 		{
