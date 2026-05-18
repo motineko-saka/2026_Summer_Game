@@ -62,7 +62,7 @@ private:
 	static constexpr float COL_CAPSULE_RADIUS = 30.0f;
 
 	// オブジェクトの押される抵抗力（0.0～1.0）
-	static constexpr float PUSH_RESISTANCE = 0.5f;
+	static constexpr float PUSH_RESISTANCE = 0.6f;
 
 	GameScene::WORLD world_;
 	GameScene::WORLD viewWorld_;

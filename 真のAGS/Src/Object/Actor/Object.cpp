@@ -13,6 +13,7 @@ Object::Object(GameScene::WORLD world)
 {
 	viewWorld_ = world;
 	world_ = world;
+	pushPow_ = { 0.0f, 0.0f, 0.0f };
 }
 
 Object::~Object()
@@ -25,6 +26,19 @@ void Object::Update(void)
 	{
 		viewWorld_ = (viewWorld_ == GameScene::WORLD::LEFT) ? GameScene::WORLD::RIGHT : GameScene::WORLD::LEFT;
 	}
+
+	// âüÇ≥ÇÍÇΩóÕÇà íuÇ…ìKóp(å∏êäÇ≥ÇπÇ»Ç™ÇÁ)
+	transform_.pos = VAdd(transform_.pos, pushPow_);
+	pushPow_ = VScale(pushPow_, PUSH_RESISTANCE);
+
+	// óÕÇ™è¨Ç≥Ç≠Ç»Ç¡ÇΩÇÁ0Ç…Ç∑ÇÈ
+	if (VSize(pushPow_) < 0.01f)
+	{
+		pushPow_ = { 0.0f, 0.0f, 0.0f };
+	}
+
+	transform_.Update();
+	MV1RefreshCollInfo(transform_.modelId);
 }
 
 void Object::Draw(void)
@@ -38,6 +52,12 @@ void Object::Draw(void)
 void Object::Release(void)
 {
 	ActorBase::Release();
+}
+
+void Object::Push(const VECTOR& direction, float speed)
+{
+	// âüÇ∑óÕÇâ¡éZ
+	pushPow_ = VAdd(pushPow_, VScale(direction, speed));
 }
 
 void Object::InitLoad(void)
