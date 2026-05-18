@@ -131,7 +131,6 @@ void GameScene::CheckCollisions(void)
 	auto objectCollider = object_->GetOwnCollider(static_cast<int>(Object::COLLIDER_TYPE::CAPSULE));
 
 	// 簡易的な距離判定でチェック
-	
 	VECTOR objectPos = object_->GetTransform().pos;
 
 	if (object_->GetViewWorld() == WORLD::RIGHT)

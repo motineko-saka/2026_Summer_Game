@@ -61,7 +61,7 @@ void Player::InitTransform(void)
 	transform_.quaRotLocal = Quaternion::Identity();
 	transform_.quaRotLocal = Quaternion::Euler(PLAYER_DEFAULT_ROT_LOCAL);
 
-	transform_.pos = PLAYER_DEFAULT_POS;
+	transform_.pos = (playerNo_ == PLAYER_NO::PLAYER1) ? PLAYER_ONE__DEFAULT_POS : PLAYER_TWO__DEFAULT_POS;
 	transform_.Update();
 }
 
