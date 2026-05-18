@@ -1,5 +1,7 @@
 #pragma once
+
 #include "CharactorBase.h"
+class Camera;
 
 class Player : public CharactorBase
 {
@@ -23,7 +25,7 @@ public:
 	};
 
 	Player(void);
-	Player(PLAYER_NO playerNo); // プレイヤー番号指定のコンストラクタ
+	Player(PLAYER_NO playerNo, Camera& camera); // プレイヤー番号指定のコンストラクタ
 	virtual ~Player(void);
 
 	// 描画
@@ -120,6 +122,8 @@ private:
 
 	// プレイヤー番号
 	PLAYER_NO playerNo_;
+
+	Camera* camera_;
 
 	// 処理
 	void ProcessMove(void);

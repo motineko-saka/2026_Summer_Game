@@ -16,11 +16,12 @@ Player::Player(void)
 {
 }
 
-Player::Player(PLAYER_NO playerNo)
+Player::Player(PLAYER_NO playerNo, Camera& camera)
 	:
 	CharactorBase(),
 	playerNo_(playerNo)
 {
+	camera_ = &camera;
 }
 
 Player::~Player(void)
@@ -36,22 +37,6 @@ void Player::Draw(void)
 void Player::Release(void)
 {
 	CharactorBase::Release();
-}
-
-Player* Player::Clone(PLAYER_NO playerNo) const
-{
-	// 新しいプレイヤーインスタンスを作成
-	Player* newPlayer = new Player(playerNo);
-	newPlayer->Init();
-
-	// 初期位置を少しずらす
-	if (playerNo == PLAYER_NO::PLAYER2)
-	{
-		newPlayer->transform_.pos.x += 200.0f;
-	}
-	newPlayer->transform_.Update();
-
-	return newPlayer;
 }
 
 Player::PLAYER_NO Player::GetPlayerNo(void) const
@@ -230,7 +215,8 @@ void Player::ProcessMove(void)
 		}
 
 		// Y軸のみのカメラ角度を取得
-		Quaternion cameraRot = scnMng_.GetCamera()->GetQuaRotY();
+
+		Quaternion cameraRot = camera_->GetQuaRotY();
 
 		// 移動方向をカメラに合わせる
 		moveDir_ = Quaternion::PosAxis(cameraRot, dir);

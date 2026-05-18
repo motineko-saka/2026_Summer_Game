@@ -47,13 +47,30 @@ void GameScene::Init(void)
 	screenHandle1_ = MakeScreen(halfWidth, screenHeight_, TRUE);
 	screenHandle2_ = MakeScreen(halfWidth, screenHeight_, TRUE);
 
+	// カメラ1の作成(プレイヤー1用)
+	camera1_ = new Camera();
+	camera1_->Init();
+
+	// カメラ2の作成(プレイヤー2用)
+	camera2_ = new Camera();
+	camera2_->Init();
+	
+
 	// プレイヤー1
-	player1_ = new Player(Player::PLAYER_NO::PLAYER1);
+	player1_ = new Player(Player::PLAYER_NO::PLAYER1, *camera1_);
 	player1_->Init();
 
+	camera1_->SetFollow(&player1_->GetTransform());
+	camera1_->ChangeMode(Camera::MODE::FOLLOW);
+
+
 	// プレイヤー2(プレイヤー1を複製)
-	player2_ = new Player(Player::PLAYER_NO::PLAYER2);
+	player2_ = new Player(Player::PLAYER_NO::PLAYER2, *camera2_);
 	player2_->Init();
+
+	camera2_->SetFollow(&player2_->GetTransform());
+	camera2_->ChangeMode(Camera::MODE::FOLLOW);
+
 
 	// ステージ
 	stageManager_ = new StageManager();
@@ -79,18 +96,6 @@ void GameScene::Init(void)
 
 	// プレイヤー1のコライダーをエネミーに登録
 	enemyManager_->AddHitCollider(player1_->GetOwnCollider(static_cast<int>(CharactorBase::COLLIDER_TYPE::CAPSULE)));
-
-	// カメラ1の作成(プレイヤー1用)
-	camera1_ = new Camera();
-	camera1_->Init();
-	camera1_->SetFollow(&player1_->GetTransform());
-	camera1_->ChangeMode(Camera::MODE::FOLLOW);
-
-	// カメラ2の作成(プレイヤー2用)
-	camera2_ = new Camera();
-	camera2_->Init();
-	camera2_->SetFollow(&player2_->GetTransform());
-	camera2_->ChangeMode(Camera::MODE::FOLLOW);
 
 	for (const auto& stage : stageManager_->GetStage())
 	{
@@ -126,14 +131,15 @@ void GameScene::CheckCollisions(void)
 	auto objectCollider = object_->GetOwnCollider(static_cast<int>(Object::COLLIDER_TYPE::CAPSULE));
 
 	// 簡易的な距離判定でチェック
-	VECTOR player1Pos = player1_->GetTransform().pos;
+	
 	VECTOR objectPos = object_->GetTransform().pos;
 
-	float distance1 = VSize(VSub(player1Pos, objectPos));
-	isPlayer1HitObject_ = (distance1 < 180.0f);
-
-	if (object_->GetWorld() == WORLD::LEFT)
+	if (object_->GetViewWorld() == WORLD::RIGHT)
 	{
+		VECTOR player1Pos = player1_->GetTransform().pos;
+		float distance1 = VSize(VSub(player1Pos, objectPos));
+		isPlayer1HitObject_ = (distance1 < 180.0f);
+
 		// プレイヤー1がオブジェクトに衝突している場合、押す
 		if (isPlayer1HitObject_)
 		{
@@ -143,10 +149,10 @@ void GameScene::CheckCollisions(void)
 			pushDir = VNorm(pushDir); // 正規化
 
 			// オブジェクトを押す(速度は適度に調整)
-			object_->Push(pushDir, 1.0f);
+			object_->Push(pushDir, 5.0f);
 		}
 	}
-	else
+	else if (object_->GetViewWorld() == WORLD::LEFT)
 	{
 		// プレイヤー2とオブジェクトの衝突判定
 		VECTOR player2Pos = player2_->GetTransform().pos;
@@ -201,7 +207,7 @@ void GameScene::DrawPlayer1Screen(void)
 	skyDome_->Draw();
 	player1_->Draw();
 	player2_->Draw(); // プレイヤー2も描画(同じ世界にいる場合)
-	object_->SetWorld(WORLD::LEFT);
+	object_->SetViewWorld(WORLD::LEFT);
 	object_->Draw();
 	enemyManager_->Draw();
 }
@@ -216,7 +222,7 @@ void GameScene::DrawPlayer2Screen(void)
 	skyDome_->Draw();
 	player1_->Draw(); // プレイヤー1も描画(同じ世界にいる場合)
 	player2_->Draw();
-	object_->SetWorld(WORLD::RIGHT);
+	object_->SetViewWorld(WORLD::RIGHT);
 	object_->Draw();
 	enemyManager_->Draw();
 }

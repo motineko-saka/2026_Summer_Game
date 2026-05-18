@@ -23,8 +23,13 @@ public:
 	void Draw(void)override;
 	void Release(void)override;
 
+	GameScene::WORLD GetViewWorld(void) { return viewWorld_; }
+
 	GameScene::WORLD GetWorld(void) { return world_; }
-	void SetWorld(GameScene::WORLD world) { world_ = world; }
+
+	void SetViewWorld(GameScene::WORLD world) { viewWorld_ = world; }
+
+	Transform& GetTransform(void) { return transform_; }
 
 	// プレイヤーから押される処理
 	void Push(const VECTOR& direction, float speed);
@@ -65,8 +70,8 @@ private:
 	// オブジェクトの押される抵抗力（0.0～1.0）
 	static constexpr float PUSH_RESISTANCE = 0.6f;
 
-	GameScene::WORLD world_;
-	GameScene::WORLD viewWorld_;
+	GameScene::WORLD world_;		// 
+	GameScene::WORLD viewWorld_;	// 今写っている世界
 
 	// 押されて移動する量
 	VECTOR pushPow_;

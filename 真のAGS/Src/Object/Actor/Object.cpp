@@ -24,7 +24,7 @@ void Object::Update(void)
 {
 	if (InputManager::GetInstance().IsTrgDown(KEY_INPUT_C))
 	{
-		viewWorld_ = (viewWorld_ == GameScene::WORLD::LEFT) ? GameScene::WORLD::RIGHT : GameScene::WORLD::LEFT;
+		world_ = (world_ == GameScene::WORLD::LEFT) ? GameScene::WORLD::RIGHT : GameScene::WORLD::LEFT;
 	}
 
 	// âüÇ≥ÇÍÇΩóÕÇà íuÇ…ìKóp(å∏êäÇ≥ÇπÇ»Ç™ÇÁ)
@@ -43,7 +43,7 @@ void Object::Update(void)
 
 void Object::Draw(void)
 {
-	if (viewWorld_ == world_)
+	if (world_ == viewWorld_)
 	{
 		ActorBase::Draw();
 	}
