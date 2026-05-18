@@ -130,12 +130,36 @@ void GameScene::CheckCollisions(void)
 	VECTOR objectPos = object_->GetTransform().pos;
 
 	float distance1 = VSize(VSub(player1Pos, objectPos));
-	isPlayer1HitObject_ = (distance1 < 180.0f); // 100は仮の判定距離
+	isPlayer1HitObject_ = (distance1 < 180.0f);
+
+	// プレイヤー1がオブジェクトに衝突している場合、押す
+	if (isPlayer1HitObject_)
+	{
+		// プレイヤーからオブジェクトへの方向ベクトル
+		VECTOR pushDir = VSub(objectPos, player1Pos);
+		pushDir.y = 0.0f; // Y軸(垂直方向)は無視
+		pushDir = VNorm(pushDir); // 正規化
+
+		// オブジェクトを押す(速度は適度に調整)
+		object_->Push(pushDir, 0.3f);
+	}
 
 	// プレイヤー2とオブジェクトの衝突判定
 	VECTOR player2Pos = player2_->GetTransform().pos;
 	float distance2 = VSize(VSub(player2Pos, objectPos));
-	isPlayer2HitObject_ = (distance2 < 180.0f); // 100は仮の判定距離
+	isPlayer2HitObject_ = (distance2 < 180.0f);
+
+	// プレイヤー2がオブジェクトに衝突している場合、押す
+	if (isPlayer2HitObject_)
+	{
+		// プレイヤーからオブジェクトへの方向ベクトル
+		VECTOR pushDir = VSub(objectPos, player2Pos);
+		pushDir.y = 0.0f; // Y軸(垂直方向)は無視
+		pushDir = VNorm(pushDir); // 正規化
+
+		// オブジェクトを押す(速度は適度に調整)
+		object_->Push(pushDir, 0.3f);
+	}
 }
 
 void GameScene::Update(void)
@@ -154,10 +178,12 @@ void GameScene::Update(void)
 	enemyManager_->Update();
 	camera1_->Update();
 	camera2_->Update();
-	object_->Update();
 
-	// 衝突判定チェック
+	// 衝突判定チェック(Objectの更新前に実行)
 	CheckCollisions();
+
+	// オブジェクトの更新(押す処理を反映)
+	object_->Update();
 }
 
 void GameScene::DrawPlayer1Screen(void)
