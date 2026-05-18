@@ -132,33 +132,38 @@ void GameScene::CheckCollisions(void)
 	float distance1 = VSize(VSub(player1Pos, objectPos));
 	isPlayer1HitObject_ = (distance1 < 180.0f);
 
-	// プレイヤー1がオブジェクトに衝突している場合、押す
-	if (isPlayer1HitObject_)
+	if (object_->GetWorld() == WORLD::LEFT)
 	{
-		// プレイヤーからオブジェクトへの方向ベクトル
-		VECTOR pushDir = VSub(objectPos, player1Pos);
-		pushDir.y = 0.0f; // Y軸(垂直方向)は無視
-		pushDir = VNorm(pushDir); // 正規化
+		// プレイヤー1がオブジェクトに衝突している場合、押す
+		if (isPlayer1HitObject_)
+		{
+			// プレイヤーからオブジェクトへの方向ベクトル
+			VECTOR pushDir = VSub(objectPos, player1Pos);
+			pushDir.y = 0.0f; // Y軸(垂直方向)は無視
+			pushDir = VNorm(pushDir); // 正規化
 
-		// オブジェクトを押す(速度は適度に調整)
-		object_->Push(pushDir, 0.3f);
+			// オブジェクトを押す(速度は適度に調整)
+			object_->Push(pushDir, 1.0f);
+		}
 	}
-
-	// プレイヤー2とオブジェクトの衝突判定
-	VECTOR player2Pos = player2_->GetTransform().pos;
-	float distance2 = VSize(VSub(player2Pos, objectPos));
-	isPlayer2HitObject_ = (distance2 < 180.0f);
-
-	// プレイヤー2がオブジェクトに衝突している場合、押す
-	if (isPlayer2HitObject_)
+	else
 	{
-		// プレイヤーからオブジェクトへの方向ベクトル
-		VECTOR pushDir = VSub(objectPos, player2Pos);
-		pushDir.y = 0.0f; // Y軸(垂直方向)は無視
-		pushDir = VNorm(pushDir); // 正規化
+		// プレイヤー2とオブジェクトの衝突判定
+		VECTOR player2Pos = player2_->GetTransform().pos;
+		float distance2 = VSize(VSub(player2Pos, objectPos));
+		isPlayer2HitObject_ = (distance2 < 180.0f);
 
-		// オブジェクトを押す(速度は適度に調整)
-		object_->Push(pushDir, 0.3f);
+		// プレイヤー2がオブジェクトに衝突している場合、押す
+		if (isPlayer2HitObject_)
+		{
+			// プレイヤーからオブジェクトへの方向ベクトル
+			VECTOR pushDir = VSub(objectPos, player2Pos);
+			pushDir.y = 0.0f; // Y軸(垂直方向)は無視
+			pushDir = VNorm(pushDir); // 正規化
+
+			// オブジェクトを押す(速度は適度に調整)
+			object_->Push(pushDir, 5.0f);
+		}
 	}
 }
 

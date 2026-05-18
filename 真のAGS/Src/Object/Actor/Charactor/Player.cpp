@@ -129,6 +129,11 @@ void Player::UpdateProcess(void)
 
 	// ƒWƒƒƒ“ƒvˆ—
 	ProcessJump();
+
+	if (InputManager::GetInstance().IsTrgMouseRight())
+	{
+		playerNo_ = playerNo_ == PLAYER_NO::PLAYER1 ? PLAYER_NO::PLAYER2 : PLAYER_NO::PLAYER1;
+	}
 }
 
 void Player::UpdateProcessPost(void)

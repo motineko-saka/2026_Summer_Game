@@ -41,6 +41,8 @@ public:
 	// 初期位置の設定
 	void SetInitialPosition(const VECTOR& pos);
 
+	VECTOR GetMovePow(void) { return movePow_; }
+
 protected:
 
 	// リソースロード

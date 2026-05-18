@@ -23,6 +23,7 @@ public:
 	void Draw(void)override;
 	void Release(void)override;
 
+	GameScene::WORLD GetWorld(void) { return world_; }
 	void SetWorld(GameScene::WORLD world) { world_ = world; }
 
 	// ƒvƒŒƒCƒ„[‚©‚ç‰Ÿ‚³‚ê‚éˆ—
