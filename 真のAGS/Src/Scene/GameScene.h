@@ -63,7 +63,14 @@ private:
 	int screenWidth_;
 	int screenHeight_;
 
+	// 衝突判定フラグ
+	bool isPlayer1HitObject_;
+	bool isPlayer2HitObject_;
+
 	// 各プレイヤーの描画
 	void DrawPlayer1Screen(void);
 	void DrawPlayer2Screen(void);
+
+	// 衝突判定チェック
+	void CheckCollisions(void);
 };

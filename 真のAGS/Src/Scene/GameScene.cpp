@@ -27,6 +27,8 @@ GameScene::GameScene(void)
 	screenHandle2_(-1),
 	screenWidth_(0),
 	screenHeight_(0),
+	isPlayer1HitObject_(false),
+	isPlayer2HitObject_(false),
 	SceneBase()
 {
 }
@@ -90,7 +92,7 @@ void GameScene::Init(void)
 	camera2_->SetFollow(&player2_->GetTransform());
 	camera2_->ChangeMode(Camera::MODE::FOLLOW);
 
-	for(const auto& stage : stageManager_->GetStage())
+	for (const auto& stage : stageManager_->GetStage())
 	{
 		const ColliderBase* stageCollider =
 			stage->GetOwnCollider(static_cast<int>(Stage::COLLIDER_TYPE::MODEL));
@@ -111,6 +113,29 @@ void GameScene::Init(void)
 
 	// プレイヤー1のコライダーをエネミーに登録
 	enemyManager_->AddHitCollider(player1_->GetOwnCollider(static_cast<int>(CharactorBase::COLLIDER_TYPE::CAPSULE)));
+
+	// 衝突フラグの初期化
+	isPlayer1HitObject_ = false;
+	isPlayer2HitObject_ = false;
+}
+
+void GameScene::CheckCollisions(void)
+{
+	// プレイヤー1とオブジェクトの衝突判定
+	auto player1Capsule = player1_->GetOwnCollider(static_cast<int>(CharactorBase::COLLIDER_TYPE::CAPSULE));
+	auto objectCollider = object_->GetOwnCollider(static_cast<int>(Object::COLLIDER_TYPE::CAPSULE));
+
+	// 簡易的な距離判定でチェック
+	VECTOR player1Pos = player1_->GetTransform().pos;
+	VECTOR objectPos = object_->GetTransform().pos;
+
+	float distance1 = VSize(VSub(player1Pos, objectPos));
+	isPlayer1HitObject_ = (distance1 < 180.0f); // 100は仮の判定距離
+
+	// プレイヤー2とオブジェクトの衝突判定
+	VECTOR player2Pos = player2_->GetTransform().pos;
+	float distance2 = VSize(VSub(player2Pos, objectPos));
+	isPlayer2HitObject_ = (distance2 < 180.0f); // 100は仮の判定距離
 }
 
 void GameScene::Update(void)
@@ -130,6 +155,9 @@ void GameScene::Update(void)
 	camera1_->Update();
 	camera2_->Update();
 	object_->Update();
+
+	// 衝突判定チェック
+	CheckCollisions();
 }
 
 void GameScene::DrawPlayer1Screen(void)
@@ -196,6 +224,26 @@ void GameScene::Draw(void)
 		player2_->GetTransform().quaRot.ToEuler().x,
 		player2_->GetTransform().quaRot.ToEuler().y,
 		player2_->GetTransform().quaRot.ToEuler().z);
+
+	// 衝突判定結果の表示(プレイヤー1側)
+	if (isPlayer1HitObject_)
+	{
+		DrawFormatString(0, 40, GetColor(255, 0, 0), "P1: オブジェクトと衝突中!");
+	}
+	else
+	{
+		DrawFormatString(0, 40, GetColor(0, 255, 0), "P1: 衝突なし");
+	}
+
+	// 衝突判定結果の表示(プレイヤー2側)
+	if (isPlayer2HitObject_)
+	{
+		DrawFormatString(halfWidth, 40, GetColor(255, 0, 0), "P2: オブジェクトと衝突中!");
+	}
+	else
+	{
+		DrawFormatString(halfWidth, 40, GetColor(0, 255, 0), "P2: 衝突なし");
+	}
 }
 
 void GameScene::Release(void)
