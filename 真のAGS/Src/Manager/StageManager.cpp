@@ -19,7 +19,16 @@ void StageManager::InitStage(void)
 
 	for(int i = 0; i < STAGE_NUM; i++)
 	{
-		auto s = new Stage();
+		StageBase* s;
+		if (static_cast<StageBase::STAGE_TYPE>(i) == StageBase::STAGE_TYPE::MAIN_STAGE)
+		{
+			s = new Stage();
+		}
+		else
+		{
+			s = new AnswerStage();
+		}
+		
 		s->Init();
 
 		stages_.push_back(s);

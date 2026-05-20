@@ -15,6 +15,12 @@ public:
 		VIEW_RANGE,
 	};
 
+	enum class STAGE_TYPE
+	{
+		MAIN_STAGE = 0,
+		ANSWER_STAGE,
+	};
+
 	StageBase();
 	virtual ~StageBase(void);
 
@@ -41,8 +47,10 @@ protected:
 
 	// èâä˙âªå„ÇÃå¬ï èàóù
 	void InitPost(void)override;
+
+	STAGE_TYPE stageType_;
 private:
-	static constexpr VECTOR STAGE_DEFAULT_POS = { 0.0f, -100.0f, 0.0f };
+	static constexpr VECTOR STAGE_DEFAULT_POS = { 0.0f, 0.0f, 0.0f };
 
 	static constexpr VECTOR STAGE_DEFAULT_SCALE = { 1.0f,1.0f,1.0f };
 

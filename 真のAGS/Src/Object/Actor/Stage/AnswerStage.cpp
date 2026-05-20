@@ -32,14 +32,11 @@ void AnswerStage::InitTransform(void)
 	transform_.Update();
 }
 
-void AnswerStage::InitCollider(void)
-{
-}
-
 void AnswerStage::InitAnimation(void)
 {
 }
 
 void AnswerStage::InitPost(void)
 {
+	stageType_ = STAGE_TYPE::ANSWER_STAGE;
 }
