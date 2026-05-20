@@ -345,7 +345,6 @@ void Player::ProcessAnimCapsule(void)
 }
 
 void Player::CollisionReserve(void)
-
 {
 	// アニメーション毎との位置座標
 	ProcessAnimPos();

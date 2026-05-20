@@ -10,7 +10,7 @@
 #include "../Object/Actor/SkyDome.h"
 #include "../Object/Actor/Charactor/Player.h"
 #include "../Object/Actor/Charactor/Enemy/EnemyRat.h"
-#include "../Object/Actor/Object.h"
+#include "../Object/Actor/Charactor/Object.h"
 #include "../Object/Collider/ColliderBase.h"
 #include "GameScene.h"
 
@@ -88,6 +88,7 @@ void GameScene::Init(void)
 	object_ = new Object(GameScene::WORLD::LEFT);
 	object_->Init();
 
+
 	// オブジェクトのモデルコライダーをプレイヤーに登録
 	const ColliderBase* objectCollider =
 		object_->GetOwnCollider(static_cast<int>(Object::COLLIDER_TYPE::MODEL));
@@ -114,6 +115,9 @@ void GameScene::Init(void)
 		// ステージモデルのコライダーをカメラに登録
 		camera1_->AddHitCollider(stageCollider);
 		camera2_->AddHitCollider(stageCollider);
+
+		// ステージモデルのコライダーをオブジェクトに登録
+		object_->AddHitCollider(stageCollider);
 	}
 
 	// プレイヤー1のコライダーをエネミーに登録
@@ -133,8 +137,8 @@ void GameScene::CheckCollisions(void)
 	// 簡易的な距離判定でチェック
 	VECTOR objectPos = object_->GetTransform().pos;
 
-	if (object_->GetViewWorld() == WORLD::RIGHT)
-	{
+	//if (object_->GetViewWorld() == WORLD::RIGHT)
+	//{
 		VECTOR player1Pos = player1_->GetTransform().pos;
 		float distance1 = VSize(VSub(player1Pos, objectPos));
 		isPlayer1HitObject_ = (distance1 < 180.0f);
@@ -150,9 +154,10 @@ void GameScene::CheckCollisions(void)
 			// オブジェクトを押す(速度は適度に調整)
 			object_->Push(pushDir, 5.0f);
 		}
-	}
-	else if (object_->GetViewWorld() == WORLD::LEFT)
-	{
+	//}
+
+	//if (object_->GetViewWorld() == WORLD::LEFT)
+	//{
 		// プレイヤー2とオブジェクトの衝突判定
 		VECTOR player2Pos = player2_->GetTransform().pos;
 		float distance2 = VSize(VSub(player2Pos, objectPos));
@@ -169,7 +174,7 @@ void GameScene::CheckCollisions(void)
 			// オブジェクトを押す(速度は適度に調整)
 			object_->Push(pushDir, 5.0f);
 		}
-	}
+	//}
 }
 
 void GameScene::Update(void)
@@ -280,6 +285,11 @@ void GameScene::Draw(void)
 	{
 		DrawFormatString(halfWidth, 40, GetColor(0, 255, 0), "P2: 衝突なし");
 	}
+
+	DrawFormatString(halfWidth, 80, GetColor(0, 0, 0), "座標:(%.1f, %.1f, %.1f)",
+		object_->GetTransform().pos.x,
+		object_->GetTransform().pos.y,
+		object_->GetTransform().pos.z);
 }
 
 void GameScene::Release(void)

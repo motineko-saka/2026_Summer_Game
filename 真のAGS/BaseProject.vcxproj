@@ -21,7 +21,7 @@
   <ItemGroup>
     <ClCompile Include="Src\Scene\GameClearScene.cpp" />
     <ClCompile Include="Src\Object\Actor\Stage\AnswerStage.cpp" />
-    <ClCompile Include="Src\Object\Actor\Object.cpp" />
+    <ClCompile Include="Src\Object\Actor\Charactor\Object.cpp" />
     <ClCompile Include="Src\Manager\EnemyManager.cpp" />
     <ClCompile Include="Src\Object\Actor\Charactor\Enemy\EnemyBase.cpp" />
     <ClCompile Include="Src\Object\Actor\Charactor\Enemy\EnemyRat.cpp" />
@@ -61,7 +61,7 @@
   <ItemGroup>
     <ClInclude Include="Src\Scene\GameClearScene.h" />
     <ClInclude Include="Src\Object\Actor\Stage\AnswerStage.h" />
-    <ClInclude Include="Src\Object\Actor\Object.h" />
+    <ClInclude Include="Src\Object\Actor\Charactor\Object.h" />
     <ClInclude Include="Src\Manager\EnemyManager.h" />
     <ClInclude Include="Src\Object\Actor\Charactor\Enemy\EnemyBase.h" />
     <ClInclude Include="Src\Object\Actor\Charactor\Enemy\EnemyRat.h" />
