@@ -11,6 +11,7 @@
 
 CharactorBase::CharactorBase(void)
 	:
+	ActorBase(),
 	animController_(nullptr),
 	moveDir_(AsoUtility::VECTOR_ZERO),
 	moveSpeed_(0.0f),
@@ -20,8 +21,7 @@ CharactorBase::CharactorBase(void)
 	isJump_(false),
 	jumpPow_(AsoUtility::VECTOR_ONE),
 	prevPos_(AsoUtility::VECTOR_ONE),
-	stepJump_(0.0f),
-	ActorBase()
+	stepJump_(0.0f)
 {
 }
 
@@ -342,7 +342,7 @@ void CharactorBase::DrawShadow(void)
 		MV1CollResultPolyDimTerminate(HitResDim);
 	}
 
-	// ライティングを有効にする
+	// ライティングを
 	SetUseLighting(TRUE);
 
 	// Ｚバッファを無効にする
