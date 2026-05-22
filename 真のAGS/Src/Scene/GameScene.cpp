@@ -118,6 +118,8 @@ void GameScene::Init(void)
 
 		// ステージモデルのコライダーをオブジェクトに登録
 		object_->AddHitCollider(stageCollider);
+
+		if (stageCollider == nullptr) DrawFormatString(100,100,0xffffff, "stageCollider is null\n");
 	}
 
 	// プレイヤー1のコライダーをエネミーに登録
@@ -137,11 +139,23 @@ void GameScene::CheckCollisions(void)
 	// 簡易的な距離判定でチェック
 	VECTOR objectPos = object_->GetTransform().pos;
 
-	// プレイヤー2とオブジェクトの衝突判定
+	// プレイヤー1とオブジェクトの衝突判定
 	VECTOR player1Pos = player1_->GetTransform().pos;
 	float distance1 = VSize(VSub(player1Pos, objectPos));
 	isPlayer1HitObject_ = (distance1 < 180.0f);
 
+	// プレイヤー1がオブジェクトに衝突している場合、押す
+	if (isPlayer1HitObject_)
+	{
+		// プレイヤーからオブジェクトへの方向ベクトル
+		VECTOR pushDir = VSub(objectPos, player1Pos);
+		pushDir.y = 0.0f; // Y軸(垂直方向)は無視
+		pushDir = VNorm(pushDir); // 正規化
+
+		// オブジェクトを押す(速度は適度に調整)
+		object_->Push(pushDir, 5.0f);
+	}
+	//--------------------------------------------
 	// プレイヤー2とオブジェクトの衝突判定
 	VECTOR player2Pos = player2_->GetTransform().pos;
 	float distance2 = VSize(VSub(player2Pos, objectPos));
@@ -158,56 +172,6 @@ void GameScene::CheckCollisions(void)
 		// オブジェクトを押す(速度は適度に調整)
 		object_->Push(pushDir, 5.0f);
 	}
-
-	// プレイヤー1がオブジェクトに衝突している場合、押す
-	if (isPlayer1HitObject_)
-	{
-		// プレイヤーからオブジェクトへの方向ベクトル
-		VECTOR pushDir = VSub(objectPos, player1Pos);
-		pushDir.y = 0.0f; // Y軸(垂直方向)は無視
-		pushDir = VNorm(pushDir); // 正規化
-
-		// オブジェクトを押す(速度は適度に調整)
-		object_->Push(pushDir, 5.0f);
-	}
-	//if (object_->GetViewWorld() == WORLD::RIGHT)
-	//{
-		VECTOR player1Pos = player1_->GetTransform().pos;
-		float distance1 = VSize(VSub(player1Pos, objectPos));
-		isPlayer1HitObject_ = (distance1 < 180.0f);
-
-		// プレイヤー1がオブジェクトに衝突している場合、押す
-		if (isPlayer1HitObject_)
-		{
-			// プレイヤーからオブジェクトへの方向ベクトル
-			VECTOR pushDir = VSub(objectPos, player1Pos);
-			pushDir.y = 0.0f; // Y軸(垂直方向)は無視
-			pushDir = VNorm(pushDir); // 正規化
-
-			// オブジェクトを押す(速度は適度に調整)
-			object_->Push(pushDir, 5.0f);
-		}
-	//}
-
-	//if (object_->GetViewWorld() == WORLD::LEFT)
-	//{
-		// プレイヤー2とオブジェクトの衝突判定
-		VECTOR player2Pos = player2_->GetTransform().pos;
-		float distance2 = VSize(VSub(player2Pos, objectPos));
-		isPlayer2HitObject_ = (distance2 < 180.0f);
-
-		// プレイヤー2がオブジェクトに衝突している場合、押す
-		if (isPlayer2HitObject_)
-		{
-			// プレイヤーからオブジェクトへの方向ベクトル
-			VECTOR pushDir = VSub(objectPos, player2Pos);
-			pushDir.y = 0.0f; // Y軸(垂直方向)は無視
-			pushDir = VNorm(pushDir); // 正規化
-
-			// オブジェクトを押す(速度は適度に調整)
-			object_->Push(pushDir, 5.0f);
-		}
-	//}
 }
 
 void GameScene::Update(void)

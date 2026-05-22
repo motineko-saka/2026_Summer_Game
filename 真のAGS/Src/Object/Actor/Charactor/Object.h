@@ -66,7 +66,7 @@ private:
 	static constexpr VECTOR COL_CAPSULE_TOP_LOCAL_POS = { 0.0f, 60.0f, 0.0f };
 
 	// 衝突判定用カプセル下部座標
-	static constexpr VECTOR COL_CAPSULE_DOWN_LOCAL_POS = { 0.0f, -50.0f, 0.0f };
+	static constexpr VECTOR COL_CAPSULE_DOWN_LOCAL_POS = { 0.0f, 0.0f, 0.0f };
 
 	// 衝突判定用カプセルの半径
 	static constexpr float COL_CAPSULE_RADIUS = 30.0f;

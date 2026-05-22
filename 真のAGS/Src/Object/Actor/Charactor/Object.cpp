@@ -48,7 +48,7 @@ void Object::InitLoad(void)
 void Object::InitTransform(void)
 {
 	// ƒ‚ƒfƒ‹‚ÌˆÊ’u
-	transform_.scl = { 1.0f, 1.0f, 1.0f };
+	transform_.scl = { 0.5f, 0.5f, 0.5f };
 	transform_.quaRot = Quaternion::Identity();
 
 	transform_.quaRotLocal = Quaternion::Identity();
@@ -111,5 +111,5 @@ void Object::UpdateProcess(void)
 
 void Object::UpdateProcessPost(void)
 {
-	MV1RefreshCollInfo(transform_.modelId);
+	
 }
