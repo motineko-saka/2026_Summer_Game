@@ -23,7 +23,10 @@ void StageBase::Update(void)
 
 void StageBase::Draw(void)
 {
-	ActorBase::Draw();
+	if(stageType_ != STAGE_TYPE::ANSWER_STAGE)
+	{
+		ActorBase::Draw();
+	}
 }
 
 void StageBase::Release(void)

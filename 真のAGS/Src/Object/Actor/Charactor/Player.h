@@ -1,5 +1,7 @@
 #pragma once
+
 #include "CharactorBase.h"
+class Camera;
 
 class Player : public CharactorBase
 {
@@ -23,7 +25,7 @@ public:
 	};
 
 	Player(void);
-	Player(PLAYER_NO playerNo); // プレイヤー番号指定のコンストラクタ
+	Player(PLAYER_NO playerNo, Camera& camera); // プレイヤー番号指定のコンストラクタ
 	virtual ~Player(void);
 
 	// 描画
@@ -40,6 +42,8 @@ public:
 
 	// 初期位置の設定
 	void SetInitialPosition(const VECTOR& pos);
+
+	VECTOR GetMovePow(void) { return movePow_; }
 
 protected:
 
@@ -66,7 +70,8 @@ protected:
 
 private:
 
-	static constexpr VECTOR PLAYER_DEFAULT_POS = { 0.0f, 0.0f, 0.0f };
+	static constexpr VECTOR PLAYER_ONE__DEFAULT_POS = { -100.0f, 0.0f, 0.0f };
+	static constexpr VECTOR PLAYER_TWO__DEFAULT_POS = { 100.0f, 0.0f, 0.0f };
 
 	static constexpr VECTOR PLAYER_DEFAULT_SCALE = { 1.0f,1.0f,1.0f };
 
@@ -118,6 +123,8 @@ private:
 
 	// プレイヤー番号
 	PLAYER_NO playerNo_;
+
+	Camera* camera_;
 
 	// 処理
 	void ProcessMove(void);

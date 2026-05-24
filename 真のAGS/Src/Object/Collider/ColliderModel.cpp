@@ -116,7 +116,7 @@ MV1_COLL_RESULT_POLY ColliderModel::GetNearestHitPolyLine(const VECTOR& start,
 		}*/
 
 		// ‘ÎÛƒtƒŒ[ƒ€ˆÈŠO‚Í–³‹‚·‚é
-		if (isTarget && !IsTargetFrame(hit.FrameIndex))
+		if (isTarget && IsTargetFrame(hit.FrameIndex))
 		{
 			continue;
 		}

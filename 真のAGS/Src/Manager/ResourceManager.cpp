@@ -52,7 +52,7 @@ void ResourceManager::Init(void)
 	resourcesMap_.emplace(SRC::PLAYER, res);
 
 	// ステージモデル
-	res = new RES(RES_T::MODEL, PATH_MDL + "Stage/MainStage/MainStage.mv1");
+	res = new RES(RES_T::MODEL, PATH_MDL + "Stage/sutege.mv1");
 	resourcesMap_.emplace(SRC::MAIN_STAGE, res);
 
 	// スカイドーム
@@ -76,7 +76,7 @@ void ResourceManager::Init(void)
 	resourcesMap_.emplace(SRC::VIEW_RANGE, res);
 
 	// 箱
-	res = new RES(RES_T::MODEL, PATH_MDL + "Cube.mv1");
+	res = new RES(RES_T::MODEL, PATH_MDL + "Object/barrel.mv1");
 	resourcesMap_.emplace(SRC::CUBE, res);
 }
 

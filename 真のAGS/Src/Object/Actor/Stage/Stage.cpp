@@ -37,4 +37,5 @@ void Stage::InitAnimation(void)
 
 void Stage::InitPost(void)
 {
+	stageType_ = STAGE_TYPE::MAIN_STAGE;
 }
