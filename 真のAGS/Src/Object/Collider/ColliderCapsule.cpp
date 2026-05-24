@@ -104,7 +104,7 @@ VECTOR ColliderCapsule::GetPosPushBackAlongNormal(const MV1_COLL_RESULT_POLY& hi
 }
 
 void ColliderCapsule::PushBackAlongNormal(const ColliderModel* colliderModel, 
-	Transform& transform, int maxTryCnt, float pushDistance, bool isExclude, bool isTarget) const
+	Transform& transform, int maxTryCnt, float pushDistance, bool isExclude, bool isTarget, bool onlyYAxis) const
 {
 	// モデルとカプセルの衝突判定
 	auto hits = MV1CollCheck_Capsule(
@@ -128,9 +128,23 @@ void ColliderCapsule::PushBackAlongNormal(const ColliderModel* colliderModel,
 			continue;
 		}
 
+		if (onlyYAxis) {
+			// Y軸方向のみ押し戻す
+			VECTOR pushVec = { 0.0f, hitPoly.Normal.y, 0.0f };
+			if (pushVec.y != 0.0f) {
+				pushVec = VNorm(pushVec);
+				transform.pos = VAdd(transform.pos, VScale(pushVec, pushDistance));
+			}
+		}
+		else {
+			// 従来通り法線方向に押し戻す
+			transform.pos = GetPosPushBackAlongNormal(hitPoly, maxTryCnt, pushDistance);
+		}
+
+
 		// 指定された回数と距離で三角形の法線方向に押し戻す
-		transform.pos =
-			GetPosPushBackAlongNormal(hitPoly, maxTryCnt, pushDistance);
+		//transform.pos =
+		//	GetPosPushBackAlongNormal(hitPoly, maxTryCnt, pushDistance);
 	}
 	// 検出した地面ポリゴン情報の後始末
 	MV1CollResultPolyDimTerminate(hits);

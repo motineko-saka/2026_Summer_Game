@@ -34,6 +34,9 @@ public:
 	// プレイヤーから押される処理
 	void Push(const VECTOR& direction, float speed);
 
+	// 衝突処理
+	void CollisionCapsule() override;
+
 protected:
 
 	// リソースロード

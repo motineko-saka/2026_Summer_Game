@@ -194,7 +194,7 @@ void GameScene::Update(void)
 	// 衝突判定チェック(Objectの更新前に実行)
 	CheckCollisions();
 
-	// オブジェクトの更新(押す処理を反映)
+	// オブジェクトの更新
 	object_->Update();
 }
 

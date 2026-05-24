@@ -48,7 +48,7 @@ public:
 	void PushBackAlongNormal(
 		const ColliderModel* colliderModel, Transform& transform,
 		int maxTryCnt, float pushDistance,
-		bool isExclude = false, bool isTarget = false) const;
+		bool isExclude = false, bool isTarget = false, bool onlyYAxis = false) const;
 
 	// Õ“Ë‚µ‚Ä‚¢‚é‚©”Û‚©i‘Îƒ‚ƒfƒ‹j
 	bool IsHit(const ColliderModel* colliderModel, 
