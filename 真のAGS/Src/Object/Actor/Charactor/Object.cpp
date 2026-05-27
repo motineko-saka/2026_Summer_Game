@@ -56,13 +56,12 @@ void Object::CollisionCapsule(void)
 			dynamic_cast<const ColliderModel*>(hitCol);
 		if (colliderModel == nullptr) continue;
 
-		// オブジェクトはY軸方向のみ押し戻す
 		colliderCapsule->PushBackAlongNormal(
 			colliderModel, transform_, CNT_TRY_COLLISION,
-			COLLISION_BACK_DIS, true, false, true); // onlyYAxis=true
+			COLLISION_BACK_DIS, true, false, true); 
+		// オブジェクトはY軸方向のみ押し戻す
 	}
 }
-
 
 void Object::InitLoad(void)
 {
