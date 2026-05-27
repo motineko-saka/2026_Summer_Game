@@ -30,6 +30,7 @@ public:
 	void SetViewWorld(GameScene::WORLD world) { viewWorld_ = world; }
 
 	Transform& GetTransform(void) { return transform_; }
+	VECTOR& GetPos(void) { return transform_.pos; }
 
 	// プレイヤーから押される処理
 	void Push(const VECTOR& direction, float speed);
@@ -63,7 +64,7 @@ private:
 	static constexpr VECTOR COL_LINE_START_LOCAL_POS = { 0.0f, 80.0f, 0.0f };
 
 	// 衝突判定用ライン終了
-	static constexpr VECTOR COL_LINE_END_LOCAL_POS = { 0.0f, -100.0f, 0.0f };
+	static constexpr VECTOR COL_LINE_END_LOCAL_POS = { 0.0f, -10.0f, 0.0f };
 
 	// 衝突判定用カプセル上部座標
 	static constexpr VECTOR COL_CAPSULE_TOP_LOCAL_POS = { 0.0f, 60.0f, 0.0f };
@@ -75,7 +76,7 @@ private:
 	static constexpr float COL_CAPSULE_RADIUS = 30.0f;
 
 	// オブジェクトの押される抵抗力（0.0～1.0）
-	static constexpr float PUSH_RESISTANCE = 0.6f;
+	static constexpr float PUSH_RESISTANCE = 0.1f;
 
 	GameScene::WORLD world_;		// 
 	GameScene::WORLD viewWorld_;	// 今写っている世界

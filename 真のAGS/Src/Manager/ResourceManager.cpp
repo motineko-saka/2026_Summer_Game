@@ -78,6 +78,10 @@ void ResourceManager::Init(void)
 	// ” 
 	res = new RES(RES_T::MODEL, PATH_MDL + "Object/barrel.mv1");
 	resourcesMap_.emplace(SRC::CUBE, res);
+
+	// ” 
+	res = new RES(RES_T::MODEL, PATH_MDL + "Cube.mv1");
+	resourcesMap_.emplace(SRC::WALL, res);
 }
 
 void ResourceManager::Release(void)

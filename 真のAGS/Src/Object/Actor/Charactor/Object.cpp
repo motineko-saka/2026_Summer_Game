@@ -76,7 +76,7 @@ void Object::InitTransform(void)
 
 	transform_.quaRotLocal = Quaternion::Identity();
 
-	transform_.pos = { 0.0f, 80.0f, -10.0f };
+	transform_.pos = { -1000.0f, 80.0f, -10.0f };
 	transform_.Update();
 }
 
@@ -116,6 +116,7 @@ void Object::UpdateProcess(void)
 	if (InputManager::GetInstance().IsTrgDown(KEY_INPUT_C))
 	{
 		world_ = (world_ == GameScene::WORLD::LEFT) ? GameScene::WORLD::RIGHT : GameScene::WORLD::LEFT;
+		transform_.pos.x = -transform_.pos.x;
 	}
 
 	// âüÇ≥ÇÍÇΩóÕÇà íuÇ…ìKóp(å∏êäÇ≥ÇπÇ»Ç™ÇÁ)
