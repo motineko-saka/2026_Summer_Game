@@ -23,6 +23,7 @@ public:
 		ENEMY_ROBOT,
 		VIEW_RANGE,
 		CUBE,
+		WALL,
 	};
 
 	// 明示的にインステンスを生成する

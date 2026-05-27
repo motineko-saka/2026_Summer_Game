@@ -7,6 +7,7 @@ class Player;
 class EnemyManager;
 class Camera;
 class Object;
+class Wall;
 
 class GameScene : public SceneBase
 {
@@ -39,6 +40,7 @@ public:
 	void Release(void) override;
 
 private:
+	constexpr static VECTOR ANSWER_VECTOR = { 1260.0f, -500.0f, -50.5f };
 	StageManager* stageManager_;
 
 	SkyDome* skyDome_;
@@ -51,7 +53,7 @@ private:
 	Player* player2_;
 	Camera* camera2_;
 
-	EnemyManager* enemyManager_;
+	//EnemyManager* enemyManager_;
 
 	Object* object_;
 
@@ -66,6 +68,8 @@ private:
 	// 衝突判定フラグ
 	bool isPlayer1HitObject_;
 	bool isPlayer2HitObject_;
+
+	VECTOR ansVec_ = {};
 
 	// 各プレイヤーの描画
 	void DrawPlayer1Screen(void);

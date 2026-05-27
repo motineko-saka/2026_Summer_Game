@@ -20,6 +20,7 @@ TitleScene::TitleScene(void)
 
 TitleScene::~TitleScene(void)
 {
+	Release();
 }
 
 void TitleScene::Init(void)

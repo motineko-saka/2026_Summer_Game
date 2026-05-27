@@ -22,7 +22,6 @@ GameScene::GameScene(void)
 	player2_(nullptr),
 	camera1_(nullptr),
 	camera2_(nullptr),
-	enemyManager_(nullptr),
 	screenHandle1_(-1),
 	screenHandle2_(-1),
 	screenWidth_(0),
@@ -35,6 +34,7 @@ GameScene::GameScene(void)
 
 GameScene::~GameScene(void)
 {
+	Release();
 }
 
 void GameScene::Init(void)
@@ -81,8 +81,8 @@ void GameScene::Init(void)
 	skyDome_->Init();
 
 	// エネミー管理
-	enemyManager_ = new EnemyManager(player1_);
-	enemyManager_->Init();
+	//enemyManager_ = new EnemyManager(player1_);
+	//enemyManager_->Init();
 
 	// オブジェクト作成
 	object_ = new Object(GameScene::WORLD::LEFT);
@@ -90,13 +90,13 @@ void GameScene::Init(void)
 
 
 	// オブジェクトのモデルコライダーをプレイヤーに登録
-	const ColliderBase* objectCollider =
+	/*const ColliderBase* objectCollider =
 		object_->GetOwnCollider(static_cast<int>(Object::COLLIDER_TYPE::MODEL));
 	player1_->AddHitCollider(objectCollider);
-	player2_->AddHitCollider(objectCollider);
+	player2_->AddHitCollider(objectCollider);*/
 
 	// プレイヤー1のコライダーをエネミーに登録
-	enemyManager_->AddHitCollider(player1_->GetOwnCollider(static_cast<int>(CharactorBase::COLLIDER_TYPE::CAPSULE)));
+	//enemyManager_->AddHitCollider(player1_->GetOwnCollider(static_cast<int>(CharactorBase::COLLIDER_TYPE::CAPSULE)));
 
 	for (const auto& stage : stageManager_->GetStage())
 	{
@@ -110,7 +110,7 @@ void GameScene::Init(void)
 		player2_->AddHitCollider(stageCollider);
 
 		// ステージモデルのコライダーをエネミーに登録
-		enemyManager_->AddHitCollider(stageCollider);
+		//enemyManager_->AddHitCollider(stageCollider);
 
 		// ステージモデルのコライダーをカメラに登録
 		camera1_->AddHitCollider(stageCollider);
@@ -123,11 +123,13 @@ void GameScene::Init(void)
 	}
 
 	// プレイヤー1のコライダーをエネミーに登録
-	enemyManager_->AddHitCollider(player1_->GetOwnCollider(static_cast<int>(CharactorBase::COLLIDER_TYPE::CAPSULE)));
+	//enemyManager_->AddHitCollider(player1_->GetOwnCollider(static_cast<int>(CharactorBase::COLLIDER_TYPE::CAPSULE)));
 
 	// 衝突フラグの初期化
 	isPlayer1HitObject_ = false;
 	isPlayer2HitObject_ = false;
+
+	ansVec_ = ANSWER_VECTOR;
 }
 
 void GameScene::CheckCollisions(void)
@@ -155,6 +157,7 @@ void GameScene::CheckCollisions(void)
 		// オブジェクトを押す(速度は適度に調整)
 		object_->Push(pushDir, 5.0f);
 	}
+
 	//--------------------------------------------
 	// プレイヤー2とオブジェクトの衝突判定
 	VECTOR player2Pos = player2_->GetTransform().pos;
@@ -187,7 +190,7 @@ void GameScene::Update(void)
 	skyDome_->Update();
 	player1_->Update();
 	player2_->Update();
-	enemyManager_->Update();
+	//enemyManager_->Update();
 	camera1_->Update();
 	camera2_->Update();
 
@@ -196,6 +199,17 @@ void GameScene::Update(void)
 
 	// オブジェクトの更新
 	object_->Update();
+
+
+	bool isHit = false;
+
+	// 答えの場所とオブジェクトの衝突判定
+	float distance1 = VSize(VSub(object_->GetTransform().pos, ansVec_));
+	isHit = (distance1 < 150.0f);
+	if (isHit)
+	{
+		sceMng_.ChangeScene(SceneManager::SCENE_ID::GAMECLEAR);
+	}
 }
 
 void GameScene::DrawPlayer1Screen(void)
@@ -210,7 +224,8 @@ void GameScene::DrawPlayer1Screen(void)
 	player2_->Draw(); // プレイヤー2も描画(同じ世界にいる場合)
 	object_->SetViewWorld(WORLD::LEFT);
 	object_->Draw();
-	enemyManager_->Draw();
+	DrawSphere3D(ansVec_, 3.0f, 1.0, 0xffffff, 0xffffff,true);
+	//enemyManager_->Draw();
 }
 
 void GameScene::DrawPlayer2Screen(void)
@@ -225,7 +240,7 @@ void GameScene::DrawPlayer2Screen(void)
 	player2_->Draw();
 	object_->SetViewWorld(WORLD::RIGHT);
 	object_->Draw();
-	enemyManager_->Draw();
+	//enemyManager_->Draw();
 }
 
 void GameScene::Draw(void)
@@ -306,8 +321,8 @@ void GameScene::Release(void)
 	object_->Release();
 	delete object_;
 
-	enemyManager_->Release();
-	delete enemyManager_;
+	//enemyManager_->Release();
+	//delete enemyManager_;
 
 	camera1_->Release();
 	delete camera1_;

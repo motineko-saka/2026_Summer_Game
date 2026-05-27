@@ -8,6 +8,7 @@ GameClearScene::GameClearScene(void)
 
 GameClearScene::~GameClearScene(void)
 {
+	Release();
 }
 
 void GameClearScene::Init(void)
