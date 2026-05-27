@@ -121,6 +121,10 @@ private:
 	static constexpr VECTOR COL_CAPSULE_DOWN_JUMP_LOCAL_POS =
 	{ 0.0f, 80.0f, 0.0f };
 
+	// 目の前に浮かせるオフセット
+	static constexpr float PICKUP_FRONT_DIST = 60.0f;
+	static constexpr float PICKUP_UP_DIST = 30.0f;
+
 	// プレイヤー番号
 	PLAYER_NO playerNo_;
 
@@ -138,7 +142,6 @@ private:
 	// デバッグ描画
 	void DrawDebug(void);
 
-	// --- ここから掴む機能関連 ---
 	// 掴んでいるコライダ（NULL=何も掴んでいない）
 	ColliderBase* heldCollider_{ nullptr };
 	// 掴む前にコライダが追従していたTransform（戻すために保持）
@@ -155,5 +158,4 @@ private:
 
 	// 掴んでいるか
 	bool IsHolding() const { return heldCollider_ != nullptr; }
-	// --- 掴む機能ここまで ---
 };

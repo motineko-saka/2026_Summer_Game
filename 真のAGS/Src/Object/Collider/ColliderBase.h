@@ -43,6 +43,18 @@ public:
 	// 追従先の再設定
 	void SetFollow(Transform* follow);
 
+	// 追従先に対するローカル座標の取得
+	const VECTOR& GetLocalPos() const { return localPos_; }
+
+	// localPos_ の設定
+	void SetLocalPos(const VECTOR& pos) { localPos_ = pos; }
+
+	// コライダが現在誰かに掴まれているか（初期の follow と異なれば掴まれている）
+	bool IsHeld() const { return follow_ != originalFollow_; }
+
+	// 初期の追従先を取得（必要なら）
+	const Transform* GetOriginalFollow() const { return originalFollow_; }
+
 	// 形状
 	SHAPE GetShape(void) const { return shape_; }
 
@@ -54,7 +66,6 @@ public:
 		const MV1_COLL_RESULT_POLY& hitColPoly,
 		int maxTryCnt,
 		float pushDistance) const = 0;
-
 
 protected:
 
@@ -71,6 +82,9 @@ protected:
 	// 追従先
 	const Transform* follow_;
 
+	// 元の追従先（コンストラクタで設定）
+	const Transform* originalFollow_;
+
 	// 有効フラグ
 	bool isValid_;
 
@@ -79,5 +93,7 @@ protected:
 
 	// デバッグ用描画
 	virtual void DrawDebug(int color) = 0;
+
+	VECTOR localPos_;
 
 };

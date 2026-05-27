@@ -149,13 +149,13 @@ void GameScene::CheckCollisions(void)
 	// プレイヤー1がオブジェクトに衝突している場合、押す
 	if (isPlayer1HitObject_)
 	{
-		// プレイヤーからオブジェクトへの方向ベクトル
-		VECTOR pushDir = VSub(objectPos, player1Pos);
-		pushDir.y = 0.0f; // Y軸(垂直方向)は無視
-		pushDir = VNorm(pushDir); // 正規化
+		//// プレイヤーからオブジェクトへの方向ベクトル
+		//VECTOR pushDir = VSub(objectPos, player1Pos);
+		//pushDir.y = 0.0f; // Y軸(垂直方向)は無視
+		//pushDir = VNorm(pushDir); // 正規化
 
-		// オブジェクトを押す(速度は適度に調整)
-		object_->Push(pushDir, 5.0f);
+		//// オブジェクトを押す(速度は適度に調整)
+		//object_->Push(pushDir, 5.0f);
 	}
 
 	//--------------------------------------------

@@ -34,6 +34,11 @@ public:
 
 	// プレイヤーから押される処理
 	void Push(const VECTOR& direction, float speed);
+
+	// 設置済みフラグ操作
+	void SetPlaced(bool placed) { placed_ = placed; }
+	bool IsPlaced() const { return placed_; }
+
 protected:
 
 	// リソースロード
@@ -79,4 +84,7 @@ private:
 
 	// 押されて移動する量
 	VECTOR pushPow_;
+
+	// 設置済みフラグ（true のとき掴めない、動かせない）
+	bool placed_{ false };
 };

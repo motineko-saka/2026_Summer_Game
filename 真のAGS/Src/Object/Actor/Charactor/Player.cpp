@@ -372,20 +372,21 @@ void Player::ProcessPickup(void)
 {
 	auto& ins = InputManager::GetInstance();
 
-	bool btnNew = false;
+	// 押下トリガのみ受け付ける（長押し無効）
+	bool btnTrg = false;
 
-	// キー/パッド割り当て
 	if (playerNo_ == PLAYER_NO::PLAYER1)
 	{
-		btnNew = ins.IsNew(KEY_INPUT_E) || ins.IsPadBtnNew(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::TOP);
+		btnTrg = ins.IsTrgDown(KEY_INPUT_E)
+			|| ins.IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::TOP);
 	}
 	else // PLAYER2
 	{
-		btnNew = ins.IsNew(KEY_INPUT_U) || ins.IsPadBtnNew(InputManager::JOYPAD_NO::PAD2, InputManager::JOYPAD_BTN::TOP);
+		btnTrg = ins.IsTrgDown(KEY_INPUT_U)
+			|| ins.IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD2, InputManager::JOYPAD_BTN::TOP);
 	}
 
-	// 押した瞬間でトグル（掴む / 放す）
-	if (btnNew)
+	if (btnTrg)
 	{
 		if (IsHolding())
 		{
@@ -393,14 +394,28 @@ void Player::ProcessPickup(void)
 		}
 		else
 		{
-			// 衝突相手リストから掴める対象を探す
+			const float PICKUP_DISTANCE = 180.0f;
+			const float pickDistSq = PICKUP_DISTANCE * PICKUP_DISTANCE;
+			const VECTOR plyPos = transform_.pos;
+
 			for (const ColliderBase* tati : hitColliders_)
 			{
 				if (tati == nullptr) continue;
-				if (tati->GetTag() == ColliderBase::TAG::OBJECT)
+
+				// 既に別のプレイヤー等に掴まれていればスキップ
+				if (tati->IsHeld()) continue;
+
+				const Transform* follow = tati->GetFollow();
+				if (follow == nullptr) continue;
+
+				const VECTOR& objPos = follow->pos;
+				float dx = objPos.x - plyPos.x;
+				float dy = objPos.y - plyPos.y;
+				float dz = objPos.z - plyPos.z;
+
+				if (dx * dx + dy * dy + dz * dz < pickDistSq)
 				{
-					ColliderBase* nonConst = const_cast<ColliderBase*>(tati);
-					PickupCollider(nonConst);
+					PickupCollider(const_cast<ColliderBase*>(tati));
 					break;
 				}
 			}
@@ -412,9 +427,15 @@ void Player::PickupCollider(ColliderBase* collider)
 {
 	if (collider == nullptr) return;
 
-	// 元の追従先を保持しておき、プレイヤーに追従させる
 	heldPrevFollow_ = collider->GetFollow();
 	collider->SetFollow(&transform_);
+
+	// プレイヤーの前方ベクトルを取得
+	VECTOR front = Quaternion::PosAxis(transform_.quaRot, { 0.0f, 0.0f, 1.0f });
+	VECTOR offset = VScale(front, PICKUP_FRONT_DIST);
+	offset.y += PICKUP_UP_DIST; 
+
+	collider->SetLocalPos(offset);
 
 	heldCollider_ = collider;
 }
@@ -423,9 +444,7 @@ void Player::DropHeldObject(void)
 {
 	if (heldCollider_ == nullptr) return;
 
-	// 追従先を元に戻す
 	heldCollider_->SetFollow(const_cast<Transform*>(heldPrevFollow_));
-
 	heldCollider_ = nullptr;
 	heldPrevFollow_ = nullptr;
 }
