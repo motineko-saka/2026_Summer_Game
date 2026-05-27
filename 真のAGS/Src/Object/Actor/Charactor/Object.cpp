@@ -40,29 +40,6 @@ void Object::Push(const VECTOR& direction, float speed)
 	pushPow_ = VAdd(pushPow_, VScale(direction, speed));
 }
 
-void Object::CollisionCapsule(void)
-{
-	int capsuleType = static_cast<int>(COLLIDER_TYPE::CAPSULE);
-	if (ownColliders_.count(capsuleType) == 0) return;
-
-	ColliderCapsule* colliderCapsule =
-		dynamic_cast<ColliderCapsule*>(ownColliders_.at(capsuleType));
-	if (colliderCapsule == nullptr) return;
-
-	for (const auto& hitCol : hitColliders_)
-	{
-		if (hitCol->GetShape() != ColliderBase::SHAPE::MODEL) continue;
-		const ColliderModel* colliderModel =
-			dynamic_cast<const ColliderModel*>(hitCol);
-		if (colliderModel == nullptr) continue;
-
-		colliderCapsule->PushBackAlongNormal(
-			colliderModel, transform_, CNT_TRY_COLLISION,
-			COLLISION_BACK_DIS, true, false, true); 
-		// オブジェクトはY軸方向のみ押し戻す
-	}
-}
-
 void Object::InitLoad(void)
 {
 	transform_.SetModel(resMng_.Load(ResourceManager::SRC::CUBE).handleId_);

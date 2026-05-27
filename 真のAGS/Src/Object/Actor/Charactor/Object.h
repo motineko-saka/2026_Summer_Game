@@ -34,10 +34,6 @@ public:
 
 	// プレイヤーから押される処理
 	void Push(const VECTOR& direction, float speed);
-
-	// 衝突処理
-	void CollisionCapsule() override;
-
 protected:
 
 	// リソースロード
@@ -67,10 +63,10 @@ private:
 	static constexpr VECTOR COL_LINE_END_LOCAL_POS = { 0.0f, -10.0f, 0.0f };
 
 	// 衝突判定用カプセル上部座標
-	static constexpr VECTOR COL_CAPSULE_TOP_LOCAL_POS = { 0.0f, 60.0f, 0.0f };
+	static constexpr VECTOR COL_CAPSULE_TOP_LOCAL_POS = { 0.0f, 100.0f, 0.0f };
 
 	// 衝突判定用カプセル下部座標
-	static constexpr VECTOR COL_CAPSULE_DOWN_LOCAL_POS = { 0.0f, 0.0f, 0.0f };
+	static constexpr VECTOR COL_CAPSULE_DOWN_LOCAL_POS = { 0.0f, 50.0f, 0.0f };
 
 	// 衝突判定用カプセルの半径
 	static constexpr float COL_CAPSULE_RADIUS = 30.0f;

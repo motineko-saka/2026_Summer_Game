@@ -1,6 +1,6 @@
 #pragma once
-
 #include "CharactorBase.h"
+
 class Camera;
 
 class Player : public CharactorBase
@@ -17,7 +17,7 @@ public:
 		//MAX,
 	};
 
-	// プレイヤー番号の列挙型
+	// プレイヤー番号
 	enum class PLAYER_NO
 	{
 		PLAYER1,
@@ -25,7 +25,7 @@ public:
 	};
 
 	Player(void);
-	Player(PLAYER_NO playerNo, Camera& camera); // プレイヤー番号指定のコンストラクタ
+	Player(PLAYER_NO playerNo, Camera& camera); // プレイヤー番号付きコンストラクタ
 	virtual ~Player(void);
 
 	// 描画
@@ -34,35 +34,35 @@ public:
 	// 解放
 	void Release(void)override;
 
-	// プレイヤーの複製
+	// 複製
 	Player* Clone(PLAYER_NO playerNo) const;
 
 	// プレイヤー番号の取得
 	PLAYER_NO GetPlayerNo(void) const;
 
-	// 初期位置の設定
+	// 初期位置セット
 	void SetInitialPosition(const VECTOR& pos);
 
 	VECTOR GetMovePow(void) { return movePow_; }
 
 protected:
 
-	// リソースロード
+	// 初期ロード
 	void InitLoad(void) override;
 
-	// 大きさ、回転、座標の初期化
+	// 初期Transform
 	void InitTransform(void) override;
 
-	// 衝突判定の初期化
+	// 初期コライダ
 	void InitCollider(void) override;
 
-	// アニメーションの初期化
+	// 初期アニメーション
 	void InitAnimation(void) override;
 
-	// 初期化後の後処理
+	// 初期後処理
 	void InitPost(void) override;
 
-	// 更新系
+	// 更新処理
 	void UpdateProcess(void) override;
 
 	void UpdateProcessPost(void) override;
@@ -77,47 +77,47 @@ private:
 
 	static constexpr VECTOR PLAYER_DEFAULT_ROT_LOCAL = { 0.0f,180.0f * DX_PI_F / 180.0f,0.0f };
 
-	// 移動速度(通常)
+	// 移動
 	static constexpr float SPEED_MOVE = 5.0f;
 
-	// 移動速度(ダッシュ)
+	// ダッシュ
 	static constexpr float SPEED_DASH = 10.0f;
 
-	// 衝突判定用ライン開始
+	// コライダ（線分）開始位置（ローカル）
 	static constexpr VECTOR COL_LINE_START_LOCAL_POS = { 0.0f, 80.0f, 0.0f };
 
-	// 衝突判定用ライン終了
+	// コライダ（線分）終了位置（ローカル）
 	static constexpr VECTOR COL_LINE_END_LOCAL_POS = { 0.0f, -10.0f, 0.0f };
 
-	// 衝突判定用ライン開始(ジャンプ時)
+	// コライダ（線分）開始位置（ジャンプ時）
 	static constexpr VECTOR COL_LINE_JUMP_START_LOCAL_POS = { 0.0f, 130.0f, 0.0f };
 
-	// 衝突判定用ライン終了(ジャンプ時)
+	// コライダ（線分）終了位置（ジャンプ時）
 	static constexpr VECTOR COL_LINE_JUMP_END_LOCAL_POS = { 0.0f, 50.0f, 0.0f };
 
-	// ジャンプ力
+	// ジャンプ力初期
 	static constexpr float POW_JUMP_INIT = 3500.0f;
 
-	// 溜めジャンプ力
+	// ジャンプ力維持
 	static constexpr float POW_JUMP_KEEP = 400.0f;
 
-	// ジャンプ力付与時間
+	// ジャンプ入力受付時間
 	static constexpr float TIME_JUMP_INPUT = 0.5f;
 
-	// 衝突判定用カプセル上部座標
+	// カプセルコライダ上位置（ローカル）
 	static constexpr VECTOR COL_CAPSULE_TOP_LOCAL_POS = { 0.0f, 110.0f, 0.0f };
 
-	// 衝突判定用カプセル下部座標
+	// カプセルコライダ下位置（ローカル）
 	static constexpr VECTOR COL_CAPSULE_DOWN_LOCAL_POS = { 0.0f, 30.0f, 0.0f };
 
-	// 衝突判定用カプセル球の半径
+	// カプセル半径
 	static constexpr float COL_CAPSULE_RADIUS = 20.0f;
 
-	// 衝突判定用カプセル上部座標(ジャンプ時)
+	// カプセル上位置（ジャンプ時）
 	static constexpr VECTOR COL_CAPSULE_TOP_JUMP_LOCAL_POS =
 	{ 0.0f, 160.0f, 0.0f };
 
-	// 衝突判定用カプセル下部座標(ジャンプ時)
+	// カプセル下位置（ジャンプ時）
 	static constexpr VECTOR COL_CAPSULE_DOWN_JUMP_LOCAL_POS =
 	{ 0.0f, 80.0f, 0.0f };
 
@@ -126,15 +126,34 @@ private:
 
 	Camera* camera_;
 
-	// 処理
+	// 移動、ジャンプ処理
 	void ProcessMove(void);
 	void ProcessJump(void);
 	void ProcessAnimPos(void);
 	void ProcessAnimCapsule(void);
 
-	// 衝突判定
+	// 衝突関連
 	void CollisionReserve(void) override;
 
 	// デバッグ描画
 	void DrawDebug(void);
+
+	// --- ここから掴む機能関連 ---
+	// 掴んでいるコライダ（NULL=何も掴んでいない）
+	ColliderBase* heldCollider_{ nullptr };
+	// 掴む前にコライダが追従していたTransform（戻すために保持）
+	const Transform* heldPrevFollow_{ nullptr };
+
+	// 入力で掴む/放す処理
+	void ProcessPickup(void);
+
+	// 実際に掴む（followを切り替える）
+	void PickupCollider(ColliderBase* collider);
+
+	// 放す（followを元に戻す）
+	void DropHeldObject(void);
+
+	// 掴んでいるか
+	bool IsHolding() const { return heldCollider_ != nullptr; }
+	// --- 掴む機能ここまで ---
 };

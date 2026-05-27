@@ -123,7 +123,7 @@ void GameScene::Init(void)
 	}
 
 	// プレイヤー1のコライダーをエネミーに登録
-	//enemyManager_->AddHitCollider(player1_->GetOwnCollider(static_cast<int>(CharactorBase::COLLIDER_TYPE::CAPSULE)));
+	player1_->AddHitCollider(object_->GetOwnCollider(static_cast<int>(Object::COLLIDER_TYPE::CAPSULE)));
 
 	// 衝突フラグの初期化
 	isPlayer1HitObject_ = false;

@@ -12,14 +12,19 @@
 Player::Player(void)
 	:
 	CharactorBase(),
-	playerNo_(PLAYER_NO::PLAYER1)
+	playerNo_(PLAYER_NO::PLAYER1),
+	heldCollider_(nullptr),
+	heldPrevFollow_(nullptr),
+	camera_(nullptr)
 {
 }
 
 Player::Player(PLAYER_NO playerNo, Camera& camera)
 	:
 	CharactorBase(),
-	playerNo_(playerNo)
+	playerNo_(playerNo),
+	heldCollider_(nullptr),
+	heldPrevFollow_(nullptr)
 {
 	camera_ = &camera;
 }
@@ -36,6 +41,9 @@ void Player::Draw(void)
 
 void Player::Release(void)
 {
+	// 放すときは元に戻す
+	DropHeldObject();
+
 	CharactorBase::Release();
 }
 
@@ -105,6 +113,10 @@ void Player::InitAnimation(void)
 void Player::InitPost(void)
 {
 	isAnim_ = false;
+
+	// 掴む機能の初期化
+	heldCollider_ = nullptr;
+	heldPrevFollow_ = nullptr;
 }
 
 void Player::UpdateProcess(void)
@@ -115,6 +127,9 @@ void Player::UpdateProcess(void)
 	// ジャンプ処理
 	ProcessJump();
 
+	// 掴む/放す処理
+	ProcessPickup();
+
 	if (InputManager::GetInstance().IsTrgMouseRight())
 	{
 		playerNo_ = playerNo_ == PLAYER_NO::PLAYER1 ? PLAYER_NO::PLAYER2 : PLAYER_NO::PLAYER1;
@@ -123,6 +138,7 @@ void Player::UpdateProcess(void)
 
 void Player::UpdateProcessPost(void)
 {
+	// 特に追加処理は不要（コライダの follow を切り替えているため追従は自動的に行われる想定）
 }
 
 void Player::ProcessMove(void)
@@ -352,8 +368,80 @@ void Player::CollisionReserve(void)
 	ProcessAnimCapsule();
 }
 
+void Player::ProcessPickup(void)
+{
+	auto& ins = InputManager::GetInstance();
+
+	bool btnNew = false;
+
+	// キー/パッド割り当て
+	if (playerNo_ == PLAYER_NO::PLAYER1)
+	{
+		btnNew = ins.IsNew(KEY_INPUT_E) || ins.IsPadBtnNew(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::TOP);
+	}
+	else // PLAYER2
+	{
+		btnNew = ins.IsNew(KEY_INPUT_U) || ins.IsPadBtnNew(InputManager::JOYPAD_NO::PAD2, InputManager::JOYPAD_BTN::TOP);
+	}
+
+	// 押した瞬間でトグル（掴む / 放す）
+	if (btnNew)
+	{
+		if (IsHolding())
+		{
+			DropHeldObject();
+		}
+		else
+		{
+			// 衝突相手リストから掴める対象を探す
+			for (const ColliderBase* tati : hitColliders_)
+			{
+				if (tati == nullptr) continue;
+				if (tati->GetTag() == ColliderBase::TAG::OBJECT)
+				{
+					ColliderBase* nonConst = const_cast<ColliderBase*>(tati);
+					PickupCollider(nonConst);
+					break;
+				}
+			}
+		}
+	}
+}
+
+void Player::PickupCollider(ColliderBase* collider)
+{
+	if (collider == nullptr) return;
+
+	// 元の追従先を保持しておき、プレイヤーに追従させる
+	heldPrevFollow_ = collider->GetFollow();
+	collider->SetFollow(&transform_);
+
+	heldCollider_ = collider;
+}
+
+void Player::DropHeldObject(void)
+{
+	if (heldCollider_ == nullptr) return;
+
+	// 追従先を元に戻す
+	heldCollider_->SetFollow(const_cast<Transform*>(heldPrevFollow_));
+
+	heldCollider_ = nullptr;
+	heldPrevFollow_ = nullptr;
+}
+
 void Player::DrawDebug(void)
 {
 	int offsetX = (playerNo_ == PLAYER_NO::PLAYER2) ? 400 : 15;
 	DrawFormatString(offsetX, 20, 0x000000, "%f,%f,%f", transform_.pos.x, transform_.pos.y, transform_.pos.z);
+
+	// 持っているか表示
+	if (IsHolding())
+	{
+		DrawFormatString(offsetX, 40, 0x000000, "Holding: YES");
+	}
+	else
+	{
+		DrawFormatString(offsetX, 40, 0x000000, "Holding: NO");
+	}
 }

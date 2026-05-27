@@ -76,7 +76,7 @@ bool ColliderLine::PushBackUp(const ColliderModel* colliderModel,
 		{
 			// Õ“Ë•¨‚æ‚èA‰º‘¤‚É‚¢‚éê‡‚Ì‚İAˆÊ’u‚ğC³‚·‚é
 			transform.pos =
-				VAdd(hit.HitPosition, VScale(AsoUtility::DIR_U, 2.0f));
+				VAdd(hit.HitPosition, VScale(AsoUtility::DIR_U, 0.5f));
 		}
 
 		ret = true;
