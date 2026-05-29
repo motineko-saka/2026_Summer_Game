@@ -11,6 +11,7 @@
 #include "../Object/Actor/Charactor/Player.h"
 #include "../Object/Actor/Charactor/Enemy/EnemyRat.h"
 #include "../Object/Actor/Charactor/Object.h"
+#include "../Object/Actor/Wall.h"
 #include "../Object/Collider/ColliderBase.h"
 #include "GameScene.h"
 
@@ -28,6 +29,7 @@ GameScene::GameScene(void)
 	screenHeight_(0),
 	isPlayer1HitObject_(false),
 	isPlayer2HitObject_(false),
+	//wall_(nullptr),
 	SceneBase()
 {
 }
@@ -88,6 +90,9 @@ void GameScene::Init(void)
 	object_ = new Object(GameScene::WORLD::LEFT);
 	object_->Init();
 
+	wall_ = new Wall();
+	wall_->Init();
+
 
 	// オブジェクトのモデルコライダーをプレイヤーに登録
 	/*const ColliderBase* objectCollider =
@@ -121,6 +126,9 @@ void GameScene::Init(void)
 
 		if (stageCollider == nullptr) DrawFormatString(100,100,0xffffff, "stageCollider is null\n");
 	}
+	player1_->AddHitCollider(wall_->GetOwnCollider(static_cast<int>(Wall::COLLIDER_TYPE::MODEL)));
+	player2_->AddHitCollider(wall_->GetOwnCollider(static_cast<int>(Wall::COLLIDER_TYPE::MODEL)));
+	object_->AddHitCollider(wall_->GetOwnCollider(static_cast<int>(Wall::COLLIDER_TYPE::MODEL)));
 
 	// プレイヤー1のコライダーをエネミーに登録
 	//enemyManager_->AddHitCollider(player1_->GetOwnCollider(static_cast<int>(CharactorBase::COLLIDER_TYPE::CAPSULE)));
@@ -199,6 +207,7 @@ void GameScene::Update(void)
 
 	// オブジェクトの更新
 	object_->Update();
+	wall_->Update();
 
 
 	bool isHit = false;
@@ -224,7 +233,7 @@ void GameScene::DrawPlayer1Screen(void)
 	player2_->Draw(); // プレイヤー2も描画(同じ世界にいる場合)
 	object_->SetViewWorld(WORLD::LEFT);
 	object_->Draw();
-	DrawSphere3D(ansVec_, 3.0f, 1.0, 0xffffff, 0xffffff,true);
+	wall_->Draw();
 	//enemyManager_->Draw();
 }
 
@@ -240,6 +249,8 @@ void GameScene::DrawPlayer2Screen(void)
 	player2_->Draw();
 	object_->SetViewWorld(WORLD::RIGHT);
 	object_->Draw();
+	wall_->Draw();
+	DrawSphere3D(ansVec_, 40.0f, 40.0, 0xffffff, 0xffffff, true);
 	//enemyManager_->Draw();
 }
 

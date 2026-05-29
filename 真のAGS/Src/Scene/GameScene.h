@@ -57,6 +57,8 @@ private:
 
 	Object* object_;
 
+	Wall* wall_;
+
 	// 画面分割用のスクリーンハンドル
 	int screenHandle1_;
 	int screenHandle2_;

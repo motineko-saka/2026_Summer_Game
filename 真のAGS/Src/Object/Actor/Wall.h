@@ -40,5 +40,5 @@ protected:
 private:
 	static constexpr VECTOR STAGE_DEFAULT_POS = { 0.0f, 0.0f, 0.0f };
 
-	static constexpr VECTOR STAGE_DEFAULT_SCALE = { 1000.0f,1000.0f,1000.0f };
+	static constexpr VECTOR STAGE_DEFAULT_SCALE = { 5.0f,1000.0f,1000.0f };
 };

@@ -24,6 +24,8 @@ public:
 		VIEW_RANGE,
 		CUBE,
 		WALL,
+		GAME_OVER_SCENE,
+		GAME_CLEAR_SCENE,
 	};
 
 	// 明示的にインステンスを生成する

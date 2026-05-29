@@ -82,6 +82,14 @@ void ResourceManager::Init(void)
 	// ” 
 	res = new RES(RES_T::MODEL, PATH_MDL + "Cube.mv1");
 	resourcesMap_.emplace(SRC::WALL, res);
+
+
+	res = new RES(RES_T::IMG, PATH_MDL + "GameOver.png");
+	resourcesMap_.emplace(SRC::GAME_OVER_SCENE, res);
+
+
+	res = new RES(RES_T::IMG, PATH_MDL + "GameClear.png");
+	resourcesMap_.emplace(SRC::GAME_CLEAR_SCENE, res);
 }
 
 void ResourceManager::Release(void)
