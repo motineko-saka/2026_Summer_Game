@@ -1,4 +1,4 @@
-#include <DxLib.h>
+ #include <DxLib.h>
 #include "../Application.h"
 #include "Fader.h"
 

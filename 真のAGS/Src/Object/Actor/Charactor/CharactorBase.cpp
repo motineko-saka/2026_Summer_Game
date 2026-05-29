@@ -150,24 +150,8 @@ void CharactorBase::CollisionCapsule(void)
 		if (colliderModel == nullptr) continue;
 
 		// プレイヤーの押し戻し
-		colliderCapsule->PushBackAlongNormal(colliderModel, transform_, CNT_TRY_COLLISION,
+		colliderCapsule->PushBackAlongNormal(colliderModel, transform_, CNT_TRY_COLLISION, 
 			COLLISION_BACK_DIS, true, false, false);
-
-
-		//// プレイヤーが進行方向に入力していて、かつ本当に衝突している時だけ押す
-		//if (!AsoUtility::EqualsVZero(moveDir_) && colliderCapsule->IsHit(colliderModel, true, false)) {
-		//	// ここで「本当に衝突している時だけ押す」＝カプセルがモデルの内部に入った時だけ
-		//	Transform* objTransform = const_cast<Transform*>(colliderModel->GetFollow());
-		//	if (objTransform)
-		//	{
-		//		VECTOR pushDir = VNorm(moveDir_);
-		//		float pushAmount = 5.0f;
-		//		objTransform->pos.x += pushDir.x * pushAmount;
-		//		objTransform->pos.y += pushDir.y * pushAmount;
-		//		objTransform->pos.z += pushDir.z * pushAmount;
-		//		objTransform->Update();
-		//	}
-		//}
 	}
 }
 

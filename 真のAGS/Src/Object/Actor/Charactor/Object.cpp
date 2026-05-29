@@ -40,30 +40,6 @@ void Object::Push(const VECTOR& direction, float speed)
 	pushPow_ = VAdd(pushPow_, VScale(direction, speed));
 }
 
-void Object::CollisionCapsule(void)
-{
-	int capsuleType = static_cast<int>(COLLIDER_TYPE::CAPSULE);
-	if (ownColliders_.count(capsuleType) == 0) return;
-
-	ColliderCapsule* colliderCapsule =
-		dynamic_cast<ColliderCapsule*>(ownColliders_.at(capsuleType));
-	if (colliderCapsule == nullptr) return;
-
-	for (const auto& hitCol : hitColliders_)
-	{
-		if (hitCol->GetShape() != ColliderBase::SHAPE::MODEL) continue;
-		const ColliderModel* colliderModel =
-			dynamic_cast<const ColliderModel*>(hitCol);
-		if (colliderModel == nullptr) continue;
-
-		// オブジェクトはY軸方向のみ押し戻す
-		colliderCapsule->PushBackAlongNormal(
-			colliderModel, transform_, CNT_TRY_COLLISION,
-			COLLISION_BACK_DIS, true, false, true); // onlyYAxis=true
-	}
-}
-
-
 void Object::InitLoad(void)
 {
 	transform_.SetModel(resMng_.Load(ResourceManager::SRC::CUBE).handleId_);
@@ -120,15 +96,35 @@ void Object::UpdateProcess(void)
 		transform_.pos.x = -transform_.pos.x;
 	}
 
-	// 押された力を位置に適用(減衰させながら)
+	// 掴まれているコライダがあれば transform をそれに同期する
+	for (const auto& ct : ownColliders_)
+	{
+		ColliderBase* col = ct.second;
+
+		if (col == nullptr) continue;
+
+		const Transform* follow = col->GetFollow();
+		// ハードゲイ が無い、または自分自身を追従先にしている場合は無視
+		if (follow == nullptr || follow == &transform_) continue;
+
+		// コライダのローカル位置をワールド座標に変換して合わせる
+
+		const VECTOR localPos = col->GetLocalPos();
+		const VECTOR worldPos = VAdd(follow->pos, follow->quaRot.PosAxis(localPos));
+		transform_.pos = worldPos;
+	
+		// 回転・スケールを追従
+		transform_.quaRot = follow->quaRot;
+		//transform_.scl = follow->scl;
+
+		// 掴まれている間はきんに君を無効化して終了
+		pushPow_ = { 0.0f, 0.0f, 0.0f };
+		break;
+	}
+
+	// 押された力を位置に適用（減衰）
 	transform_.pos = VAdd(transform_.pos, pushPow_);
 	pushPow_ = VScale(pushPow_, PUSH_RESISTANCE);
-
-	// 力が小さくなったら0にする
-	if (VSize(pushPow_) < 0.01f)
-	{
-		pushPow_ = { 0.0f, 0.0f, 0.0f };
-	}
 
 	CollisionCapsule();
 	transform_.Update();

@@ -90,7 +90,7 @@ protected:
 	virtual void CollisionReserve(void) {}
 	void Collision(void);
 	void CollisionGravity(void);
-	virtual void CollisionCapsule();
+	void CollisionCapsule();
 
 	// ŠÛ‰e•`‰æ
 	void DrawShadow(void);

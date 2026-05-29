@@ -6,6 +6,7 @@ ColliderBase::ColliderBase(SHAPE shape, TAG tag, const Transform* follow)
 	shape_(shape),
 	tag_(tag),
 	follow_(follow),
+	originalFollow_(follow),
 	isValid_(true)
 {
 }
@@ -36,8 +37,7 @@ VECTOR ColliderBase::GetPosPushBackAlongNormal(const MV1_COLL_RESULT_POLY& hitCo
 
 VECTOR ColliderBase::GetRotPos(const VECTOR& localPos) const
 {
-	// 追従相手の回転に合わせて指定ローカル座標を回転し、
-// 基準座標に加えることでワールド座標へ変換
+	// ローカル座標を回転・平行移動してワールド座標にする
 	VECTOR localRotPos = follow_->quaRot.PosAxis(localPos);
 	return VAdd(follow_->pos, localRotPos);
 }
