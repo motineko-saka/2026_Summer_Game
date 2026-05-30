@@ -16,7 +16,17 @@ public:
 		VIEW_RANGE,
 	};
 
-	Object(GameScene::WORLD world);
+	// オブジェクトの種類
+	enum class OBJECT_TYPE
+	{
+		DEFAULT,   
+		WBOX,    
+		AKEG,   
+		SCENE_PROP,
+	};
+
+	// world と種類を指定可能に
+	Object(GameScene::WORLD world, OBJECT_TYPE type = OBJECT_TYPE::DEFAULT);
 	virtual ~Object(void);
 
 	//void Update(void)override;
@@ -38,6 +48,13 @@ public:
 	// 設置済みフラグ操作
 	void SetPlaced(bool placed) { placed_ = placed; }
 	bool IsPlaced() const { return placed_; }
+
+	// 種類取得
+	OBJECT_TYPE GetObjectType() const { return type_; }
+	void SetObjectType(OBJECT_TYPE t) { type_ = t; }
+
+	// 位置設定の簡易ヘルパ
+	void SetPosition(const VECTOR& pos) { transform_.pos = pos; transform_.Update(); }
 
 protected:
 
@@ -81,6 +98,9 @@ private:
 
 	GameScene::WORLD world_;		// 
 	GameScene::WORLD viewWorld_;	// 今写っている世界
+
+	// オブジェクト種類
+	OBJECT_TYPE type_{ OBJECT_TYPE::DEFAULT };
 
 	// 押されて移動する量
 	VECTOR pushPow_;

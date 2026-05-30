@@ -24,6 +24,7 @@ public:
 		VIEW_RANGE,
 		CUBE,
 		WALL,
+		WOODBOX,
 	};
 
 	// 明示的にインステンスを生成する
