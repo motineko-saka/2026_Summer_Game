@@ -31,7 +31,7 @@ void Wall::Release(void)
 
 void Wall::InitLoad(void)
 {
-	transform_.SetModel(resMng_.Load(ResourceManager::SRC::WALL).handleId_);
+	transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::WALL));
 }
 
 void Wall::InitTransform(void)

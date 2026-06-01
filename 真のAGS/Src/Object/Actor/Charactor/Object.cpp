@@ -50,7 +50,7 @@ void Object::InitLoad(void)
 		transform_.SetModel(resMng_.Load(ResourceManager::SRC::CUBE).handleId_);
 		break;
 	case OBJECT_TYPE::SCENE_PROP:
-		transform_.SetModel(resMng_.Load(ResourceManager::SRC::WALL).handleId_);
+		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::WALL));
 		break;
 	case OBJECT_TYPE::DEFAULT:
 
@@ -152,9 +152,6 @@ void Object::CheckAnswer(void)
 	bool isHit = false;
 
 	float distance1 = VSize(VSub(transform_.pos, ansVec_));
-	isHit = (distance1 < 150.0f);
-	if (isHit)
-	{
-		isAnswerPosition_ = true;
-	}
+
+	isAnswerPosition_ = (distance1 < 150.0f);
 }

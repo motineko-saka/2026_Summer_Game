@@ -92,22 +92,21 @@ void GameScene::Init(void)
 	// オブジェクト作成（複数）
 	objects_.reserve(4);
 
-	objects_.push_back(new Object(GameScene::WORLD::LEFT, ansVec_, Object::OBJECT_TYPE::DEFAULT));
+	objects_.push_back(new Object(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[0], Object::OBJECT_TYPE::DEFAULT));
 	objects_.back()->Init();
-	objects_.back()->SetPosition({ -300.0f, 80.0f, -10.0f });
+	objects_.back()->SetPosition({ 1260.0f, -500.0f, -50.5f });
 
-	objects_.push_back(new Object(GameScene::WORLD::LEFT, ansVec_, Object::OBJECT_TYPE::WBOX));
+	objects_.push_back(new Object(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], Object::OBJECT_TYPE::WBOX));
 	objects_.back()->Init();
-	objects_.back()->SetPosition({ -200.0f, 80.0f, -10.0f });
+	objects_.back()->SetPosition({ 1260.0f, -720.0f, -50.5f });
 
-	objects_.push_back(new Object(GameScene::WORLD::RIGHT, ansVec_, Object::OBJECT_TYPE::AKEG));
+	objects_.push_back(new Object(GameScene::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[2], Object::OBJECT_TYPE::AKEG));
 	objects_.back()->Init();
-	objects_.back()->SetPosition({ 200.0f, 80.0f, -10.0f });
+	objects_.back()->SetPosition({ -1260.0f, -720.0f, -50.5f });
 
-	objects_.push_back(new Object(GameScene::WORLD::LEFT, ansVec_, Object::OBJECT_TYPE::SCENE_PROP));
+	objects_.push_back(new Object(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[3], Object::OBJECT_TYPE::SCENE_PROP));
 	objects_.back()->Init();
-	objects_.back()->SetPosition({ 0.0f, 80.0f, -50.0f });
-
+	objects_.back()->SetPosition({ 1260.0f, -720.0f, -50.5f });
 
 	// ステージの各コライダをプレイヤー／カメラ／オブジェクトに登録
 	for (const auto& stage : stageManager_->GetStage())
@@ -144,6 +143,12 @@ void GameScene::Init(void)
 		if (objCaps) player1_->AddHitCollider(objCaps);
 		if (objCaps) player2_->AddHitCollider(objCaps);
 	}
+
+	const ColliderBase* wallCollider =
+		wall_->GetOwnCollider(static_cast<int>(Stage::COLLIDER_TYPE::MODEL));
+
+	player1_->AddHitCollider(wallCollider);
+	player2_->AddHitCollider(wallCollider);
 
 	// 衝突フラグの初期化
 	isPlayer1HitObject_ = false;
@@ -343,13 +348,14 @@ void GameScene::Draw(void)
 	int y = 120;
 	for (auto& object : objects_)
 	{
-		DrawFormatString(halfWidth, y, GetColor(255, 255, 255), "Object情報:座標(%.1f, %.1f, %.1f) 回転(%.1f, %.1f, %.1f)\nisAnswer : %d",
+		DrawFormatString(halfWidth, y, GetColor(255, 255, 255), "Object情報:座標(%.1f, %.1f, %.1f) 回転(%.1f, %.1f, %.1f)\nViewWorld : %d isAnswer : %d",
 			object->GetTransform().pos.x,
 			object->GetTransform().pos.y,
 			object->GetTransform().pos.z,
 			object->GetTransform().quaRot.ToEuler().x,
 			object->GetTransform().quaRot.ToEuler().y,
 			object->GetTransform().quaRot.ToEuler().z,
+			static_cast<int>(object->GetWorld()),
 			object->IsAnswerPosition());
 
 		y += 40;
