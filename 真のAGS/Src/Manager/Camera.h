@@ -1,4 +1,3 @@
-#pragma once
 #include <DxLib.h>
 #include "../Common/Quaternion.h"
 #include "../Object/Actor/ActorBase.h"
@@ -12,9 +11,9 @@ public:
 
 	// カメラの初期座標
 	static constexpr VECTOR DERFAULT_POS = { 0.0f, 200.0f, -500.0f };
-	
+
 	// カメラの初期角度
-	static constexpr VECTOR DERFAULT_ANGLES = { 
+	static constexpr VECTOR DERFAULT_ANGLES = {
 		0.0f, 0.0f, 0.0f
 	};
 
@@ -35,10 +34,15 @@ public:
 	// 追従位置から注視点までの相対座標
 	static constexpr VECTOR FOLLOW_TARGET_LOCAL_POS = { 0.0f, 0.0f, 500.0f };
 
+	// トップダウン用
+	// y を大きくすると遠目の俯瞰になるので実機で調整してください
+	static constexpr VECTOR TOP_CAMERA_LOCAL_POS = { 0.0f, 800.0f, 0.0f };
+	static constexpr VECTOR TOP_TARGET_LOCAL_POS = { 0.0f, 0.0f, 0.0f };
+
 	// カメラのX回転上限度角
 	static constexpr float LIMIT_X_UP_RAD = 40.0f * (DX_PI_F / 180.0f);
 	static constexpr float LIMIT_X_DW_RAD = 10.0f * (DX_PI_F / 180.0f);
-	
+
 	// カメラモード
 	enum class MODE
 	{
@@ -46,6 +50,7 @@ public:
 		FIXED_POINT,
 		FREE,
 		FOLLOW,
+		TOP,
 	};
 
 	// 衝突判定種別
@@ -82,10 +87,10 @@ public:
 	// 角度の取得
 	const VECTOR& GetAngles(void) const;
 	const Quaternion& GetQuaRot(void) const;
-	
+
 	// X回転を抜いたY軸のみのカメラ角度
 	const Quaternion& GetQuaRotY(void) const;
-	
+
 	// 注視点の取得
 	const VECTOR& GetTargetPos(void) const;
 
@@ -138,6 +143,8 @@ private:
 	// カメラモード
 	MODE mode_;
 
+	MODE prevMode_;
+
 	// カメラの位置
 	//VECTOR pos_;
 
@@ -157,7 +164,7 @@ private:
 
 	// カメラの上方向
 	//VECTOR cameraUp_;
-	
+
 	// カメラを初期位置に戻す
 	void SetDefault(void);
 
@@ -178,6 +185,7 @@ private:
 	void SetBeforeDrawFixedPoint(void);
 	void SetBeforeDrawFree(void);
 	void SetBeforeDrawFollow(void);
+	void SetBeforeDrawTop(void);
 
 	// 衝突判定
 	void Collision(void);

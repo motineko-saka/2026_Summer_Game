@@ -91,18 +91,17 @@ void GameScene::Init(void)
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ -300.0f, 80.0f, -10.0f });
 
-	objects_.push_back(new Object(GameScene::WORLD::LEFT, Object::OBJECT_TYPE::MOVABLE));
+	objects_.push_back(new Object(GameScene::WORLD::LEFT, Object::OBJECT_TYPE::WBOX));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ -200.0f, 80.0f, -10.0f });
 
-	objects_.push_back(new Object(GameScene::WORLD::RIGHT, Object::OBJECT_TYPE::ANSWER));
+	objects_.push_back(new Object(GameScene::WORLD::RIGHT, Object::OBJECT_TYPE::AKEG));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ 200.0f, 80.0f, -10.0f });
 
 	objects_.push_back(new Object(GameScene::WORLD::LEFT, Object::OBJECT_TYPE::SCENE_PROP));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ 0.0f, 80.0f, -50.0f });
-
 
 	// ステージの各コライダをプレイヤー／カメラ／オブジェクトに登録
 	for (const auto& stage : stageManager_->GetStage())
