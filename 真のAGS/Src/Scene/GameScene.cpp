@@ -144,6 +144,13 @@ void GameScene::Init(void)
 	isPlayer2HitObject_ = false;
 
 	ansVec_ = ANSWER_VECTOR;
+
+	// 初期アクティブ状態（プレイヤー1 を操作）
+	activePlayer_ = Player::PLAYER_NO::PLAYER1;
+	player1_->SetActive(true);
+	player2_->SetActive(false);
+	camera1_->SetControlEnabled(true);
+	camera2_->SetControlEnabled(false);
 }
 
 void GameScene::CheckCollisions(void)
@@ -175,14 +182,14 @@ void GameScene::CheckCollisions(void)
 		bool hit2 = (distance2 < 180.0f);
 		if (hit2)
 		{
-			isPlayer2HitObject_ = true;
+			//isPlayer2HitObject_ = true;
 			// プレイヤーからオブジェクトへの方向ベクトル
-			VECTOR pushDir = VSub(objectPos, player2Pos);
-			pushDir.y = 0.0f; // Y軸(垂直方向)は無視
-			pushDir = VNorm(pushDir); // 正規化
+			//VECTOR pushDir = VSub(objectPos, player2Pos);
+			//pushDir.y = 0.0f; // Y軸(垂直方向)は無視
+			//pushDir = VNorm(pushDir); // 正規化
 
 			// オブジェクトを押す(速度は適度に調整)
-			obj->Push(pushDir, 5.0f);
+			//obj->Push(pushDir, 5.0f);
 		}
 	}
 }
@@ -194,6 +201,48 @@ void GameScene::Update(void)
 	if (ins.IsTrgDown(KEY_INPUT_SPACE))
 	{
 		sceMng_.ChangeScene(SceneManager::SCENE_ID::GAMECLEAR);
+	}
+
+	// プレイヤー選択切替
+	if (ins.IsTrgDown(KEY_INPUT_TAB))
+	{
+		if (activePlayer_ == Player::PLAYER_NO::PLAYER1)
+		{
+			activePlayer_ = Player::PLAYER_NO::PLAYER2;
+			player1_->SetActive(false);
+			player2_->SetActive(true);
+			camera1_->SetControlEnabled(false);
+			camera2_->SetControlEnabled(true);
+		}
+		else
+		{
+			activePlayer_ = Player::PLAYER_NO::PLAYER1;
+			player1_->SetActive(true);
+			player2_->SetActive(false);
+			camera1_->SetControlEnabled(true);
+			camera2_->SetControlEnabled(false);
+		}
+	}
+
+	// 右クリックでもプレイヤー切替
+	if (ins.IsTrgMouseRight())
+	{
+		if (activePlayer_ == Player::PLAYER_NO::PLAYER1)
+		{
+			activePlayer_ = Player::PLAYER_NO::PLAYER2;
+			player1_->SetActive(false);
+			player2_->SetActive(true);
+			camera1_->SetControlEnabled(false);
+			camera2_->SetControlEnabled(true);
+		}
+		else
+		{
+			activePlayer_ = Player::PLAYER_NO::PLAYER1;
+			player1_->SetActive(true);
+			player2_->SetActive(false);
+			camera1_->SetControlEnabled(true);
+			camera2_->SetControlEnabled(false);
+		}
 	}
 
 	stageManager_->Update();
@@ -294,6 +343,21 @@ void GameScene::Draw(void)
 
 	// 右半分にプレイヤー2の画面
 	DrawExtendGraph(halfWidth, 0, screenWidth_, screenHeight_, screenHandle2_, true);
+
+	// 非アクティブ側を薄暗くする
+	int dimAlpha = 150; 
+	SetDrawBlendMode(DX_BLENDMODE_ALPHA, dimAlpha);
+	if (activePlayer_ == Player::PLAYER_NO::PLAYER1)
+	{
+		// 右側を暗くする
+		DrawBox(halfWidth, 0, screenWidth_, screenHeight_, GetColor(0, 0, 0), TRUE);
+	}
+	else
+	{
+		// 左側を暗くする
+		DrawBox(0, 0, halfWidth, screenHeight_, GetColor(0, 0, 0), TRUE);
+	}
+	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 
 	// デバッグ表示
 	DrawFormatString(0, 0, GetColor(255, 255, 255), "P1角度:(%.1f, %.1f, %.1f)",

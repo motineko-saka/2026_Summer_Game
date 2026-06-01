@@ -55,6 +55,7 @@ void InputManager::Init(void)
 	InputManager::GetInstance().Add(KEY_INPUT_BACKSLASH);
 	InputManager::GetInstance().Add(KEY_INPUT_LCONTROL);
 	InputManager::GetInstance().Add(KEY_INPUT_RCONTROL);
+	InputManager::GetInstance().Add(KEY_INPUT_TAB);
 
 
 	InputManager::MouseInfo info;
@@ -81,7 +82,6 @@ void InputManager::Init(void)
 
 void InputManager::Update(void)
 {
-
 	// キーボード検知
 	for (auto& p : keyInfos_)
 	{

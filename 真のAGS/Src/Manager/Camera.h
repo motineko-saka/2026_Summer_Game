@@ -103,6 +103,10 @@ public:
 	// 追従対象の設定
 	void SetFollow(const Transform* follow);
 
+	// カメラ制御の有効無効 (非アクティブ時に入力での回転/移動を止める)
+	void SetControlEnabled(bool enabled) { controlEnabled_ = enabled; }
+	bool IsControlEnabled() const { return controlEnabled_; }
+
 protected:
 
 	// リソースロード
@@ -164,6 +168,9 @@ private:
 
 	// カメラの上方向
 	//VECTOR cameraUp_;
+
+	// カメラ制御の有効フラグ（true=入力で回転/移動を受け付ける）
+	bool controlEnabled_{ true };
 
 	// カメラを初期位置に戻す
 	void SetDefault(void);

@@ -34,16 +34,14 @@ public:
 	// 解放
 	void Release(void)override;
 
-	// 複製
-	Player* Clone(PLAYER_NO playerNo) const;
-
 	// プレイヤー番号の取得
 	PLAYER_NO GetPlayerNo(void) const;
 
-	// 初期位置セット
-	void SetInitialPosition(const VECTOR& pos);
-
 	VECTOR GetMovePow(void) { return movePow_; }
+
+	// 選択/非選択の切替
+	void SetActive(bool active);
+	bool IsActive() const { return isActive_; }
 
 protected:
 
@@ -158,4 +156,7 @@ private:
 
 	// 掴んでいるか
 	bool IsHolding() const { return heldCollider_ != nullptr; }
+
+	// 選択状態（true=操作可能、false=操作停止）
+	bool isActive_{ true };
 };
