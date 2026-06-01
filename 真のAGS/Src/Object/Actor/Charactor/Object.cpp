@@ -9,8 +9,10 @@
 #include "../../Collider/ColliderModel.h"
 #include "../../../Manager/InputManager.h"
 
-Object::Object(GameScene::WORLD world, OBJECT_TYPE type)
+Object::Object(GameScene::WORLD world, VECTOR ansVec, OBJECT_TYPE type)
 {
+	isAnswerPosition_ = false;
+	ansVec_ = ansVec;
 	viewWorld_ = world;
 	world_ = world;
 	type_ = type;
@@ -23,10 +25,7 @@ Object::~Object()
 
 void Object::Draw(void)
 {
-	if (world_ == viewWorld_)
-	{
-		ActorBase::Draw();
-	}
+	ActorBase::Draw();
 }
 
 void Object::Release(void)
@@ -45,18 +44,16 @@ void Object::InitLoad(void)
 	switch (type_)
 	{
 	case OBJECT_TYPE::WBOX:
-		
 		transform_.SetModel(resMng_.Load(ResourceManager::SRC::WOODBOX).handleId_);
 		break;
 	case OBJECT_TYPE::AKEG:
-		
 		transform_.SetModel(resMng_.Load(ResourceManager::SRC::CUBE).handleId_);
 		break;
 	case OBJECT_TYPE::SCENE_PROP:
-		
 		transform_.SetModel(resMng_.Load(ResourceManager::SRC::WALL).handleId_);
 		break;
 	case OBJECT_TYPE::DEFAULT:
+
 	default:
 		transform_.SetModel(resMng_.Load(ResourceManager::SRC::CUBE).handleId_);
 		break;
@@ -141,9 +138,23 @@ void Object::UpdateProcess(void)
 
 	CollisionCapsule();
 	transform_.Update();
+
+	CheckAnswer();
 }
 
 void Object::UpdateProcessPost(void)
 {
 
+}
+
+void Object::CheckAnswer(void)
+{
+	bool isHit = false;
+
+	float distance1 = VSize(VSub(transform_.pos, ansVec_));
+	isHit = (distance1 < 150.0f);
+	if (isHit)
+	{
+		isAnswerPosition_ = true;
+	}
 }

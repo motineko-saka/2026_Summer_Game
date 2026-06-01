@@ -2,6 +2,7 @@
 #include "SceneBase.h"
 #include "../Object/Common/Transform.h"
 #include <vector>
+#include <memory>
 class StageManager;
 class SkyDome;
 class Player;
@@ -42,6 +43,8 @@ public:
 
 private:
 	constexpr static VECTOR ANSWER_VECTOR = { 1260.0f, -500.0f, -50.5f };
+	//constexpr static VECTOR ANSWER_VECTOR[] = { {1260.0f, -500.0f, -50.5f} ,
+	//											{} };
 	StageManager* stageManager_;
 
 	SkyDome* skyDome_;
@@ -55,6 +58,8 @@ private:
 	Camera* camera2_;
 
 	//EnemyManager* enemyManager_;
+
+	std::unique_ptr<Wall> wall_;
 
 	// 複数のオブジェクトを管理
 	std::vector<Object*> objects_;

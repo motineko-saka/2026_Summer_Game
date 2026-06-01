@@ -26,7 +26,7 @@ public:
 	};
 
 	// world と種類を指定可能に
-	Object(GameScene::WORLD world, OBJECT_TYPE type = OBJECT_TYPE::DEFAULT);
+	Object(GameScene::WORLD world,VECTOR ansVec, OBJECT_TYPE type = OBJECT_TYPE::DEFAULT);
 	virtual ~Object(void);
 
 	//void Update(void)override;
@@ -55,6 +55,8 @@ public:
 
 	// 位置設定の簡易ヘルパ
 	void SetPosition(const VECTOR& pos) { transform_.pos = pos; transform_.Update(); }
+
+	bool IsAnswerPosition() const { return isAnswerPosition_; }
 
 protected:
 
@@ -105,6 +107,15 @@ private:
 	// 押されて移動する量
 	VECTOR pushPow_;
 
+	// 答えの座標
+	VECTOR ansVec_;
+
+	// 答えのオブジェクトかどうか
+	bool isAnswerPosition_;
+
 	// 設置済みフラグ（true のとき掴めない、動かせない）
 	bool placed_{ false };
+
+	// 答えの場所とオブジェクトの衝突判定
+	void CheckAnswer(void);
 };

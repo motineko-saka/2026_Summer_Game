@@ -11,6 +11,7 @@
 #include "../Object/Actor/Charactor/Player.h"
 #include "../Object/Actor/Charactor/Enemy/EnemyRat.h"
 #include "../Object/Actor/Charactor/Object.h"
+#include "../Object/Actor/Wall.h"
 #include "../Object/Collider/ColliderBase.h"
 #include "GameScene.h"
 
@@ -42,6 +43,8 @@ void GameScene::Init(void)
 	// 画面サイズの取得
 	GetScreenState(&screenWidth_, &screenHeight_, nullptr);
 
+	ansVec_ = ANSWER_VECTOR;
+
 	// 分割画面用のスクリーン作成(左右画面)
 	int halfWidth = screenWidth_ / 2;
 	screenHandle1_ = MakeScreen(halfWidth, screenHeight_, TRUE);
@@ -54,7 +57,6 @@ void GameScene::Init(void)
 	// カメラ2の作成(プレイヤー2用)
 	camera2_ = new Camera();
 	camera2_->Init();
-
 
 	// プレイヤー1
 	player1_ = new Player(Player::PLAYER_NO::PLAYER1, *camera1_);
@@ -80,6 +82,9 @@ void GameScene::Init(void)
 	skyDome_ = new SkyDome(player1_->GetTransform());
 	skyDome_->Init();
 
+	wall_ = std::make_unique<Wall>();
+	wall_->Init();
+
 	// エネミー管理
 	//enemyManager_ = new EnemyManager(player1_);
 	//enemyManager_->Init();
@@ -87,19 +92,19 @@ void GameScene::Init(void)
 	// オブジェクト作成（複数）
 	objects_.reserve(4);
 
-	objects_.push_back(new Object(GameScene::WORLD::LEFT, Object::OBJECT_TYPE::DEFAULT));
+	objects_.push_back(new Object(GameScene::WORLD::LEFT, ansVec_, Object::OBJECT_TYPE::DEFAULT));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ -300.0f, 80.0f, -10.0f });
 
-	objects_.push_back(new Object(GameScene::WORLD::LEFT, Object::OBJECT_TYPE::MOVABLE));
+	objects_.push_back(new Object(GameScene::WORLD::LEFT, ansVec_, Object::OBJECT_TYPE::WBOX));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ -200.0f, 80.0f, -10.0f });
 
-	objects_.push_back(new Object(GameScene::WORLD::RIGHT, Object::OBJECT_TYPE::ANSWER));
+	objects_.push_back(new Object(GameScene::WORLD::RIGHT, ansVec_, Object::OBJECT_TYPE::AKEG));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ 200.0f, 80.0f, -10.0f });
 
-	objects_.push_back(new Object(GameScene::WORLD::LEFT, Object::OBJECT_TYPE::SCENE_PROP));
+	objects_.push_back(new Object(GameScene::WORLD::LEFT, ansVec_, Object::OBJECT_TYPE::SCENE_PROP));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ 0.0f, 80.0f, -50.0f });
 
@@ -143,8 +148,6 @@ void GameScene::Init(void)
 	// 衝突フラグの初期化
 	isPlayer1HitObject_ = false;
 	isPlayer2HitObject_ = false;
-
-	ansVec_ = ANSWER_VECTOR;
 }
 
 void GameScene::CheckCollisions(void)
@@ -204,6 +207,7 @@ void GameScene::Update(void)
 	//enemyManager_->Update();
 	camera1_->Update();
 	camera2_->Update();
+	wall_->Update();
 
 	// 衝突判定チェック(Objectの更新前に実行)
 	CheckCollisions();
@@ -214,15 +218,18 @@ void GameScene::Update(void)
 		if (obj) obj->Update();
 	}
 
-	bool isHit = false;
+	// 答えの場所に全てのオブジェクトがあるか判定
+	bool isAnswer = true;
 
-	// 答えの場所とオブジェクトの衝突判定 (任意: ここでは最初のオブジェクトで判定)
-	if (!objects_.empty() && objects_[0] != nullptr)
+	for (auto* obj : objects_)
 	{
-		float distance1 = VSize(VSub(objects_[0]->GetTransform().pos, ansVec_));
-		isHit = (distance1 < 150.0f);
+		if (!obj->IsAnswerPosition())
+		{
+			isAnswer = false;
+		}
 	}
-	if (isHit)
+
+	if (isAnswer)
 	{
 		sceMng_.ChangeScene(SceneManager::SCENE_ID::GAMECLEAR);
 	}
@@ -238,17 +245,15 @@ void GameScene::DrawPlayer1Screen(void)
 	skyDome_->Draw();
 	player1_->Draw();
 	player2_->Draw(); // プレイヤー2も描画(同じ世界にいる場合)
+	wall_->Draw();
 
 	// 全オブジェクトを順に描画（それぞれの viewWorld を設定）
 	for (auto* obj : objects_)
 	{
 		if (obj == nullptr) continue;
-		obj->SetViewWorld(WORLD::LEFT);
+		//obj->SetViewWorld(WORLD::LEFT);
 		obj->Draw();
 	}
-
-	DrawSphere3D(ansVec_, 3.0f, 1.0, 0xffffff, 0xffffff, true);
-	//enemyManager_->Draw();
 }
 
 void GameScene::DrawPlayer2Screen(void)
@@ -261,15 +266,14 @@ void GameScene::DrawPlayer2Screen(void)
 	skyDome_->Draw();
 	player1_->Draw(); // プレイヤー1も描画(同じ世界にいる場合)
 	player2_->Draw();
+	wall_->Draw();
 
 	for (auto* obj : objects_)
 	{
 		if (obj == nullptr) continue;
-		obj->SetViewWorld(WORLD::RIGHT);
+		//obj->SetViewWorld(WORLD::RIGHT);
 		obj->Draw();
 	}
-
-	//enemyManager_->Draw();
 }
 
 void GameScene::Draw(void)
@@ -334,6 +338,21 @@ void GameScene::Draw(void)
 			objects_[0]->GetTransform().pos.x,
 			objects_[0]->GetTransform().pos.y,
 			objects_[0]->GetTransform().pos.z);
+	}
+
+	int y = 120;
+	for (auto& object : objects_)
+	{
+		DrawFormatString(halfWidth, y, GetColor(255, 255, 255), "Object情報:座標(%.1f, %.1f, %.1f) 回転(%.1f, %.1f, %.1f)\nisAnswer : %d",
+			object->GetTransform().pos.x,
+			object->GetTransform().pos.y,
+			object->GetTransform().pos.z,
+			object->GetTransform().quaRot.ToEuler().x,
+			object->GetTransform().quaRot.ToEuler().y,
+			object->GetTransform().quaRot.ToEuler().z,
+			object->IsAnswerPosition());
+
+		y += 40;
 	}
 }
 

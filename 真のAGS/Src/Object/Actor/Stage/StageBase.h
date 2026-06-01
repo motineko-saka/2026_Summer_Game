@@ -29,7 +29,7 @@ public:
 	void Release(void)override;
 
 	// 除外フレーム名称
-	const std::vector<std::string> EXCLUDE_FRAME_NAMES = { "Mush", "Grass", };
+	const std::vector<std::string> EXCLUDE_FRAME_NAMES = { "Grass","Plant","Leaves" };
 
 protected:
 
@@ -57,7 +57,7 @@ private:
 	// 対象フレーム
 	const std::vector<std::string> TARGET_FRAME_NAMES =
 	{
-	"Ground",
+	"Ground","Grass","Plant","Leaves"
 	};
 };
 
