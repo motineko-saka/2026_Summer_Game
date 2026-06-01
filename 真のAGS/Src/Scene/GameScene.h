@@ -1,6 +1,7 @@
 #pragma once
 #include "SceneBase.h"
 #include "../Object/Common/Transform.h"
+#include <vector>
 class StageManager;
 class SkyDome;
 class Player;
@@ -55,9 +56,8 @@ private:
 
 	//EnemyManager* enemyManager_;
 
-	Object* object_;
-
-	Wall* wall_;
+	// 複数のオブジェクトを管理
+	std::vector<Object*> objects_;
 
 	// 画面分割用のスクリーンハンドル
 	int screenHandle1_;

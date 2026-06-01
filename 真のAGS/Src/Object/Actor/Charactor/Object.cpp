@@ -9,17 +9,17 @@
 #include "../../Collider/ColliderModel.h"
 #include "../../../Manager/InputManager.h"
 
-Object::Object(GameScene::WORLD world)
+Object::Object(GameScene::WORLD world, OBJECT_TYPE type)
 {
 	viewWorld_ = world;
 	world_ = world;
+	type_ = type;
 	pushPow_ = { 0.0f, 0.0f, 0.0f };
 }
 
 Object::~Object()
 {
 }
-
 
 void Object::Draw(void)
 {
@@ -42,7 +42,25 @@ void Object::Push(const VECTOR& direction, float speed)
 
 void Object::InitLoad(void)
 {
-	transform_.SetModel(resMng_.Load(ResourceManager::SRC::CUBE).handleId_);
+	switch (type_)
+	{
+	case OBJECT_TYPE::WBOX:
+		
+		transform_.SetModel(resMng_.Load(ResourceManager::SRC::WOODBOX).handleId_);
+		break;
+	case OBJECT_TYPE::AKEG:
+		
+		transform_.SetModel(resMng_.Load(ResourceManager::SRC::CUBE).handleId_);
+		break;
+	case OBJECT_TYPE::SCENE_PROP:
+		
+		transform_.SetModel(resMng_.Load(ResourceManager::SRC::WALL).handleId_);
+		break;
+	case OBJECT_TYPE::DEFAULT:
+	default:
+		transform_.SetModel(resMng_.Load(ResourceManager::SRC::CUBE).handleId_);
+		break;
+	}
 }
 
 void Object::InitTransform(void)
@@ -81,7 +99,7 @@ void Object::InitCollider(void)
 }
 void Object::InitAnimation(void)
 {
-	animController_ = new AnimationController(transform_.modelId);	
+	animController_ = new AnimationController(transform_.modelId);
 }
 
 void Object::InitPost(void)
@@ -104,20 +122,15 @@ void Object::UpdateProcess(void)
 		if (col == nullptr) continue;
 
 		const Transform* follow = col->GetFollow();
-		// ハードゲイ が無い、または自分自身を追従先にしている場合は無視
+		// 無ければ、または自分自身を追従先にしている場合は無視
 		if (follow == nullptr || follow == &transform_) continue;
-
-		// コライダのローカル位置をワールド座標に変換して合わせる
 
 		const VECTOR localPos = col->GetLocalPos();
 		const VECTOR worldPos = VAdd(follow->pos, follow->quaRot.PosAxis(localPos));
 		transform_.pos = worldPos;
-	
-		// 回転・スケールを追従
-		transform_.quaRot = follow->quaRot;
-		//transform_.scl = follow->scl;
 
-		// 掴まれている間はきんに君を無効化して終了
+		transform_.quaRot = follow->quaRot;
+
 		pushPow_ = { 0.0f, 0.0f, 0.0f };
 		break;
 	}
@@ -132,5 +145,5 @@ void Object::UpdateProcess(void)
 
 void Object::UpdateProcessPost(void)
 {
-	
+
 }

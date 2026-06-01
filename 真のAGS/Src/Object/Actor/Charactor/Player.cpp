@@ -106,9 +106,6 @@ void Player::InitAnimation(void)
 	animController_->Add(static_cast<int>(ANIM_TYPE::JUMP), 60.0f,
 		Application::PATH_MODEL + "Player/JumpRising.mv1");
 
-	animController_->Add(static_cast<int>(ANIM_TYPE::JUMP), 60.0f,
-		Application::PATH_MODEL + "Player/Push.mv1");
-
 
 	animController_->Play(static_cast<int>(ANIM_TYPE::IDLE));
 }

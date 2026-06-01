@@ -11,7 +11,6 @@
 #include "../Object/Actor/Charactor/Player.h"
 #include "../Object/Actor/Charactor/Enemy/EnemyRat.h"
 #include "../Object/Actor/Charactor/Object.h"
-#include "../Object/Actor/Wall.h"
 #include "../Object/Collider/ColliderBase.h"
 #include "GameScene.h"
 
@@ -29,7 +28,6 @@ GameScene::GameScene(void)
 	screenHeight_(0),
 	isPlayer1HitObject_(false),
 	isPlayer2HitObject_(false),
-	//wall_(nullptr),
 	SceneBase()
 {
 }
@@ -56,7 +54,7 @@ void GameScene::Init(void)
 	// カメラ2の作成(プレイヤー2用)
 	camera2_ = new Camera();
 	camera2_->Init();
-	
+
 
 	// プレイヤー1
 	player1_ = new Player(Player::PLAYER_NO::PLAYER1, *camera1_);
@@ -86,23 +84,27 @@ void GameScene::Init(void)
 	//enemyManager_ = new EnemyManager(player1_);
 	//enemyManager_->Init();
 
-	// オブジェクト作成
-	object_ = new Object(GameScene::WORLD::LEFT);
-	object_->Init();
+	// オブジェクト作成（複数）
+	objects_.reserve(4);
 
-	wall_ = new Wall();
-	wall_->Init();
+	objects_.push_back(new Object(GameScene::WORLD::LEFT, Object::OBJECT_TYPE::DEFAULT));
+	objects_.back()->Init();
+	objects_.back()->SetPosition({ -300.0f, 80.0f, -10.0f });
+
+	objects_.push_back(new Object(GameScene::WORLD::LEFT, Object::OBJECT_TYPE::MOVABLE));
+	objects_.back()->Init();
+	objects_.back()->SetPosition({ -200.0f, 80.0f, -10.0f });
+
+	objects_.push_back(new Object(GameScene::WORLD::RIGHT, Object::OBJECT_TYPE::ANSWER));
+	objects_.back()->Init();
+	objects_.back()->SetPosition({ 200.0f, 80.0f, -10.0f });
+
+	objects_.push_back(new Object(GameScene::WORLD::LEFT, Object::OBJECT_TYPE::SCENE_PROP));
+	objects_.back()->Init();
+	objects_.back()->SetPosition({ 0.0f, 80.0f, -50.0f });
 
 
-	// オブジェクトのモデルコライダーをプレイヤーに登録
-	/*const ColliderBase* objectCollider =
-		object_->GetOwnCollider(static_cast<int>(Object::COLLIDER_TYPE::MODEL));
-	player1_->AddHitCollider(objectCollider);
-	player2_->AddHitCollider(objectCollider);*/
-
-	// プレイヤー1のコライダーをエネミーに登録
-	//enemyManager_->AddHitCollider(player1_->GetOwnCollider(static_cast<int>(CharactorBase::COLLIDER_TYPE::CAPSULE)));
-
+	// ステージの各コライダをプレイヤー／カメラ／オブジェクトに登録
 	for (const auto& stage : stageManager_->GetStage())
 	{
 		const ColliderBase* stageCollider =
@@ -121,17 +123,22 @@ void GameScene::Init(void)
 		camera1_->AddHitCollider(stageCollider);
 		camera2_->AddHitCollider(stageCollider);
 
-		// ステージモデルのコライダーをオブジェクトに登録
-		object_->AddHitCollider(stageCollider);
+		// ステージモデルのコライダーを全オブジェクトに登録
+		for (auto* obj : objects_)
+		{
+			obj->AddHitCollider(stageCollider);
+		}
 
-		if (stageCollider == nullptr) DrawFormatString(100,100,0xffffff, "stageCollider is null\n");
+		if (stageCollider == nullptr) DrawFormatString(100, 100, 0xffffff, "stageCollider is null\n");
 	}
-	player1_->AddHitCollider(wall_->GetOwnCollider(static_cast<int>(Wall::COLLIDER_TYPE::MODEL)));
-	player2_->AddHitCollider(wall_->GetOwnCollider(static_cast<int>(Wall::COLLIDER_TYPE::MODEL)));
-	object_->AddHitCollider(wall_->GetOwnCollider(static_cast<int>(Wall::COLLIDER_TYPE::MODEL)));
 
-	// プレイヤー1のコライダーをエネミーに登録
-	player1_->AddHitCollider(object_->GetOwnCollider(static_cast<int>(Object::COLLIDER_TYPE::CAPSULE)));
+	// 各オブジェクトの衝突コライダをプレイヤーに登録
+	for (auto* obj : objects_)
+	{
+		const ColliderBase* objCaps = obj->GetOwnCollider(static_cast<int>(Object::COLLIDER_TYPE::CAPSULE));
+		if (objCaps) player1_->AddHitCollider(objCaps);
+		if (objCaps) player2_->AddHitCollider(objCaps);
+	}
 
 	// 衝突フラグの初期化
 	isPlayer1HitObject_ = false;
@@ -142,46 +149,42 @@ void GameScene::Init(void)
 
 void GameScene::CheckCollisions(void)
 {
-	// プレイヤー1とオブジェクトの衝突判定
-	auto player1Capsule = player1_->GetOwnCollider(static_cast<int>(CharactorBase::COLLIDER_TYPE::CAPSULE));
-	auto objectCollider = object_->GetOwnCollider(static_cast<int>(Object::COLLIDER_TYPE::CAPSULE));
+	// 各オブジェクトに対してプレイヤーとの距離判定を行う
+	isPlayer1HitObject_ = false;
+	isPlayer2HitObject_ = false;
 
-	// 簡易的な距離判定でチェック
-	VECTOR objectPos = object_->GetTransform().pos;
-
-	// プレイヤー1とオブジェクトの衝突判定
-	VECTOR player1Pos = player1_->GetTransform().pos;
-	float distance1 = VSize(VSub(player1Pos, objectPos));
-	isPlayer1HitObject_ = (distance1 < 180.0f);
-
-	// プレイヤー1がオブジェクトに衝突している場合、押す
-	if (isPlayer1HitObject_)
+	for (auto* obj : objects_)
 	{
-		//// プレイヤーからオブジェクトへの方向ベクトル
-		//VECTOR pushDir = VSub(objectPos, player1Pos);
-		//pushDir.y = 0.0f; // Y軸(垂直方向)は無視
-		//pushDir = VNorm(pushDir); // 正規化
+		if (obj == nullptr) continue;
 
-		//// オブジェクトを押す(速度は適度に調整)
-		//object_->Push(pushDir, 5.0f);
-	}
+		VECTOR objectPos = obj->GetTransform().pos;
 
-	//--------------------------------------------
-	// プレイヤー2とオブジェクトの衝突判定
-	VECTOR player2Pos = player2_->GetTransform().pos;
-	float distance2 = VSize(VSub(player2Pos, objectPos));
-	isPlayer2HitObject_ = (distance2 < 180.0f);
+		// プレイヤー1との距離
+		VECTOR player1Pos = player1_->GetTransform().pos;
+		float distance1 = VSize(VSub(player1Pos, objectPos));
+		bool hit1 = (distance1 < 180.0f);
+		if (hit1)
+		{
+			isPlayer1HitObject_ = true;
+			// 必要なら押す処理を有効化
+			// VECTOR pushDir = VSub(objectPos, player1Pos); pushDir.y = 0.0f; pushDir = VNorm(pushDir); obj->Push(pushDir, 5.0f);
+		}
 
-	// プレイヤー2がオブジェクトに衝突している場合、押す
-	if (isPlayer2HitObject_)
-	{
-		// プレイヤーからオブジェクトへの方向ベクトル
-		VECTOR pushDir = VSub(objectPos, player2Pos);
-		pushDir.y = 0.0f; // Y軸(垂直方向)は無視
-		pushDir = VNorm(pushDir); // 正規化
+		// プレイヤー2との距離
+		VECTOR player2Pos = player2_->GetTransform().pos;
+		float distance2 = VSize(VSub(player2Pos, objectPos));
+		bool hit2 = (distance2 < 180.0f);
+		if (hit2)
+		{
+			isPlayer2HitObject_ = true;
+			// プレイヤーからオブジェクトへの方向ベクトル
+			VECTOR pushDir = VSub(objectPos, player2Pos);
+			pushDir.y = 0.0f; // Y軸(垂直方向)は無視
+			pushDir = VNorm(pushDir); // 正規化
 
-		// オブジェクトを押す(速度は適度に調整)
-		object_->Push(pushDir, 5.0f);
+			// オブジェクトを押す(速度は適度に調整)
+			obj->Push(pushDir, 5.0f);
+		}
 	}
 }
 
@@ -205,16 +208,20 @@ void GameScene::Update(void)
 	// 衝突判定チェック(Objectの更新前に実行)
 	CheckCollisions();
 
-	// オブジェクトの更新
-	object_->Update();
-	wall_->Update();
-
+	// 全オブジェクトの更新
+	for (auto* obj : objects_)
+	{
+		if (obj) obj->Update();
+	}
 
 	bool isHit = false;
 
-	// 答えの場所とオブジェクトの衝突判定
-	float distance1 = VSize(VSub(object_->GetTransform().pos, ansVec_));
-	isHit = (distance1 < 150.0f);
+	// 答えの場所とオブジェクトの衝突判定 (任意: ここでは最初のオブジェクトで判定)
+	if (!objects_.empty() && objects_[0] != nullptr)
+	{
+		float distance1 = VSize(VSub(objects_[0]->GetTransform().pos, ansVec_));
+		isHit = (distance1 < 150.0f);
+	}
 	if (isHit)
 	{
 		sceMng_.ChangeScene(SceneManager::SCENE_ID::GAMECLEAR);
@@ -231,9 +238,16 @@ void GameScene::DrawPlayer1Screen(void)
 	skyDome_->Draw();
 	player1_->Draw();
 	player2_->Draw(); // プレイヤー2も描画(同じ世界にいる場合)
-	object_->SetViewWorld(WORLD::LEFT);
-	object_->Draw();
-	wall_->Draw();
+
+	// 全オブジェクトを順に描画（それぞれの viewWorld を設定）
+	for (auto* obj : objects_)
+	{
+		if (obj == nullptr) continue;
+		obj->SetViewWorld(WORLD::LEFT);
+		obj->Draw();
+	}
+
+	DrawSphere3D(ansVec_, 3.0f, 1.0, 0xffffff, 0xffffff, true);
 	//enemyManager_->Draw();
 }
 
@@ -247,10 +261,14 @@ void GameScene::DrawPlayer2Screen(void)
 	skyDome_->Draw();
 	player1_->Draw(); // プレイヤー1も描画(同じ世界にいる場合)
 	player2_->Draw();
-	object_->SetViewWorld(WORLD::RIGHT);
-	object_->Draw();
-	wall_->Draw();
-	DrawSphere3D(ansVec_, 40.0f, 40.0, 0xffffff, 0xffffff, true);
+
+	for (auto* obj : objects_)
+	{
+		if (obj == nullptr) continue;
+		obj->SetViewWorld(WORLD::RIGHT);
+		obj->Draw();
+	}
+
 	//enemyManager_->Draw();
 }
 
@@ -309,10 +327,14 @@ void GameScene::Draw(void)
 		DrawFormatString(halfWidth, 40, GetColor(0, 255, 0), "P2: 衝突なし");
 	}
 
-	DrawFormatString(halfWidth, 80, GetColor(0, 0, 0), "座標:(%.1f, %.1f, %.1f)",
-		object_->GetTransform().pos.x,
-		object_->GetTransform().pos.y,
-		object_->GetTransform().pos.z);
+	// オブジェクト位置表示（先頭のオブジェクト）
+	if (!objects_.empty() && objects_[0] != nullptr)
+	{
+		DrawFormatString(halfWidth, 80, GetColor(0, 0, 0), "座標:(%.1f, %.1f, %.1f)",
+			objects_[0]->GetTransform().pos.x,
+			objects_[0]->GetTransform().pos.y,
+			objects_[0]->GetTransform().pos.z);
+	}
 }
 
 void GameScene::Release(void)
@@ -329,8 +351,16 @@ void GameScene::Release(void)
 	player2_->Release();
 	delete player2_;
 
-	object_->Release();
-	delete object_;
+	// 全オブジェクト解放
+	for (auto* obj : objects_)
+	{
+		if (obj)
+		{
+			obj->Release();
+			delete obj;
+		}
+	}
+	objects_.clear();
 
 	//enemyManager_->Release();
 	//delete enemyManager_;

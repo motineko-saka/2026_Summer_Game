@@ -14,7 +14,6 @@ public:
 		RUN,
 		FAST_RUN,
 		JUMP,
-		PUSH,
 		//MAX,
 	};
 
