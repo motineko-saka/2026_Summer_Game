@@ -96,29 +96,18 @@ void GameScene::Init(void)
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ 1260.0f, -500.0f, -50.5f });
 
-<<<<<<< HEAD
 	objects_.push_back(new Object(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], Object::OBJECT_TYPE::WBOX));
-=======
-	objects_.push_back(new Object(GameScene::WORLD::LEFT, Object::OBJECT_TYPE::WBOX));
->>>>>>> ce5944f6b1dbf76d57c07af69eeae69eb771163e
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ 1260.0f, -720.0f, -50.5f });
 
-<<<<<<< HEAD
 	objects_.push_back(new Object(GameScene::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[2], Object::OBJECT_TYPE::AKEG));
-=======
-	objects_.push_back(new Object(GameScene::WORLD::RIGHT, Object::OBJECT_TYPE::AKEG));
->>>>>>> ce5944f6b1dbf76d57c07af69eeae69eb771163e
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ -1260.0f, -720.0f, -50.5f });
 
 	objects_.push_back(new Object(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[3], Object::OBJECT_TYPE::SCENE_PROP));
 	objects_.back()->Init();
-<<<<<<< HEAD
 	objects_.back()->SetPosition({ 1260.0f, -720.0f, -50.5f });
-=======
 	objects_.back()->SetPosition({ 0.0f, 80.0f, -50.0f });
->>>>>>> ce5944f6b1dbf76d57c07af69eeae69eb771163e
 
 	// ステージの各コライダをプレイヤー／カメラ／オブジェクトに登録
 	for (const auto& stage : stageManager_->GetStage())
@@ -165,9 +154,6 @@ void GameScene::Init(void)
 	// 衝突フラグの初期化
 	isPlayer1HitObject_ = false;
 	isPlayer2HitObject_ = false;
-<<<<<<< HEAD
-=======
-
 	ansVec_ = ANSWER_VECTOR;
 
 	// 初期アクティブ状態（プレイヤー1 を操作）
@@ -176,7 +162,6 @@ void GameScene::Init(void)
 	player2_->SetActive(false);
 	camera1_->SetControlEnabled(true);
 	camera2_->SetControlEnabled(false);
->>>>>>> ce5944f6b1dbf76d57c07af69eeae69eb771163e
 }
 
 void GameScene::CheckCollisions(void)

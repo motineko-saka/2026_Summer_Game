@@ -52,11 +52,8 @@ void ResourceManager::Init(void)
 	resourcesMap_.emplace(SRC::PLAYER, res);
 
 	// ステージモデル
-<<<<<<< HEAD
 	res = new RES(RES_T::MODEL, PATH_MDL + "Stage/Stage.mv1");
-=======
 	res = new RES(RES_T::MODEL, PATH_MDL + "Stage/野本アレン.mv1");
->>>>>>> ce5944f6b1dbf76d57c07af69eeae69eb771163e
 	resourcesMap_.emplace(SRC::MAIN_STAGE, res);
 
 	// スカイドーム
