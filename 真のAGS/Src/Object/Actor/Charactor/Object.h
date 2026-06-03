@@ -58,6 +58,10 @@ public:
 
 	bool IsAnswerPosition() const { return isAnswerPosition_; }
 
+	// スケール設定/取得
+	void SetScale(const VECTOR& scl) {transform_.scl = scl; transform_.Update(); }
+	VECTOR GetScale() const { return transform_.scl; }
+
 protected:
 
 	// リソースロード
@@ -109,6 +113,8 @@ private:
 
 	// 答えの座標
 	VECTOR ansVec_;
+
+	VECTOR defaultScale_{ 1.0f, 1.0f, 1.0f };
 
 	// 答えのオブジェクトかどうか
 	bool isAnswerPosition_;
