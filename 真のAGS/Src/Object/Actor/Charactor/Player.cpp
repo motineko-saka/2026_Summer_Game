@@ -15,7 +15,8 @@ Player::Player(void)
 	playerNo_(PLAYER_NO::PLAYER1),
 	heldCollider_(nullptr),
 	heldPrevFollow_(nullptr),
-	camera_(nullptr)
+	camera_(nullptr),
+	isActive_(true)
 {
 }
 
@@ -24,7 +25,8 @@ Player::Player(PLAYER_NO playerNo, Camera& camera)
 	CharactorBase(),
 	playerNo_(playerNo),
 	heldCollider_(nullptr),
-	heldPrevFollow_(nullptr)
+	heldPrevFollow_(nullptr),
+	isActive_(true)
 {
 	camera_ = &camera;
 }
@@ -50,6 +52,24 @@ void Player::Release(void)
 Player::PLAYER_NO Player::GetPlayerNo(void) const
 {
 	return playerNo_;
+}
+
+void Player::SetActive(bool active)
+{
+	isActive_ = active;
+
+	// 前の操作を止める
+	if (!isActive_)
+	{
+		movePow_ = AsoUtility::VECTOR_ZERO;
+		moveDir_ = AsoUtility::VECTOR_ZERO;
+		moveSpeed_ = 0.0f;
+		// 重力やジャンプを止める
+		jumpPow_ = AsoUtility::VECTOR_ZERO;
+		stepJump_ = 0.0f;
+		// アニメーションを止める
+		if (animController_) animController_->Play(static_cast<int>(ANIM_TYPE::IDLE), true);
+	}
 }
 
 void Player::InitLoad(void)
@@ -121,6 +141,12 @@ void Player::InitPost(void)
 
 void Player::UpdateProcess(void)
 {
+	// 非アクティブなら操作を止める
+	if (!isActive_)
+	{
+		return;
+	}
+
 	// 移動処理
 	ProcessMove();
 
@@ -129,16 +155,11 @@ void Player::UpdateProcess(void)
 
 	// 掴む/放す処理
 	ProcessPickup();
-
-	if (InputManager::GetInstance().IsTrgMouseRight())
-	{
-		playerNo_ = playerNo_ == PLAYER_NO::PLAYER1 ? PLAYER_NO::PLAYER2 : PLAYER_NO::PLAYER1;
-	}
 }
 
 void Player::UpdateProcessPost(void)
 {
-	// 特に追加処理は不要（コライダの follow を切り替えているため追従は自動的に行われる想定）
+
 }
 
 void Player::ProcessMove(void)
@@ -153,55 +174,36 @@ void Player::ProcessMove(void)
 
 	movePow_ = AsoUtility::VECTOR_ZERO;
 
-	// プレイヤー番号に応じて入力キーを変更
-	if (playerNo_ == PLAYER_NO::PLAYER1)
+	// ゲームパッドが接続されているかで処理を分ける
+	if (GetJoypadNum() == 0)
 	{
-		// ゲームパッドが接続されている数で処理を分ける
-		if (GetJoypadNum() == 0)
-		{
-			// WASD で移動処理
-			if (ins.IsNew(KEY_INPUT_W)) { dir = AsoUtility::DIR_F; }
-			if (ins.IsNew(KEY_INPUT_A)) { dir = AsoUtility::DIR_L; }
-			if (ins.IsNew(KEY_INPUT_S)) { dir = AsoUtility::DIR_B; }
-			if (ins.IsNew(KEY_INPUT_D)) { dir = AsoUtility::DIR_R; }
+		// WASD で移動処理
+		if (ins.IsNew(KEY_INPUT_W)) { dir = AsoUtility::DIR_F; }
+		if (ins.IsNew(KEY_INPUT_A)) { dir = AsoUtility::DIR_L; }
+		if (ins.IsNew(KEY_INPUT_S)) { dir = AsoUtility::DIR_B; }
+		if (ins.IsNew(KEY_INPUT_D)) { dir = AsoUtility::DIR_R; }
 
-			if (ins.IsNew(KEY_INPUT_W) && ins.IsNew(KEY_INPUT_A)) { dir = AsoUtility::DIR_FL; }
-			if (ins.IsNew(KEY_INPUT_W) && ins.IsNew(KEY_INPUT_D)) { dir = AsoUtility::DIR_FR; }
-			if (ins.IsNew(KEY_INPUT_S) && ins.IsNew(KEY_INPUT_A)) { dir = AsoUtility::DIR_BL; }
-			if (ins.IsNew(KEY_INPUT_S) && ins.IsNew(KEY_INPUT_D)) { dir = AsoUtility::DIR_BR; }
+		if (ins.IsNew(KEY_INPUT_W) && ins.IsNew(KEY_INPUT_A)) { dir = AsoUtility::DIR_FL; }
+		if (ins.IsNew(KEY_INPUT_W) && ins.IsNew(KEY_INPUT_D)) { dir = AsoUtility::DIR_FR; }
+		if (ins.IsNew(KEY_INPUT_S) && ins.IsNew(KEY_INPUT_A)) { dir = AsoUtility::DIR_BL; }
+		if (ins.IsNew(KEY_INPUT_S) && ins.IsNew(KEY_INPUT_D)) { dir = AsoUtility::DIR_BR; }
 
-			if (ins.IsNew(KEY_INPUT_RSHIFT)) { isDash = true; }
-		}
-		else
-		{
-			// 接続しているゲームパッド1の情報取得
-			InputManager::JOYPAD_IN_STATE padState =
-				ins.GetJPadInputState(InputManager::JOYPAD_NO::PAD1);
-
-			// アナログキーの入力値を正規化して取得
-			dir = ins.GetDirectionXZAKey(padState.AKeyLX, padState.AKeyLY);
-
-			if (ins.IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1,
-				InputManager::JOYPAD_BTN::R_TRIGGER))
-			{
-				isDash = true;
-			}
-		}
+		if (ins.IsNew(KEY_INPUT_RSHIFT)) { isDash = true; }
 	}
-	else if (playerNo_ == PLAYER_NO::PLAYER2)
+	else
 	{
-		// プレイヤー2は矢印キーで操作
-		if (ins.IsNew(KEY_INPUT_I)) { dir = AsoUtility::DIR_F; }
-		if (ins.IsNew(KEY_INPUT_J)) { dir = AsoUtility::DIR_L; }
-		if (ins.IsNew(KEY_INPUT_K)) { dir = AsoUtility::DIR_B; }
-		if (ins.IsNew(KEY_INPUT_L)) { dir = AsoUtility::DIR_R; }
+		// 接続しているゲームパッド1の情報取得（既存の構成に合わせる）
+		InputManager::JOYPAD_IN_STATE padState =
+			ins.GetJPadInputState(InputManager::JOYPAD_NO::PAD1);
 
-		if (ins.IsNew(KEY_INPUT_I) && ins.IsNew(KEY_INPUT_J)) { dir = AsoUtility::DIR_FL; }
-		if (ins.IsNew(KEY_INPUT_I) && ins.IsNew(KEY_INPUT_L)) { dir = AsoUtility::DIR_FR; }
-		if (ins.IsNew(KEY_INPUT_K) && ins.IsNew(KEY_INPUT_J)) { dir = AsoUtility::DIR_BL; }
-		if (ins.IsNew(KEY_INPUT_K) && ins.IsNew(KEY_INPUT_L)) { dir = AsoUtility::DIR_BR; }
+		// アナログキーの入力値を正規化して取得
+		dir = ins.GetDirectionXZAKey(padState.AKeyLX, padState.AKeyLY);
 
-		if (ins.IsNew(KEY_INPUT_RCONTROL)) { isDash = true; }
+		if (ins.IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1,
+			InputManager::JOYPAD_BTN::R_TRIGGER))
+		{
+			isDash = true;
+		}
 	}
 
 	if (!AsoUtility::EqualsVZero(dir))
@@ -231,7 +233,6 @@ void Player::ProcessMove(void)
 		}
 
 		// Y軸のみのカメラ角度を取得
-
 		Quaternion cameraRot = camera_->GetQuaRotY();
 
 		// 移動方向をカメラに合わせる
@@ -268,11 +269,11 @@ void Player::ProcessJump(void)
 		isHitKey = ins.IsTrgDown(KEY_INPUT_BACKSLASH)
 			|| ins.IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::DOWN);
 	}
-	else if (playerNo_ == PLAYER_NO::PLAYER2)
-	{
-		isHitKeyNew = ins.IsNew(KEY_INPUT_RETURN); // Enterキー
-		isHitKey = ins.IsTrgDown(KEY_INPUT_RETURN);
-	}
+	//else if (playerNo_ == PLAYER_NO::PLAYER2)
+	//{
+	//	isHitKeyNew = ins.IsNew(KEY_INPUT_RETURN); // Enterキー
+	//	isHitKey = ins.IsTrgDown(KEY_INPUT_RETURN);
+	//}
 
 	// 溜めジャンプ処理
 	if (isHitKeyNew)
@@ -380,11 +381,11 @@ void Player::ProcessPickup(void)
 		btnTrg = ins.IsTrgDown(KEY_INPUT_E)
 			|| ins.IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::TOP);
 	}
-	else // PLAYER2
-	{
-		btnTrg = ins.IsTrgDown(KEY_INPUT_U)
-			|| ins.IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD2, InputManager::JOYPAD_BTN::TOP);
-	}
+	//else // PLAYER2
+	//{
+	//	btnTrg = ins.IsTrgDown(KEY_INPUT_U)
+	//		|| ins.IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD2, InputManager::JOYPAD_BTN::TOP);
+	//}
 
 	if (btnTrg)
 	{
@@ -433,7 +434,7 @@ void Player::PickupCollider(ColliderBase* collider)
 	// プレイヤーの前方ベクトルを取得
 	VECTOR front = Quaternion::PosAxis(transform_.quaRot, { 0.0f, 0.0f, 1.0f });
 	VECTOR offset = VScale(front, PICKUP_FRONT_DIST);
-	offset.y += PICKUP_UP_DIST; 
+	offset.y += PICKUP_UP_DIST;
 
 	collider->SetLocalPos(offset);
 

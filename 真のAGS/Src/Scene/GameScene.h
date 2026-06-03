@@ -1,6 +1,7 @@
 #pragma once
 #include "SceneBase.h"
 #include "../Object/Common/Transform.h"
+#include "../Object/Actor/Charactor/Player.h"
 #include <vector>
 #include <memory>
 class StageManager;
@@ -82,6 +83,9 @@ private:
 	bool isPlayer2HitObject_;
 
 	VECTOR ansVec_ = {};
+
+	// 現在選択中のプレイヤー
+	Player::PLAYER_NO activePlayer_{ Player::PLAYER_NO::PLAYER1 };
 
 	// 各プレイヤーの描画
 	void DrawPlayer1Screen(void);
