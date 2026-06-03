@@ -94,7 +94,7 @@ void GameScene::Init(void)
 
 	objects_.push_back(new Object(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[0], Object::OBJECT_TYPE::DEFAULT));
 	objects_.back()->Init();
-	objects_.back()->SetPosition({ 1260.0f, -500.0f, -50.5f });
+	objects_.back()->SetPosition({ 1260.0f, -720.0f, -50.5f });
 
 	objects_.push_back(new Object(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], Object::OBJECT_TYPE::WBOX));
 	objects_.back()->Init();
@@ -104,10 +104,10 @@ void GameScene::Init(void)
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ -1260.0f, -720.0f, -50.5f });
 
-	objects_.push_back(new Object(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[3], Object::OBJECT_TYPE::SCENE_PROP));
+	objects_.push_back(new Object(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[3], Object::OBJECT_TYPE::BUTTOM));
 	objects_.back()->Init();
-	objects_.back()->SetPosition({ 1260.0f, -720.0f, -50.5f });
-	objects_.back()->SetPosition({ 0.0f, 80.0f, -50.0f });
+	objects_.back()->SetPosition({ 1000.0f, -720.0f, -50.5f });
+	//objects_.back()->SetPosition({ 0.0f, 80.0f, -50.0f });
 
 	// ステージの各コライダをプレイヤー／カメラ／オブジェクトに登録
 	for (const auto& stage : stageManager_->GetStage())
@@ -203,6 +203,37 @@ void GameScene::CheckCollisions(void)
 			//obj->Push(pushDir, 5.0f);
 		}
 	}
+
+	if(InputManager::GetInstance().IsTrgDown(KEY_INPUT_SPACE))
+	{
+		// ボタンオブジェクトの判定
+		for (auto* obj : objects_)
+		{
+			if (obj == nullptr) continue;
+
+			// ボタンタイプのオブジェクトのみ処理
+			if (obj->GetType() == Object::OBJECT_TYPE::BUTTOM)
+			{
+				VECTOR objectPos = obj->GetTransform().pos;
+
+				// プレイヤー1との距離チェック
+				VECTOR player1Pos = player1_->GetTransform().pos;
+				float distance1 = VSize(VSub(player1Pos, objectPos));
+				if (distance1 < 180.0f)
+				{
+					obj->SetButtomPushed(true);
+				}
+
+				// プレイヤー2との距離チェック
+				VECTOR player2Pos = player2_->GetTransform().pos;
+				float distance2 = VSize(VSub(player2Pos, objectPos));
+				if (distance2 < 180.0f)
+				{
+					obj->SetButtomPushed(true);
+				}
+			}
+		}
+	}
 }
 
 void GameScene::Update(void)
@@ -211,7 +242,7 @@ void GameScene::Update(void)
 	auto const& ins = InputManager::GetInstance();
 	if (ins.IsTrgDown(KEY_INPUT_SPACE))
 	{
-		sceMng_.ChangeScene(SceneManager::SCENE_ID::GAMECLEAR);
+		
 	}
 
 	// プレイヤー選択切替
@@ -265,6 +296,7 @@ void GameScene::Update(void)
 	camera2_->Update();
 	wall_->Update();
 
+
 	// 衝突判定チェック(Objectの更新前に実行)
 	CheckCollisions();
 
@@ -301,7 +333,7 @@ void GameScene::DrawPlayer1Screen(void)
 	skyDome_->Draw();
 	player1_->Draw();
 	player2_->Draw(); // プレイヤー2も描画(同じ世界にいる場合)
-	wall_->Draw();
+	//wall_->Draw();
 
 	// 全オブジェクトを順に描画（それぞれの viewWorld を設定）
 	for (auto* obj : objects_)
@@ -322,7 +354,7 @@ void GameScene::DrawPlayer2Screen(void)
 	skyDome_->Draw();
 	player1_->Draw(); // プレイヤー1も描画(同じ世界にいる場合)
 	player2_->Draw();
-	wall_->Draw();
+	//wall_->Draw();
 
 	for (auto* obj : objects_)
 	{

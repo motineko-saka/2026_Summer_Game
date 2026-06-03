@@ -23,6 +23,7 @@ public:
 		WBOX,    
 		AKEG,   
 		SCENE_PROP,
+		BUTTOM,
 	};
 
 	// world と種類を指定可能に
@@ -52,6 +53,9 @@ public:
 	// 種類取得
 	OBJECT_TYPE GetObjectType() const { return type_; }
 	void SetObjectType(OBJECT_TYPE t) { type_ = t; }
+
+	void SetButtomPushed(bool isPush) { isButtomPushed_ = isPush; }
+	const OBJECT_TYPE GetType() const { return type_; }
 
 	// 位置設定の簡易ヘルパ
 	void SetPosition(const VECTOR& pos) { transform_.pos = pos; transform_.Update(); }
@@ -113,9 +117,17 @@ private:
 	// 答えのオブジェクトかどうか
 	bool isAnswerPosition_;
 
+	// つかまれているかどうか
+	bool isGrabbed_;
+
+	bool isButtomPushed_ = false;
+
 	// 設置済みフラグ（true のとき掴めない、動かせない）
 	bool placed_{ false };
 
 	// 答えの場所とオブジェクトの衝突判定
 	void CheckAnswer(void);
+
+	// ボタンの更新
+	void UpdateButtom();
 };

@@ -78,7 +78,7 @@ void ResourceManager::Init(void)
 
 	// ” 
 	res = new RES(RES_T::MODEL, PATH_MDL + "Object/barrel.mv1");
-	resourcesMap_.emplace(SRC::CUBE, res);
+	resourcesMap_.emplace(SRC::BARREL, res);
 
 	// ” 
 	res = new RES(RES_T::MODEL, PATH_MDL + "Cube.mv1");
@@ -87,6 +87,10 @@ void ResourceManager::Init(void)
 	// –Ø” 
 	res = new RES(RES_T::MODEL, PATH_MDL + "Object/wooden_box.mv1");
 	resourcesMap_.emplace(SRC::WOODBOX, res);
+
+	// ƒ{ƒ^ƒ“
+	res = new RES(RES_T::MODEL, PATH_MDL + "Cube.mv1");
+	resourcesMap_.emplace(SRC::BUTTON, res);
 }
 
 void ResourceManager::Release(void)

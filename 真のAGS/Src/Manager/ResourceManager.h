@@ -22,9 +22,10 @@ public:
 		ENEMY_RAT,
 		ENEMY_ROBOT,
 		VIEW_RANGE,
-		CUBE,
+		BARREL,
 		WALL,
 		WOODBOX,
+		BUTTON,
 	};
 
 	// 明示的にインステンスを生成する

@@ -47,15 +47,18 @@ void Object::InitLoad(void)
 		transform_.SetModel(resMng_.Load(ResourceManager::SRC::WOODBOX).handleId_);
 		break;
 	case OBJECT_TYPE::AKEG:
-		transform_.SetModel(resMng_.Load(ResourceManager::SRC::CUBE).handleId_);
+		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::BARREL));
 		break;
 	case OBJECT_TYPE::SCENE_PROP:
 		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::WALL));
 		break;
+	case OBJECT_TYPE::BUTTOM:
+		transform_.SetModel(resMng_.Load(ResourceManager::SRC::BUTTON).handleId_);
+		break;
 	case OBJECT_TYPE::DEFAULT:
-
+		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::BARREL));
+		break;
 	default:
-		transform_.SetModel(resMng_.Load(ResourceManager::SRC::CUBE).handleId_);
 		break;
 	}
 }
@@ -120,8 +123,13 @@ void Object::UpdateProcess(void)
 
 		const Transform* follow = col->GetFollow();
 		// 無ければ、または自分自身を追従先にしている場合は無視
-		if (follow == nullptr || follow == &transform_) continue;
-
+		if (follow == nullptr || follow == &transform_) {
+			// つかまれていない場合
+			isGrabbed_ = true;
+			continue;
+		}
+		// つかまれている場合
+		isGrabbed_ = false;
 		const VECTOR localPos = col->GetLocalPos();
 		const VECTOR worldPos = VAdd(follow->pos, follow->quaRot.PosAxis(localPos));
 		transform_.pos = worldPos;
@@ -139,12 +147,19 @@ void Object::UpdateProcess(void)
 	CollisionCapsule();
 	transform_.Update();
 
-	CheckAnswer();
+	// つかまれていなかったら
+	if(isGrabbed_)
+	{
+		CheckAnswer();
+	}
 }
 
 void Object::UpdateProcessPost(void)
 {
-
+	if(isButtomPushed_)
+	{
+		UpdateButtom();
+	}
 }
 
 void Object::CheckAnswer(void)
@@ -154,4 +169,20 @@ void Object::CheckAnswer(void)
 	float distance1 = VSize(VSub(transform_.pos, ansVec_));
 
 	isAnswerPosition_ = (distance1 < 150.0f);
+}
+
+void Object::UpdateButtom()
+{
+	int aren = 0;
+	//VECTOR objectPos = transform_.pos;
+
+	//// プレイヤーとの距離
+	//VECTOR playerPos = follow->pos;
+	//float distance1 = VSize(VSub(playerPos, objectPos));
+	//bool hit = (distance1 < 180.0f);
+	//if(hit)
+	//{
+	//	// プレイヤーに近いときは押す
+	//	isButtomPushed_ = true;
+	//}
 }
