@@ -114,28 +114,24 @@ void Object::UpdateProcess(void)
 		transform_.pos.x = -transform_.pos.x;
 	}
 
+	isGrabbed_ = false; // デフォルトはつかまれていない
+
 	// 掴まれているコライダがあれば transform をそれに同期する
 	for (const auto& ct : ownColliders_)
 	{
 		ColliderBase* col = ct.second;
-
 		if (col == nullptr) continue;
 
 		const Transform* follow = col->GetFollow();
-		// 無ければ、または自分自身を追従先にしている場合は無視
-		if (follow == nullptr || follow == &transform_) {
-			// つかまれていない場合
-			isGrabbed_ = true;
-			continue;
-		}
-		// つかまれている場合
-		isGrabbed_ = false;
+		if (follow == nullptr || follow == &transform_) continue;
+
+		// ここに到達 = つかまれている
+		isGrabbed_ = true;
+
 		const VECTOR localPos = col->GetLocalPos();
 		const VECTOR worldPos = VAdd(follow->pos, follow->quaRot.PosAxis(localPos));
 		transform_.pos = worldPos;
-
 		transform_.quaRot = follow->quaRot;
-
 		pushPow_ = { 0.0f, 0.0f, 0.0f };
 		break;
 	}
@@ -147,8 +143,8 @@ void Object::UpdateProcess(void)
 	CollisionCapsule();
 	transform_.Update();
 
-	// つかまれていなかったら
-	if(isGrabbed_)
+	// つかまれていなかったら答えチェック
+	if (!isGrabbed_)
 	{
 		CheckAnswer();
 	}
@@ -156,10 +152,6 @@ void Object::UpdateProcess(void)
 
 void Object::UpdateProcessPost(void)
 {
-	if(isButtomPushed_)
-	{
-		UpdateButtom();
-	}
 }
 
 void Object::CheckAnswer(void)
@@ -169,20 +161,4 @@ void Object::CheckAnswer(void)
 	float distance1 = VSize(VSub(transform_.pos, ansVec_));
 
 	isAnswerPosition_ = (distance1 < 150.0f);
-}
-
-void Object::UpdateButtom()
-{
-	int aren = 0;
-	//VECTOR objectPos = transform_.pos;
-
-	//// プレイヤーとの距離
-	//VECTOR playerPos = follow->pos;
-	//float distance1 = VSize(VSub(playerPos, objectPos));
-	//bool hit = (distance1 < 180.0f);
-	//if(hit)
-	//{
-	//	// プレイヤーに近いときは押す
-	//	isButtomPushed_ = true;
-	//}
 }

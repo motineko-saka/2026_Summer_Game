@@ -94,12 +94,12 @@ void GameScene::Init(void)
 
 	objects_.push_back(new Object(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[0], Object::OBJECT_TYPE::DEFAULT));
 	objects_.back()->Init();
-<<<<<<< HEAD
+
 	objects_.back()->SetPosition({ 1260.0f, -720.0f, -50.5f });
-=======
+
 	objects_.back()->SetPosition({ 1260.0f, -500.0f, -50.5f });
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
->>>>>>> bc86bbb8e8009cbf60dcc0e0a376fd3c08496174
+
 
 	objects_.push_back(new Object(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], Object::OBJECT_TYPE::WBOX));
 	objects_.back()->Init();
@@ -113,14 +113,14 @@ void GameScene::Init(void)
 
 	objects_.push_back(new Object(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[3], Object::OBJECT_TYPE::BUTTOM));
 	objects_.back()->Init();
-<<<<<<< HEAD
+
 	objects_.back()->SetPosition({ 1000.0f, -720.0f, -50.5f });
 	//objects_.back()->SetPosition({ 0.0f, 80.0f, -50.0f });
-=======
+
 	objects_.back()->SetPosition({ 1260.0f, -720.0f, -50.5f });
 	objects_.back()->SetPosition({ 0.0f, 80.0f, -50.0f });
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
->>>>>>> bc86bbb8e8009cbf60dcc0e0a376fd3c08496174
+
 
 	// ステージの各コライダをプレイヤー／カメラ／オブジェクトに登録
 	for (const auto& stage : stageManager_->GetStage())
@@ -189,6 +189,48 @@ void GameScene::CheckCollisions(void)
 
 		VECTOR objectPos = obj->GetTransform().pos;
 
+		// ボタンタイプの場合は専用処理
+		if (obj->GetType() == Object::OBJECT_TYPE::BUTTOM)
+		{
+			bool isNearButton = false;
+
+			// プレイヤー1との距離チェック
+			VECTOR player1Pos = player1_->GetTransform().pos;
+			float distance1 = VSize(VSub(player1Pos, objectPos));
+			if (distance1 < 180.0f)
+			{
+				isNearButton = true;
+				// ボタンが押されたときの処理（例：ゲームクリア、ドアが開くなど）
+			}
+
+			// プレイヤー2も同様にチェック
+			VECTOR player2Pos = player2_->GetTransform().pos;
+			float distance2 = VSize(VSub(player2Pos, objectPos));
+			if (distance2 < 180.0f)
+			{
+				isNearButton = true;
+			}
+
+			// ボタンの近くにいて、スペースキーが押されたら
+			if (isNearButton && InputManager::GetInstance().IsTrgDown(KEY_INPUT_SPACE))
+			{
+				obj->SetButtomPushed(true);
+				// ボタンが押されたときの処理（例：ゲームクリア、ドアが開くなど）
+			}
+
+			continue;
+
+			// プレイヤー2も同様にチェック
+			VECTOR player2Pos = player2_->GetTransform().pos;
+			float distance2 = VSize(VSub(player2Pos, objectPos));
+			if (distance2 < 180.0f)
+			{
+				obj->SetButtomPushed(true);
+			}
+
+			continue;
+		}
+
 		// プレイヤー1との距離
 		VECTOR player1Pos = player1_->GetTransform().pos;
 		float distance1 = VSize(VSub(player1Pos, objectPos));
@@ -253,10 +295,6 @@ void GameScene::Update(void)
 {
 	// シーン遷移
 	auto const& ins = InputManager::GetInstance();
-	if (ins.IsTrgDown(KEY_INPUT_SPACE))
-	{
-		
-	}
 
 	// プレイヤー選択切替
 	if (ins.IsTrgDown(KEY_INPUT_TAB))
@@ -416,6 +454,7 @@ void GameScene::Draw(void)
 	}
 	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 
+#pragma region デバッグ表示
 	// デバッグ表示
 	DrawFormatString(0, 0, GetColor(255, 255, 255), "P1角度:(%.1f, %.1f, %.1f)",
 		player1_->GetTransform().quaRot.ToEuler().x,
@@ -471,6 +510,7 @@ void GameScene::Draw(void)
 
 		y += 40;
 	}
+#pragma endregion
 }
 
 void GameScene::Release(void)

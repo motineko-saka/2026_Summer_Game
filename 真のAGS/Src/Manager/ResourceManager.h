@@ -26,6 +26,7 @@ public:
 		WALL,
 		WOODBOX,
 		BUTTON,
+		CUBE,
 	};
 
 	// 明示的にインステンスを生成する

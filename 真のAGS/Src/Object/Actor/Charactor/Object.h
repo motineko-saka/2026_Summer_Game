@@ -123,7 +123,8 @@ private:
 	// 答えのオブジェクトかどうか
 	bool isAnswerPosition_;
 
-	// つかまれているかどうか
+	// つかまれているかどうか 
+	// true:つかまれている false:つかまれていない
 	bool isGrabbed_;
 
 	bool isButtomPushed_ = false;
@@ -133,7 +134,4 @@ private:
 
 	// 答えの場所とオブジェクトの衝突判定
 	void CheckAnswer(void);
-
-	// ボタンの更新
-	void UpdateButtom();
 };

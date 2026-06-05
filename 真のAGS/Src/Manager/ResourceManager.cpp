@@ -77,13 +77,13 @@ void ResourceManager::Init(void)
 	resourcesMap_.emplace(SRC::VIEW_RANGE, res);
 
 	// ” 
-<<<<<<< HEAD
+
 	res = new RES(RES_T::MODEL, PATH_MDL + "Object/barrel.mv1");
 	resourcesMap_.emplace(SRC::BARREL, res);
-=======
+
 	res = new RES(RES_T::MODEL, PATH_MDL + "Object/mokuba.mv1");
 	resourcesMap_.emplace(SRC::CUBE, res);
->>>>>>> bc86bbb8e8009cbf60dcc0e0a376fd3c08496174
+
 
 	// ” 
 	res = new RES(RES_T::MODEL, PATH_MDL + "Cube.mv1");
