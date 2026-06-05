@@ -221,8 +221,8 @@ void GameScene::CheckCollisions(void)
 			continue;
 
 			// プレイヤー2も同様にチェック
-			VECTOR player2Pos = player2_->GetTransform().pos;
-			float distance2 = VSize(VSub(player2Pos, objectPos));
+			player2Pos = player2_->GetTransform().pos;
+			distance2 = VSize(VSub(player2Pos, objectPos));
 			if (distance2 < 180.0f)
 			{
 				obj->SetButtomPushed(true);
