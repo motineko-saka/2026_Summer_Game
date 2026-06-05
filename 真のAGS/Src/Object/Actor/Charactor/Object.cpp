@@ -66,7 +66,7 @@ void Object::InitLoad(void)
 void Object::InitTransform(void)
 {
 	// ƒ‚ƒfƒ‹‚ÌˆÊ’u
-	transform_.scl = { 0.5f, 0.5f, 0.5f };
+	transform_.scl = defaultScale_;
 	transform_.quaRot = Quaternion::Identity();
 
 	transform_.quaRotLocal = Quaternion::Identity();
