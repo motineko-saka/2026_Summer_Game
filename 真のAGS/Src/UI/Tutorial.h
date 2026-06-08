@@ -1,5 +1,7 @@
 #pragma once
 #include <string>
+#include <vector>
+#include <functional>
 
 class Tutorial
 {
@@ -8,27 +10,32 @@ public:
 	~Tutorial();
 
 	void Init();
-	void Start();            // チュートリアル開始（最初のステップへ）
-	void Update();           // 毎フレーム呼ぶ
-	void Draw() const;       // 描画
+	void Start();
+	void Update();
+	void Draw() const;
 	bool IsActive() const { return active_; }
 
+	// 新 API: ステップを登録する（条件ラムダが true を返したら次へ）
+	using ConditionFunc = std::function<bool()>;
+	using OnEnterFunc = std::function<void()>;
+	void ClearSteps();
+	void AddStep(const std::string& text, ConditionFunc cond, OnEnterFunc onEnter = nullptr);
+
 private:
-	enum class Step
+	struct StepInfo
 	{
-		NONE = -1,
-		MOVE,           // WASD
-		CAMERA_ANGLE,   // 矢印
-		CAMERA_STATE,   // CTRL
-		SWITCH_CHAR,    // TAB
-		FINISHED
+		std::string text;
+		ConditionFunc condition;
+		OnEnterFunc onEnter;
 	};
 
-	Step step_;
+	std::vector<StepInfo> steps_;
+	int currentIndex_;
+
 	bool active_;
-	int inputDelay_;                 // 入力デバウンス（フレーム）
+	int inputDelay_;                 // 入力デバウンス
 	static constexpr int DELAY_MAX = 8;
 
-	// 各ステップに表示する文字列を返す
-	const char* GetTextForStep(Step s) const;
+	// 描画アニメーション用
+	mutable int animCounter_;        // 描画アニメーション用カウンタ（Updateで増加）
 };
