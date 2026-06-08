@@ -7,6 +7,14 @@ class SceneBase
 
 public:
 
+	// 世界
+	enum class WORLD
+	{
+		LEFT = 0,
+		RIGHT,
+		ANSWER,
+	};
+
 	// コンストラクタ
 	SceneBase(void);
 

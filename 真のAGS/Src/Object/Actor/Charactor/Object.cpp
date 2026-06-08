@@ -9,7 +9,7 @@
 #include "../../Collider/ColliderModel.h"
 #include "../../../Manager/InputManager.h"
 
-Object::Object(GameScene::WORLD world, VECTOR ansVec, OBJECT_TYPE type)
+Object::Object(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type)
 {
 	isAnswerPosition_ = false;
 	ansVec_ = ansVec;
@@ -110,7 +110,7 @@ void Object::UpdateProcess(void)
 {
 	if (InputManager::GetInstance().IsTrgDown(KEY_INPUT_C))
 	{
-		world_ = (world_ == GameScene::WORLD::LEFT) ? GameScene::WORLD::RIGHT : GameScene::WORLD::LEFT;
+		world_ = (world_ == SceneBase::WORLD::LEFT) ? SceneBase::WORLD::RIGHT : SceneBase::WORLD::LEFT;
 		transform_.pos.x = -transform_.pos.x;
 	}
 
