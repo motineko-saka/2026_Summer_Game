@@ -17,13 +17,6 @@ class TutorialScene : public SceneBase
 {
 
 public:
-	// 世界
-	enum class WORLD
-	{
-		LEFT = 0,
-		RIGHT,
-		ANSWER,
-	};
 
 	// コンストラクタ
 	TutorialScene(void);

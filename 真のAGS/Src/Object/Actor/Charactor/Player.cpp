@@ -381,11 +381,6 @@ void Player::ProcessPickup(void)
 		btnTrg = ins.IsTrgDown(KEY_INPUT_E)
 			|| ins.IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::TOP);
 	}
-	//else // PLAYER2
-	//{
-	//	btnTrg = ins.IsTrgDown(KEY_INPUT_U)
-	//		|| ins.IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD2, InputManager::JOYPAD_BTN::TOP);
-	//}
 
 	if (btnTrg)
 	{

@@ -44,7 +44,7 @@ void Object::InitLoad(void)
 	switch (type_)
 	{
 	case OBJECT_TYPE::WBOX:
-		transform_.SetModel(resMng_.Load(ResourceManager::SRC::WOODBOX).handleId_);
+		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::WOODBOX));
 		break;
 	case OBJECT_TYPE::AKEG:
 		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::BARREL));
@@ -53,10 +53,10 @@ void Object::InitLoad(void)
 		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::WALL));
 		break;
 	case OBJECT_TYPE::BUTTOM:
-		transform_.SetModel(resMng_.Load(ResourceManager::SRC::BUTTON).handleId_);
+		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::BUTTON));
 		break;
 	case OBJECT_TYPE::DEFAULT:
-		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::BARREL));
+		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::CUBE));
 		break;
 	default:
 		break;

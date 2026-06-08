@@ -87,12 +87,12 @@ void TutorialScene::Init(void)
 	wall_->Init();
 
 	// オブジェクト作成（複数）
-	objects_.reserve(4);
+	objects_.reserve(1);
 
 	objects_.push_back(new Object(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[0], Object::OBJECT_TYPE::DEFAULT));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ 1260.0f, -720.0f, -50.5f });
-	objects_.back()->SetPosition({ 1260.0f, -500.0f, -50.5f });
+	//objects_.back()->SetPosition({ 1260.0f, -500.0f, -50.5f });
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 
 	objects_.push_back(new Object(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], Object::OBJECT_TYPE::WBOX));
@@ -219,33 +219,6 @@ void TutorialScene::CheckCollisions(void)
 			// currently unused
 		}
 	}
-
-	if (InputManager::GetInstance().IsTrgDown(KEY_INPUT_SPACE))
-	{
-		for (auto* obj : objects_)
-		{
-			if (obj == nullptr) continue;
-
-			if (obj->GetType() == Object::OBJECT_TYPE::BUTTOM)
-			{
-				VECTOR objectPos = obj->GetTransform().pos;
-
-				VECTOR player1Pos = player1_->GetTransform().pos;
-				float distance1 = VSize(VSub(player1Pos, objectPos));
-				if (distance1 < 180.0f)
-				{
-					obj->SetButtomPushed(true);
-				}
-
-				VECTOR player2Pos = player2_->GetTransform().pos;
-				float distance2 = VSize(VSub(player2Pos, objectPos));
-				if (distance2 < 180.0f)
-				{
-					obj->SetButtomPushed(true);
-				}
-			}
-		}
-	}
 }
 
 void TutorialScene::Update(void)
@@ -254,9 +227,28 @@ void TutorialScene::Update(void)
 	tutorial_.Update();
 	if (tutorial_.IsActive())
 	{
+		// チュートリアル中でも世界の物理・プレイヤー・オブジェクトは更新する。
+		// これにより WASD 押下でプレイヤーが実際に移動し、オブジェクトに重力が適用される。
+		stageManager_->Update();
+		skyDome_->Update();
+		player1_->Update();
+		player2_->Update();
+		//enemyManager_->Update();
+		camera1_->Update();
+		camera2_->Update();
+		wall_->Update();
+
+		// 全オブジェクトの更新（落下・衝突処理を実行）
+		for (auto* obj : objects_)
+		{
+			if (obj) obj->Update();
+		}
+
+		// チュートリアルがアクティブならここで終了（シーン遷移判定などは行わない）
 		return;
 	}
 
+	// 以下は通常の更新処理（チュートリアル非アクティブ時）
 	// シーン遷移
 	auto const& ins = InputManager::GetInstance();
 
@@ -351,6 +343,7 @@ void TutorialScene::DrawPlayer1Screen(void)
 	for (auto* obj : objects_)
 	{
 		if (obj == nullptr) continue;
+		//obj->SetViewWorld(WORLD::LEFT);
 		obj->Draw();
 	}
 }
@@ -369,6 +362,7 @@ void TutorialScene::DrawPlayer2Screen(void)
 	for (auto* obj : objects_)
 	{
 		if (obj == nullptr) continue;
+		//obj->SetViewWorld(WORLD::RIGHT);
 		obj->Draw();
 	}
 }

@@ -97,7 +97,7 @@ void GameScene::Init(void)
 
 	objects_.back()->SetPosition({ 1260.0f, -720.0f, -50.5f });
 
-	objects_.back()->SetPosition({ 1260.0f, -500.0f, -50.5f });
+	//objects_.back()->SetPosition({ 1260.0f, -500.0f, -50.5f });
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 
 
@@ -219,16 +219,6 @@ void GameScene::CheckCollisions(void)
 			}
 
 			continue;
-
-			// プレイヤー2も同様にチェック
-			player2Pos = player2_->GetTransform().pos;
-			distance2 = VSize(VSub(player2Pos, objectPos));
-			if (distance2 < 180.0f)
-			{
-				obj->SetButtomPushed(true);
-			}
-
-			continue;
 		}
 
 		// プレイヤー1との距離
@@ -256,37 +246,6 @@ void GameScene::CheckCollisions(void)
 
 			// オブジェクトを押す(速度は適度に調整)
 			//obj->Push(pushDir, 5.0f);
-		}
-	}
-
-	if(InputManager::GetInstance().IsTrgDown(KEY_INPUT_SPACE))
-	{
-		// ボタンオブジェクトの判定
-		for (auto* obj : objects_)
-		{
-			if (obj == nullptr) continue;
-
-			// ボタンタイプのオブジェクトのみ処理
-			if (obj->GetType() == Object::OBJECT_TYPE::BUTTOM)
-			{
-				VECTOR objectPos = obj->GetTransform().pos;
-
-				// プレイヤー1との距離チェック
-				VECTOR player1Pos = player1_->GetTransform().pos;
-				float distance1 = VSize(VSub(player1Pos, objectPos));
-				if (distance1 < 180.0f)
-				{
-					obj->SetButtomPushed(true);
-				}
-
-				// プレイヤー2との距離チェック
-				VECTOR player2Pos = player2_->GetTransform().pos;
-				float distance2 = VSize(VSub(player2Pos, objectPos));
-				if (distance2 < 180.0f)
-				{
-					obj->SetButtomPushed(true);
-				}
-			}
 		}
 	}
 }
@@ -390,7 +349,7 @@ void GameScene::DrawPlayer1Screen(void)
 	for (auto* obj : objects_)
 	{
 		if (obj == nullptr) continue;
-		//obj->SetViewWorld(WORLD::LEFT);
+		obj->SetViewWorld(WORLD::LEFT);
 		obj->Draw();
 	}
 }
@@ -410,7 +369,7 @@ void GameScene::DrawPlayer2Screen(void)
 	for (auto* obj : objects_)
 	{
 		if (obj == nullptr) continue;
-		//obj->SetViewWorld(WORLD::RIGHT);
+		obj->SetViewWorld(WORLD::RIGHT);
 		obj->Draw();
 	}
 }
