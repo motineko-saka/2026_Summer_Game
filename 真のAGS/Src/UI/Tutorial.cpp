@@ -65,7 +65,6 @@ void Tutorial::Update()
 	switch (step_)
 	{
 	case Step::MOVE:
-		// WASDいずれかを押すと次のステップへ
 		if (inputDelay_ == 0 && AnyKey_WASD())
 		{
 			step_ = Step::CAMERA_ANGLE;
@@ -74,7 +73,6 @@ void Tutorial::Update()
 		break;
 
 	case Step::CAMERA_ANGLE:
-		// ↑↓→←いずれかを押すと次のステップへ
 		if (inputDelay_ == 0 &&
 			(CheckHitKey(KEY_INPUT_UP) || CheckHitKey(KEY_INPUT_DOWN) ||
 				CheckHitKey(KEY_INPUT_LEFT) || CheckHitKey(KEY_INPUT_RIGHT)))
@@ -85,7 +83,6 @@ void Tutorial::Update()
 		break;
 
 	case Step::CAMERA_STATE:
-		// コントロールキーどちらかを押すと次のステップへ
 		if (inputDelay_ == 0 &&
 			(CheckHitKey(KEY_INPUT_LCONTROL) || CheckHitKey(KEY_INPUT_RCONTROL)))
 		{
@@ -95,7 +92,6 @@ void Tutorial::Update()
 		break;
 
 	case Step::SWITCH_CHAR:
-		// TABキーを押すと次のステップへ
 		if (inputDelay_ == 0 && CheckHitKey(KEY_INPUT_TAB))
 		{
 			step_ = Step::FINISHED;
