@@ -1,7 +1,7 @@
 #pragma once
 #include <DxLib.h>
 #include "../Charactor/CharactorBase.h"
-#include "../../../Scene/GameScene.h"
+#include "../../../Scene/SceneBase.h"
 
 class Object : public CharactorBase
 {
@@ -27,18 +27,18 @@ public:
 	};
 
 	// world と種類を指定可能に
-	Object(GameScene::WORLD world,VECTOR ansVec, OBJECT_TYPE type = OBJECT_TYPE::DEFAULT);
+	Object(SceneBase::WORLD world,VECTOR ansVec, OBJECT_TYPE type = OBJECT_TYPE::DEFAULT);
 	virtual ~Object(void);
 
 	//void Update(void)override;
 	void Draw(void)override;
 	void Release(void)override;
 
-	GameScene::WORLD GetViewWorld(void) { return viewWorld_; }
+	SceneBase::WORLD GetViewWorld(void) { return viewWorld_; }
 
-	GameScene::WORLD GetWorld(void) { return world_; }
+	SceneBase::WORLD GetWorld(void) { return world_; }
 
-	void SetViewWorld(GameScene::WORLD world) { viewWorld_ = world; }
+	void SetViewWorld(SceneBase::WORLD world) { viewWorld_ = world; }
 
 	Transform& GetTransform(void) { return transform_; }
 	VECTOR& GetPos(void) { return transform_.pos; }
@@ -106,8 +106,8 @@ private:
 	// オブジェクトの押される抵抗力（0.0～1.0）
 	static constexpr float PUSH_RESISTANCE = 0.1f;
 
-	GameScene::WORLD world_;		// 
-	GameScene::WORLD viewWorld_;	// 今写っている世界
+	SceneBase::WORLD world_;		// 
+	SceneBase::WORLD viewWorld_;	// 今写っている世界
 
 	// オブジェクト種類
 	OBJECT_TYPE type_{ OBJECT_TYPE::DEFAULT };

@@ -58,6 +58,8 @@
     <ClCompile Include="Src\Object\Actor\Stage\StageBase.cpp" />
     <ClCompile Include="Src\Manager\StageManager.cpp" />
     <ClCompile Include="Src\Object\Actor\Wall.cpp" />
+    <ClCompile Include="Src\Scene\TutorialScene.cpp" />
+    <ClCompile Include="Src\UI\Tutorial.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Src\Scene\GameClearScene.h" />
@@ -99,6 +101,8 @@
     <ClInclude Include="Src\Object\Actor\Stage\StageBase.h" />
     <ClInclude Include="Src\Manager\StageManager.h" />
     <ClInclude Include="Src\Object\Actor\Wall.h" />
+    <ClInclude Include="Src\Scene\TutorialScene.h" />
+    <ClInclude Include="Src\UI\Tutorial.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

@@ -23,6 +23,7 @@ public:
 	{
 		NONE,
 		TITLE,
+		TUTORIAL,
 		GAME,
 		GAMECLEAR,
 		DEBUG,

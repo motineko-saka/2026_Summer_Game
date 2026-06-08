@@ -4,6 +4,7 @@
 #include "../Object/Actor/Charactor/Player.h"
 #include <vector>
 #include <memory>
+#include "../UI/Tutorial.h"
 class StageManager;
 class SkyDome;
 class Player;
@@ -12,15 +13,23 @@ class Camera;
 class Object;
 class Wall;
 
-class GameScene : public SceneBase
+class TutorialScene : public SceneBase
 {
 
 public:
+	// 世界
+	enum class WORLD
+	{
+		LEFT = 0,
+		RIGHT,
+		ANSWER,
+	};
+
 	// コンストラクタ
-	GameScene(void);
+	TutorialScene(void);
 
 	// デストラクタ
-	~GameScene(void) override;
+	~TutorialScene(void) override;
 
 	// 初期化
 	void Init(void) override;
@@ -41,7 +50,7 @@ private:
 														{-1260.0f, -720.0f, -50.5f},
 														{1260.0f, -720.0f, -50.5f},
 														{-1260.0f, -720.0f, -50.5f},
-														};
+	};
 
 	StageManager* stageManager_;
 
@@ -85,4 +94,7 @@ private:
 
 	// 衝突判定チェック
 	void CheckCollisions(void);
+
+	// チュートリアル
+	Tutorial tutorial_; // 追加
 };

@@ -13,9 +13,10 @@
 #include "../Object/Actor/Charactor/Object.h"
 #include "../Object/Actor/Wall.h"
 #include "../Object/Collider/ColliderBase.h"
-#include "GameScene.h"
+#include "TutorialScene.h"
+#include "../UI/Tutorial.h" // 追加（ヘッダでも追加済み）
 
-GameScene::GameScene(void)
+TutorialScene::TutorialScene(void)
 	:
 	stageManager_(nullptr),
 	skyDome_(nullptr),
@@ -33,12 +34,12 @@ GameScene::GameScene(void)
 {
 }
 
-GameScene::~GameScene(void)
+TutorialScene::~TutorialScene(void)
 {
 	Release();
 }
 
-void GameScene::Init(void)
+void TutorialScene::Init(void)
 {
 	// 画面サイズの取得
 	GetScreenState(&screenWidth_, &screenHeight_, nullptr);
@@ -85,42 +86,29 @@ void GameScene::Init(void)
 	wall_ = std::make_unique<Wall>();
 	wall_->Init();
 
-	// エネミー管理
-	//enemyManager_ = new EnemyManager(player1_);
-	//enemyManager_->Init();
-
 	// オブジェクト作成（複数）
 	objects_.reserve(4);
 
-	objects_.push_back(new Object(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[0], Object::OBJECT_TYPE::DEFAULT));
+	objects_.push_back(new Object(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[0], Object::OBJECT_TYPE::DEFAULT));
 	objects_.back()->Init();
-
 	objects_.back()->SetPosition({ 1260.0f, -720.0f, -50.5f });
-
 	objects_.back()->SetPosition({ 1260.0f, -500.0f, -50.5f });
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 
-
-	objects_.push_back(new Object(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], Object::OBJECT_TYPE::WBOX));
+	objects_.push_back(new Object(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], Object::OBJECT_TYPE::WBOX));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ 1260.0f, -720.0f, -50.5f });
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 
-	objects_.push_back(new Object(GameScene::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[2], Object::OBJECT_TYPE::AKEG));
+	objects_.push_back(new Object(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[2], Object::OBJECT_TYPE::AKEG));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ -1260.0f, -720.0f, -50.5f });
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 
-	objects_.push_back(new Object(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[3], Object::OBJECT_TYPE::BUTTOM));
+	objects_.push_back(new Object(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[3], Object::OBJECT_TYPE::BUTTOM));
 	objects_.back()->Init();
-
-	objects_.back()->SetPosition({ 1000.0f, -720.0f, -50.5f });
-	//objects_.back()->SetPosition({ 0.0f, 80.0f, -50.0f });
-
-	objects_.back()->SetPosition({ 1260.0f, -720.0f, -50.5f });
 	objects_.back()->SetPosition({ 0.0f, 80.0f, -50.0f });
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
-
 
 	// ステージの各コライダをプレイヤー／カメラ／オブジェクトに登録
 	for (const auto& stage : stageManager_->GetStage())
@@ -128,20 +116,13 @@ void GameScene::Init(void)
 		const ColliderBase* stageCollider =
 			stage->GetOwnCollider(static_cast<int>(Stage::COLLIDER_TYPE::MODEL));
 
-		// ステージモデルのコライダーをプレイヤー1に登録
 		player1_->AddHitCollider(stageCollider);
-
-		// ステージモデルのコライダーをプレイヤー2に登録
 		player2_->AddHitCollider(stageCollider);
 
-		// ステージモデルのコライダーをエネミーに登録
-		//enemyManager_->AddHitCollider(stageCollider);
-
-		// ステージモデルのコライダーをカメラに登録
+		// カメラに登録
 		camera1_->AddHitCollider(stageCollider);
 		camera2_->AddHitCollider(stageCollider);
 
-		// ステージモデルのコライダーを全オブジェクトに登録
 		for (auto* obj : objects_)
 		{
 			obj->AddHitCollider(stageCollider);
@@ -175,9 +156,13 @@ void GameScene::Init(void)
 	player2_->SetActive(false);
 	camera1_->SetControlEnabled(true);
 	camera2_->SetControlEnabled(false);
+
+	// チュートリアル開始
+	tutorial_.Init();
+	tutorial_.Start();
 }
 
-void GameScene::CheckCollisions(void)
+void TutorialScene::CheckCollisions(void)
 {
 	// 各オブジェクトに対してプレイヤーとの距離判定を行う
 	isPlayer1HitObject_ = false;
@@ -194,16 +179,13 @@ void GameScene::CheckCollisions(void)
 		{
 			bool isNearButton = false;
 
-			// プレイヤー1との距離チェック
 			VECTOR player1Pos = player1_->GetTransform().pos;
 			float distance1 = VSize(VSub(player1Pos, objectPos));
 			if (distance1 < 180.0f)
 			{
 				isNearButton = true;
-				// ボタンが押されたときの処理（例：ゲームクリア、ドアが開くなど）
 			}
 
-			// プレイヤー2も同様にチェック
 			VECTOR player2Pos = player2_->GetTransform().pos;
 			float distance2 = VSize(VSub(player2Pos, objectPos));
 			if (distance2 < 180.0f)
@@ -211,17 +193,7 @@ void GameScene::CheckCollisions(void)
 				isNearButton = true;
 			}
 
-			// ボタンの近くにいて、スペースキーが押されたら
 			if (isNearButton && InputManager::GetInstance().IsTrgDown(KEY_INPUT_SPACE))
-			{
-				obj->SetButtomPushed(true);
-				// ボタンが押されたときの処理（例：ゲームクリア、ドアが開くなど）
-			}
-
-			continue;
-
-			// プレイヤー2も同様にチェック
-			if (distance2 < 180.0f)
 			{
 				obj->SetButtomPushed(true);
 			}
@@ -236,8 +208,6 @@ void GameScene::CheckCollisions(void)
 		if (hit1)
 		{
 			isPlayer1HitObject_ = true;
-			// 必要なら押す処理を有効化
-			// VECTOR pushDir = VSub(objectPos, player1Pos); pushDir.y = 0.0f; pushDir = VNorm(pushDir); obj->Push(pushDir, 5.0f);
 		}
 
 		// プレイヤー2との距離
@@ -246,30 +216,20 @@ void GameScene::CheckCollisions(void)
 		bool hit2 = (distance2 < 180.0f);
 		if (hit2)
 		{
-			//isPlayer2HitObject_ = true;
-			// プレイヤーからオブジェクトへの方向ベクトル
-			//VECTOR pushDir = VSub(objectPos, player2Pos);
-			//pushDir.y = 0.0f; // Y軸(垂直方向)は無視
-			//pushDir = VNorm(pushDir); // 正規化
-
-			// オブジェクトを押す(速度は適度に調整)
-			//obj->Push(pushDir, 5.0f);
+			// currently unused
 		}
 	}
 
-	if(InputManager::GetInstance().IsTrgDown(KEY_INPUT_SPACE))
+	if (InputManager::GetInstance().IsTrgDown(KEY_INPUT_SPACE))
 	{
-		// ボタンオブジェクトの判定
 		for (auto* obj : objects_)
 		{
 			if (obj == nullptr) continue;
 
-			// ボタンタイプのオブジェクトのみ処理
 			if (obj->GetType() == Object::OBJECT_TYPE::BUTTOM)
 			{
 				VECTOR objectPos = obj->GetTransform().pos;
 
-				// プレイヤー1との距離チェック
 				VECTOR player1Pos = player1_->GetTransform().pos;
 				float distance1 = VSize(VSub(player1Pos, objectPos));
 				if (distance1 < 180.0f)
@@ -277,7 +237,6 @@ void GameScene::CheckCollisions(void)
 					obj->SetButtomPushed(true);
 				}
 
-				// プレイヤー2との距離チェック
 				VECTOR player2Pos = player2_->GetTransform().pos;
 				float distance2 = VSize(VSub(player2Pos, objectPos));
 				if (distance2 < 180.0f)
@@ -289,8 +248,15 @@ void GameScene::CheckCollisions(void)
 	}
 }
 
-void GameScene::Update(void)
+void TutorialScene::Update(void)
 {
+	// チュートリアル更新。アクティブならシーン更新を停止する
+	tutorial_.Update();
+	if (tutorial_.IsActive())
+	{
+		return;
+	}
+
 	// シーン遷移
 	auto const& ins = InputManager::GetInstance();
 
@@ -345,7 +311,6 @@ void GameScene::Update(void)
 	camera2_->Update();
 	wall_->Update();
 
-
 	// 衝突判定チェック(Objectの更新前に実行)
 	CheckCollisions();
 
@@ -372,7 +337,7 @@ void GameScene::Update(void)
 	}
 }
 
-void GameScene::DrawPlayer1Screen(void)
+void TutorialScene::DrawPlayer1Screen(void)
 {
 	// プレイヤー1用のカメラ設定
 	camera1_->SetBeforeDraw();
@@ -382,18 +347,15 @@ void GameScene::DrawPlayer1Screen(void)
 	skyDome_->Draw();
 	player1_->Draw();
 	player2_->Draw(); // プレイヤー2も描画(同じ世界にいる場合)
-	//wall_->Draw();
 
-	// 全オブジェクトを順に描画（それぞれの viewWorld を設定）
 	for (auto* obj : objects_)
 	{
 		if (obj == nullptr) continue;
-		//obj->SetViewWorld(WORLD::LEFT);
 		obj->Draw();
 	}
 }
 
-void GameScene::DrawPlayer2Screen(void)
+void TutorialScene::DrawPlayer2Screen(void)
 {
 	// プレイヤー2用のカメラ設定
 	camera2_->SetBeforeDraw();
@@ -401,19 +363,17 @@ void GameScene::DrawPlayer2Screen(void)
 	// 3D描画
 	stageManager_->Draw();
 	skyDome_->Draw();
-	player1_->Draw(); // プレイヤー1も描画(同じ世界にいる場合)
+	player1_->Draw();
 	player2_->Draw();
-	//wall_->Draw();
 
 	for (auto* obj : objects_)
 	{
 		if (obj == nullptr) continue;
-		//obj->SetViewWorld(WORLD::RIGHT);
 		obj->Draw();
 	}
 }
 
-void GameScene::Draw(void)
+void TutorialScene::Draw(void)
 {
 	int halfWidth = screenWidth_ / 2;
 
@@ -438,7 +398,7 @@ void GameScene::Draw(void)
 	DrawExtendGraph(halfWidth, 0, screenWidth_, screenHeight_, screenHandle2_, true);
 
 	// 非アクティブ側を薄暗くする
-	int dimAlpha = 150; 
+	int dimAlpha = 150;
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, dimAlpha);
 	if (activePlayer_ == Player::PLAYER_NO::PLAYER1)
 	{
@@ -509,9 +469,12 @@ void GameScene::Draw(void)
 		y += 40;
 	}
 #pragma endregion
+
+	// チュートリアル描画（最前面）
+	tutorial_.Draw();
 }
 
-void GameScene::Release(void)
+void TutorialScene::Release(void)
 {
 	stageManager_->Release();
 	delete stageManager_;
