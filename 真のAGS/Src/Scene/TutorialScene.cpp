@@ -74,7 +74,6 @@ void TutorialScene::Init(void)
 	camera2_->SetFollow(&player2_->GetTransform());
 	camera2_->ChangeMode(Camera::MODE::FOLLOW);
 
-
 	// ステージ
 	stageManager_ = new StageManager();
 	stageManager_->InitStage();
@@ -157,8 +156,69 @@ void TutorialScene::Init(void)
 	camera1_->SetControlEnabled(true);
 	camera2_->SetControlEnabled(false);
 
-	// チュートリアル開始
+	// チュートリアル開始（ステップ登録）
 	tutorial_.Init();
+	tutorial_.ClearSteps();
+
+	// プレイヤー1 の初期位置をキャプチャ（移動判定用）
+	const VECTOR p1StartPos = player1_->GetTransform().pos;
+
+	// ステップ1: 移動（位置変化で判定）
+	tutorial_.AddStep(
+		"移動の練習：W/A/S/D または 方向キーでプレイヤーを移動させてください。\n実際に移動すると次へ進みます。",
+		[this, p1StartPos]() -> bool {
+			VECTOR cur = player1_->GetTransform().pos;
+			float moved = VSize(VSub(cur, p1StartPos));
+			return moved > 1000.0f; 
+		}
+	);
+
+	// ステップ2: 視点操作（矢印キーで視点）
+	tutorial_.AddStep(
+		"視点操作の練習：矢印キーで視点を動かしてください。\n視点操作を行うと次へ進みます。",
+		[]() -> bool {
+			return CheckHitKey(KEY_INPUT_UP) || CheckHitKey(KEY_INPUT_DOWN) ||
+				CheckHitKey(KEY_INPUT_LEFT) || CheckHitKey(KEY_INPUT_RIGHT);
+		}
+	);
+
+	// ステップ3: キャラ切替（Tab または 右クリックで切替）
+	tutorial_.AddStep(
+		"キャラクター切替の練習：Tab または 右クリックで操作キャラを切り替えてください。\n切替操作を行うと次へ進みます。",
+		[]() -> bool {
+			auto const& in = InputManager::GetInstance();
+			return in.IsTrgDown(KEY_INPUT_TAB) || in.IsTrgMouseRight();
+		}
+	);
+
+	// ステップ4: ボタン操作（ボタン近くで Space）
+	Object* buttonObj = nullptr;
+	for (auto* o : objects_)
+	{
+		if (o && o->GetType() == Object::OBJECT_TYPE::BUTTOM) { buttonObj = o; break; }
+	}
+	tutorial_.AddStep(
+		"ボタン操作の練習：ボタンの近くで Space を押してください。\nボタンを押すと次へ進みます。",
+		[this, buttonObj]() -> bool {
+			if (!buttonObj) return false;
+			VECTOR bpos = buttonObj->GetTransform().pos;
+			VECTOR p1 = player1_->GetTransform().pos;
+			if (VSize(VSub(p1, bpos)) < 180.0f && InputManager::GetInstance().IsTrgDown(KEY_INPUT_SPACE)) return true;
+			VECTOR p2 = player2_->GetTransform().pos;
+			if (VSize(VSub(p2, bpos)) < 180.0f && InputManager::GetInstance().IsTrgDown(KEY_INPUT_SPACE)) return true;
+			return false;
+		}
+	);
+
+	// 最終ステップ: 確認して終了（任意キー）
+	tutorial_.AddStep(
+		"チュートリアル完了：Z / Enter / Space でチュートリアルを終了します。",
+		[]() -> bool {
+			return CheckHitKey(KEY_INPUT_Z) || CheckHitKey(KEY_INPUT_RETURN) || CheckHitKey(KEY_INPUT_SPACE);
+		}
+	);
+
+	// 開始
 	tutorial_.Start();
 }
 
@@ -250,12 +310,9 @@ void TutorialScene::CheckCollisions(void)
 
 void TutorialScene::Update(void)
 {
-	// チュートリアル更新。アクティブならシーン更新を停止する
+	// チュートリアル更新（ゲーム挙動は許可し、プレイヤー操作で条件達成させる）
 	tutorial_.Update();
-	if (tutorial_.IsActive())
-	{
-		return;
-	}
+	// 注意：チュートリアル中もプレイヤー／カメラの Update を行うため early return は行わない
 
 	// シーン遷移
 	auto const& ins = InputManager::GetInstance();
