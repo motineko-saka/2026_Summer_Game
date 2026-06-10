@@ -1,15 +1,15 @@
-#include "Object.h"
-#include "../../../Utility/AsoUtility.h"
-#include "../../../Manager/ResourceManager.h"
-#include "../../../Manager/Resource.h"
-#include "../../../Manager/SceneManager.h"
-#include "../../../Application.h"
-#include "../../Collider/ColliderLine.h"
-#include "../../Collider/ColliderCapsule.h"
-#include "../../Collider/ColliderModel.h"
-#include "../../../Manager/InputManager.h"
+#include "ObjectBase.h"
+#include "../../../../Utility/AsoUtility.h"
+#include "../../../../Manager/ResourceManager.h"
+#include "../../../../Manager/Resource.h"
+#include "../../../../Manager/SceneManager.h"
+#include "../../../../Application.h"
+#include "../../../Collider/ColliderLine.h"
+#include "../../../Collider/ColliderCapsule.h"
+#include "../../../Collider/ColliderModel.h"
+#include "../../../../Manager/InputManager.h"
 
-Object::Object(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type)
+ObjectBase::ObjectBase(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type)
 {
 	isAnswerPosition_ = false;
 	ansVec_ = ansVec;
@@ -19,27 +19,27 @@ Object::Object(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type)
 	pushPow_ = { 0.0f, 0.0f, 0.0f };
 }
 
-Object::~Object()
+ObjectBase::~ObjectBase()
 {
 }
 
-void Object::Draw(void)
+void ObjectBase::Draw(void)
 {
 	ActorBase::Draw();
 }
 
-void Object::Release(void)
+void ObjectBase::Release(void)
 {
 	ActorBase::Release();
 }
 
-void Object::Push(const VECTOR& direction, float speed)
+void ObjectBase::Push(const VECTOR& direction, float speed)
 {
 	// ‰Ÿ‚·—Í‚ð‰ÁŽZ
 	pushPow_ = VAdd(pushPow_, VScale(direction, speed));
 }
 
-void Object::InitLoad(void)
+void ObjectBase::InitLoad(void)
 {
 	switch (type_)
 	{
@@ -63,7 +63,7 @@ void Object::InitLoad(void)
 	}
 }
 
-void Object::InitTransform(void)
+void ObjectBase::InitTransform(void)
 {
 	// ƒ‚ƒfƒ‹‚ÌˆÊ’u
 	transform_.scl = defaultScale_;
@@ -75,7 +75,7 @@ void Object::InitTransform(void)
 	transform_.Update();
 }
 
-void Object::InitCollider(void)
+void ObjectBase::InitCollider(void)
 {
 	MV1SetupCollInfo(transform_.modelId);
 
@@ -97,16 +97,16 @@ void Object::InitCollider(void)
 		COL_CAPSULE_RADIUS);
 	ownColliders_.emplace(static_cast<int>(COLLIDER_TYPE::CAPSULE), colCapsule);
 }
-void Object::InitAnimation(void)
+void ObjectBase::InitAnimation(void)
 {
 	animController_ = new AnimationController(transform_.modelId);
 }
 
-void Object::InitPost(void)
+void ObjectBase::InitPost(void)
 {
 }
 
-void Object::UpdateProcess(void)
+void ObjectBase::UpdateProcess(void)
 {
 	if (InputManager::GetInstance().IsTrgDown(KEY_INPUT_C))
 	{
@@ -150,11 +150,11 @@ void Object::UpdateProcess(void)
 	}
 }
 
-void Object::UpdateProcessPost(void)
+void ObjectBase::UpdateProcessPost(void)
 {
 }
 
-void Object::CheckAnswer(void)
+void ObjectBase::CheckAnswer(void)
 {
 	bool isHit = false;
 

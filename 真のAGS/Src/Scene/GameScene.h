@@ -9,11 +9,18 @@ class SkyDome;
 class Player;
 class EnemyManager;
 class Camera;
-class Object;
+class ObjectBase;
 class Wall;
+
+
 
 class GameScene : public SceneBase
 {
+	struct PlayerS
+	{
+		Player* player_;
+		Camera* camera_;
+	};
 
 public:
 	// コンストラクタ
@@ -55,12 +62,14 @@ private:
 	Player* player2_;
 	Camera* camera2_;
 
+	std::vector<PlayerS> players_;
+
 	//EnemyManager* enemyManager_;
 
 	std::unique_ptr<Wall> wall_;
 
 	// 複数のオブジェクトを管理
-	std::vector<Object*> objects_;
+	std::vector<ObjectBase*> objects_;
 
 	// 画面分割用のスクリーンハンドル
 	int screenHandle1_;

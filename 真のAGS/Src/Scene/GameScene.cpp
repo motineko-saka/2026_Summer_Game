@@ -10,7 +10,7 @@
 #include "../Object/Actor/SkyDome.h"
 #include "../Object/Actor/Charactor/Player.h"
 #include "../Object/Actor/Charactor/Enemy/EnemyRat.h"
-#include "../Object/Actor/Charactor/Object.h"
+#include "../Object/Actor/Charactor/GameObject/ObjectBase.h"
 #include "../Object/Actor/Wall.h"
 #include "../Object/Collider/ColliderBase.h"
 #include "GameScene.h"
@@ -92,7 +92,7 @@ void GameScene::Init(void)
 	// オブジェクト作成（複数）
 	objects_.reserve(4);
 
-	objects_.push_back(new Object(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[0], Object::OBJECT_TYPE::DEFAULT));
+	objects_.push_back(new ObjectBase(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::DEFAULT));
 	objects_.back()->Init();
 
 	objects_.back()->SetPosition({ 1260.0f, -720.0f, -50.5f });
@@ -101,17 +101,17 @@ void GameScene::Init(void)
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 
 
-	objects_.push_back(new Object(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], Object::OBJECT_TYPE::WBOX));
+	objects_.push_back(new ObjectBase(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::WBOX));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ 1260.0f, -720.0f, -50.5f });
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 
-	objects_.push_back(new Object(GameScene::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[2], Object::OBJECT_TYPE::AKEG));
+	objects_.push_back(new ObjectBase(GameScene::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[2], ObjectBase::OBJECT_TYPE::AKEG));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ -1260.0f, -720.0f, -50.5f });
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 
-	objects_.push_back(new Object(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[3], Object::OBJECT_TYPE::BUTTOM));
+	objects_.push_back(new ObjectBase(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[3], ObjectBase::OBJECT_TYPE::BUTTOM));
 	objects_.back()->Init();
 
 	objects_.back()->SetPosition({ 1000.0f, -720.0f, -50.5f });
@@ -153,7 +153,7 @@ void GameScene::Init(void)
 	// 各オブジェクトの衝突コライダをプレイヤーに登録
 	for (auto* obj : objects_)
 	{
-		const ColliderBase* objCaps = obj->GetOwnCollider(static_cast<int>(Object::COLLIDER_TYPE::CAPSULE));
+		const ColliderBase* objCaps = obj->GetOwnCollider(static_cast<int>(ObjectBase::COLLIDER_TYPE::CAPSULE));
 		if (objCaps) player1_->AddHitCollider(objCaps);
 		if (objCaps) player2_->AddHitCollider(objCaps);
 	}
@@ -190,11 +190,12 @@ void GameScene::CheckCollisions(void)
 		VECTOR objectPos = obj->GetTransform().pos;
 
 		// ボタンタイプの場合は専用処理
-		if (obj->GetType() == Object::OBJECT_TYPE::BUTTOM)
+		if (obj->GetType() == ObjectBase::OBJECT_TYPE::BUTTOM)
 		{
 			bool isNearButton = false;
 
 			// プレイヤー1との距離チェック
+
 			VECTOR player1Pos = player1_->GetTransform().pos;
 			float distance1 = VSize(VSub(player1Pos, objectPos));
 			if (distance1 < 180.0f)
@@ -265,7 +266,7 @@ void GameScene::CheckCollisions(void)
 			if (obj == nullptr) continue;
 
 			// ボタンタイプのオブジェクトのみ処理
-			if (obj->GetType() == Object::OBJECT_TYPE::BUTTOM)
+			if (obj->GetType() == ObjectBase::OBJECT_TYPE::BUTTOM)
 			{
 				VECTOR objectPos = obj->GetTransform().pos;
 

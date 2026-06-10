@@ -10,11 +10,11 @@
 #include "../Object/Actor/SkyDome.h"
 #include "../Object/Actor/Charactor/Player.h"
 #include "../Object/Actor/Charactor/Enemy/EnemyRat.h"
-#include "../Object/Actor/Charactor/Object.h"
+#include "../Object/Actor/Charactor/GameObject/ObjectBase.h"
 #include "../Object/Actor/Wall.h"
 #include "../Object/Collider/ColliderBase.h"
 #include "TutorialScene.h"
-#include "../UI/Tutorial.h" // 追加（ヘッダでも追加済み）
+#include "../UI/Tutorial.h" 
 
 TutorialScene::TutorialScene(void)
 	:
@@ -52,27 +52,39 @@ void TutorialScene::Init(void)
 	screenHandle2_ = MakeScreen(halfWidth, screenHeight_, TRUE);
 
 	// カメラ1の作成(プレイヤー1用)
-	camera1_ = new Camera();
-	camera1_->Init();
+	for (int i = 0; i < 2; i++)
+	{
+		players_[i].camera_ = new Camera();
+		players_[i].camera_->Init();
+		players_[i].player_ = new Player(Player::PLAYER_NO::PLAYER1, *players_[i].camera_);
+		players_[i].player_->Init();
 
-	// カメラ2の作成(プレイヤー2用)
-	camera2_ = new Camera();
-	camera2_->Init();
+		players_[i].camera_->SetFollow(&players_[i].player_->GetTransform());
+		players_[i].camera_->ChangeMode(Camera::MODE::FOLLOW);
+	}
 
-	// プレイヤー1
-	player1_ = new Player(Player::PLAYER_NO::PLAYER1, *camera1_);
-	player1_->Init();
+	//// カメラ1の作成(プレイヤー1用)
+	//camera1_ = new Camera();
+	//camera1_->Init();
 
-	camera1_->SetFollow(&player1_->GetTransform());
-	camera1_->ChangeMode(Camera::MODE::FOLLOW);
+	//// カメラ2の作成(プレイヤー2用)
+	//camera2_ = new Camera();
+	//camera2_->Init();
+
+	//// プレイヤー1
+	//player1_ = new Player(Player::PLAYER_NO::PLAYER1, *camera1_);
+	//player1_->Init();
+
+	//camera1_->SetFollow(&player1_->GetTransform());
+	//camera1_->ChangeMode(Camera::MODE::FOLLOW);
 
 
-	// プレイヤー2(プレイヤー1を複製)
-	player2_ = new Player(Player::PLAYER_NO::PLAYER2, *camera2_);
-	player2_->Init();
+	//// プレイヤー2(プレイヤー1を複製)
+	//player2_ = new Player(Player::PLAYER_NO::PLAYER2, *camera2_);
+	//player2_->Init();
 
-	camera2_->SetFollow(&player2_->GetTransform());
-	camera2_->ChangeMode(Camera::MODE::FOLLOW);
+	//camera2_->SetFollow(&player2_->GetTransform());
+	//camera2_->ChangeMode(Camera::MODE::FOLLOW);
 
 	// ステージ
 	stageManager_ = new StageManager();
@@ -88,23 +100,23 @@ void TutorialScene::Init(void)
 	// オブジェクト作成（複数）
 	objects_.reserve(4);
 
-	objects_.push_back(new Object(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[0], Object::OBJECT_TYPE::DEFAULT));
+	objects_.push_back(new ObjectBase(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::DEFAULT));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ 1260.0f, -720.0f, -50.5f });
 	objects_.back()->SetPosition({ 1260.0f, -500.0f, -50.5f });
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 
-	objects_.push_back(new Object(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], Object::OBJECT_TYPE::WBOX));
+	objects_.push_back(new ObjectBase(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::WBOX));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ 1260.0f, -720.0f, -50.5f });
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 
-	objects_.push_back(new Object(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[2], Object::OBJECT_TYPE::AKEG));
+	objects_.push_back(new ObjectBase(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[2], ObjectBase::OBJECT_TYPE::AKEG));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ -1260.0f, -720.0f, -50.5f });
-	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
+	objects_.back()->SetScale({ 0.5, 0.5, 0.5 });
 
-	objects_.push_back(new Object(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[3], Object::OBJECT_TYPE::BUTTOM));
+	objects_.push_back(new ObjectBase(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[3], ObjectBase::OBJECT_TYPE::BUTTOM));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ 0.0f, 80.0f, -50.0f });
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
@@ -133,7 +145,7 @@ void TutorialScene::Init(void)
 	// 各オブジェクトの衝突コライダをプレイヤーに登録
 	for (auto* obj : objects_)
 	{
-		const ColliderBase* objCaps = obj->GetOwnCollider(static_cast<int>(Object::COLLIDER_TYPE::CAPSULE));
+		const ColliderBase* objCaps = obj->GetOwnCollider(static_cast<int>(ObjectBase::COLLIDER_TYPE::CAPSULE));
 		if (objCaps) player1_->AddHitCollider(objCaps);
 		if (objCaps) player2_->AddHitCollider(objCaps);
 	}
@@ -160,7 +172,7 @@ void TutorialScene::Init(void)
 	tutorial_.Init();
 	tutorial_.ClearSteps();
 
-	// プレイヤー1 の初期位置をキャプチャ（移動判定用）
+	// プレイヤー1 の初期位置をキャプチャ
 	const VECTOR p1StartPos = player1_->GetTransform().pos;
 
 	// ステップ1: 移動（位置変化で判定）
@@ -169,11 +181,11 @@ void TutorialScene::Init(void)
 		[this, p1StartPos]() -> bool {
 			VECTOR cur = player1_->GetTransform().pos;
 			float moved = VSize(VSub(cur, p1StartPos));
-			return moved > 1000.0f; 
+			return moved > moveStepe_;
 		}
 	);
 
-	// ステップ2: 視点操作（矢印キーで視点）
+	// ステップ2: 視点操作
 	tutorial_.AddStep(
 		"視点操作の練習：矢印キーで視点を動かしてください。\n視点操作を行うと次へ進みます。",
 		[]() -> bool {
@@ -182,7 +194,7 @@ void TutorialScene::Init(void)
 		}
 	);
 
-	// ステップ3: キャラ切替（Tab または 右クリックで切替）
+	// ステップ3: キャラ切替
 	tutorial_.AddStep(
 		"キャラクター切替の練習：Tab または 右クリックで操作キャラを切り替えてください。\n切替操作を行うと次へ進みます。",
 		[]() -> bool {
@@ -191,11 +203,29 @@ void TutorialScene::Init(void)
 		}
 	);
 
+	// ステップ4: オブジェクト操作（オブジェクトに近づいて E）
+	tutorial_.AddStep(
+		"オブジェクト操作の練習：オブジェクトに近づいて E を押してください。\nオブジェクトを押すと次へ進みます。",
+		[this]() -> bool {
+			for (auto* obj : objects_)
+			{
+				if (obj == nullptr) continue;
+				VECTOR objPos = obj->GetTransform().pos;
+				VECTOR p1Pos = player1_->GetTransform().pos;
+				float dist1 = VSize(VSub(p1Pos, objPos));
+				if (dist1 < 180.0f && InputManager::GetInstance().IsTrgDown(KEY_INPUT_E)) return true;
+				VECTOR p2Pos = player2_->GetTransform().pos;
+				float dist2 = VSize(VSub(p2Pos, objPos));
+				if (dist2 < 180.0f && InputManager::GetInstance().IsTrgDown(KEY_INPUT_E)) return true;
+			}
+			return false;
+		}
+	);
 	// ステップ4: ボタン操作（ボタン近くで Space）
-	Object* buttonObj = nullptr;
+	ObjectBase* buttonObj = nullptr;
 	for (auto* o : objects_)
 	{
-		if (o && o->GetType() == Object::OBJECT_TYPE::BUTTOM) { buttonObj = o; break; }
+		if (o && o->GetType() == ObjectBase::OBJECT_TYPE::BUTTOM) { buttonObj = o; break; }
 	}
 	tutorial_.AddStep(
 		"ボタン操作の練習：ボタンの近くで Space を押してください。\nボタンを押すと次へ進みます。",
@@ -210,7 +240,7 @@ void TutorialScene::Init(void)
 		}
 	);
 
-	// 最終ステップ: 確認して終了（任意キー）
+	// 最終ステップ: 確認して終了
 	tutorial_.AddStep(
 		"チュートリアル完了：Z / Enter / Space でチュートリアルを終了します。",
 		[]() -> bool {
@@ -235,7 +265,7 @@ void TutorialScene::CheckCollisions(void)
 		VECTOR objectPos = obj->GetTransform().pos;
 
 		// ボタンタイプの場合は専用処理
-		if (obj->GetType() == Object::OBJECT_TYPE::BUTTOM)
+		if (obj->GetType() == ObjectBase::OBJECT_TYPE::BUTTOM)
 		{
 			bool isNearButton = false;
 
@@ -257,7 +287,6 @@ void TutorialScene::CheckCollisions(void)
 			{
 				obj->SetButtomPushed(true);
 			}
-
 			continue;
 		}
 
@@ -276,7 +305,7 @@ void TutorialScene::CheckCollisions(void)
 		bool hit2 = (distance2 < 180.0f);
 		if (hit2)
 		{
-			// currently unused
+			isPlayer2HitObject_ = true;
 		}
 	}
 
@@ -286,7 +315,7 @@ void TutorialScene::CheckCollisions(void)
 		{
 			if (obj == nullptr) continue;
 
-			if (obj->GetType() == Object::OBJECT_TYPE::BUTTOM)
+			if (obj->GetType() == ObjectBase::OBJECT_TYPE::BUTTOM)
 			{
 				VECTOR objectPos = obj->GetTransform().pos;
 
@@ -310,7 +339,7 @@ void TutorialScene::CheckCollisions(void)
 
 void TutorialScene::Update(void)
 {
-	// チュートリアル更新（ゲーム挙動は許可し、プレイヤー操作で条件達成させる）
+	// チュートリアル更新
 	tutorial_.Update();
 	// 注意：チュートリアル中もプレイヤー／カメラの Update を行うため early return は行わない
 
