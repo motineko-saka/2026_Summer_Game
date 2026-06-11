@@ -51,6 +51,18 @@ void GameScene::Init(void)
 	screenHandle2_ = MakeScreen(halfWidth, screenHeight_, TRUE);
 
 	// カメラ1の作成(プレイヤー1用)
+	for (int i = 0; i < 2; i++)
+	{
+		players_.resize(2);
+		players_[i].camera_ = new Camera();
+		players_[i].camera_->Init();
+		players_[i].player_ = new Player(Player::PLAYER_NO::PLAYER1, *players_[i].camera_);
+		players_[i].player_->Init();
+
+		players_[i].camera_->SetFollow(&players_[i].player_->GetTransform());
+		players_[i].camera_->ChangeMode(Camera::MODE::FOLLOW);
+	}
+
 	camera1_ = new Camera();
 	camera1_->Init();
 
@@ -90,7 +102,7 @@ void GameScene::Init(void)
 	//enemyManager_->Init();
 
 	// オブジェクト作成（複数）
-	objects_.reserve(4);
+	objects_.reserve(5);
 
 	objects_.push_back(new Object(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[0], Object::OBJECT_TYPE::DEFAULT));
 	objects_.back()->Init();
@@ -113,12 +125,17 @@ void GameScene::Init(void)
 
 	objects_.push_back(new Object(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[3], Object::OBJECT_TYPE::BUTTOM));
 	objects_.back()->Init();
-
 	objects_.back()->SetPosition({ 1000.0f, -720.0f, -50.5f });
-	//objects_.back()->SetPosition({ 0.0f, 80.0f, -50.0f });
-
-	objects_.back()->SetPosition({ 1260.0f, -720.0f, -50.5f });
+	//objects_.back()->SetPosition({ 1260.0f, -720.0f, -50.5f });
 	objects_.back()->SetPosition({ 0.0f, 80.0f, -50.0f });
+	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
+
+	objects_.push_back(new Object(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], Object::OBJECT_TYPE::PUSH_BUTTON));
+	objects_.back()->Init();
+	objects_.back()->SetPosition({ -900.0f, -500.0f, 900.5f });
+	//objects_.back()->SetPosition({500.0f, -720.0f, -50.5f });
+	//objects_.back()->SetPosition({ 1260.0f, -720.0f, -50.5f });
+	//objects_.back()->SetPosition({ 0.0f, 80.0f, -50.0f });
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 
 
@@ -164,6 +181,11 @@ void GameScene::Init(void)
 	player1_->AddHitCollider(wallCollider);
 	player2_->AddHitCollider(wallCollider);
 
+	const ColliderBase* playerCollider =
+		player1_->GetOwnCollider(static_cast<int>(Player::COLLIDER_TYPE::LINE));
+
+	objects_[4]->AddHitCollider(playerCollider);
+
 	// 衝突フラグの初期化
 	isPlayer1HitObject_ = false;
 	isPlayer2HitObject_ = false;
@@ -188,6 +210,11 @@ void GameScene::CheckCollisions(void)
 		if (obj == nullptr) continue;
 
 		VECTOR objectPos = obj->GetTransform().pos;
+
+		if (obj->isPushButtom())
+		{
+			int a = 0;
+		}
 
 		// ボタンタイプの場合は専用処理
 		if (obj->GetType() == Object::OBJECT_TYPE::BUTTOM)
@@ -219,16 +246,6 @@ void GameScene::CheckCollisions(void)
 			}
 
 			continue;
-
-			// プレイヤー2も同様にチェック
-			player2Pos = player2_->GetTransform().pos;
-			distance2 = VSize(VSub(player2Pos, objectPos));
-			if (distance2 < 180.0f)
-			{
-				obj->SetButtomPushed(true);
-			}
-
-			continue;
 		}
 
 		// プレイヤー1との距離
@@ -248,7 +265,7 @@ void GameScene::CheckCollisions(void)
 		bool hit2 = (distance2 < 180.0f);
 		if (hit2)
 		{
-			//isPlayer2HitObject_ = true;
+			isPlayer2HitObject_ = true;
 			// プレイヤーからオブジェクトへの方向ベクトル
 			//VECTOR pushDir = VSub(objectPos, player2Pos);
 			//pushDir.y = 0.0f; // Y軸(垂直方向)は無視
@@ -355,6 +372,19 @@ void GameScene::Update(void)
 	for (auto* obj : objects_)
 	{
 		if (obj) obj->Update();
+	}
+
+	// 踏む
+	for (auto* obj : objects_)
+	{
+		if (obj && obj->GetType() == Object::OBJECT_TYPE::PUSH_BUTTON)
+		{
+			if (obj->IsPushButtonPressed())
+			{
+				// ボタンが踏まれたときの処理
+				obj->PushButton();
+			}
+		}
 	}
 
 	// 答えの場所に全てのオブジェクトがあるか判定

@@ -24,6 +24,7 @@ public:
 		AKEG,   
 		SCENE_PROP,
 		BUTTOM,
+		PUSH_BUTTON,
 	};
 
 	// world と種類を指定可能に
@@ -65,6 +66,16 @@ public:
 	// スケール設定/取得
 	void SetScale(const VECTOR& scl) {transform_.scl = scl; transform_.Update(); }
 	VECTOR GetScale() const { return transform_.scl; }
+
+	bool isPushButtom(void) { return isButtomPushed_; }
+
+	void PushButton(void);
+
+	// PUSH_BUTTON が踏まれているか取得
+	bool IsPushButtonPressed(void) const { return isPushButtom_; }
+
+	// PUSH_BUTTON のリセット（次のフレーム判定のため）
+	void ResetPushButton(void) { isPushButtom_ = false; }
 
 protected:
 
@@ -121,13 +132,16 @@ private:
 	VECTOR defaultScale_{ 1.0f, 1.0f, 1.0f };
 
 	// 答えのオブジェクトかどうか
-	bool isAnswerPosition_;
+	bool isAnswerPosition_ = false;
 
 	// つかまれているかどうか 
 	// true:つかまれている false:つかまれていない
-	bool isGrabbed_;
+	bool isGrabbed_ = false;
 
 	bool isButtomPushed_ = false;
+
+	// PUSH_BUTTON が踏まれているか
+	bool isPushButtom_ = false;
 
 	// 設置済みフラグ（true のとき掴めない、動かせない）
 	bool placed_{ false };
