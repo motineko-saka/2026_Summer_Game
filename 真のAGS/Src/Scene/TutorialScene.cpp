@@ -48,20 +48,30 @@ void TutorialScene::Init(void)
 
 	// 分割画面用のスクリーン作成(左右画面)
 	int halfWidth = screenWidth_ / 2;
-	screenHandle1_ = MakeScreen(halfWidth, screenHeight_, TRUE);
-	screenHandle2_ = MakeScreen(halfWidth, screenHeight_, TRUE);
+	screenHandle1_ = MakeScreen(halfWidth, screenHeight_, true);
+	screenHandle2_ = MakeScreen(halfWidth, screenHeight_, true);
 
-	// カメラ1の作成(プレイヤー1用)
+	players_.resize(2);
+
 	for (int i = 0; i < 2; i++)
 	{
 		players_[i].camera_ = new Camera();
 		players_[i].camera_->Init();
-		players_[i].player_ = new Player(Player::PLAYER_NO::PLAYER1, *players_[i].camera_);
+
+		// プレイヤー番号を設定
+		Player::PLAYER_NO pno = (i == 0) ? Player::PLAYER_NO::PLAYER1 : Player::PLAYER_NO::PLAYER2;
+		players_[i].player_ = new Player(pno, *players_[i].camera_);
 		players_[i].player_->Init();
 
 		players_[i].camera_->SetFollow(&players_[i].player_->GetTransform());
 		players_[i].camera_->ChangeMode(Camera::MODE::FOLLOW);
 	}
+
+	// メンバ変数に紐付け
+	player1_ = players_[0].player_;
+	player2_ = players_[1].player_;
+	camera1_ = players_[0].camera_;
+	camera2_ = players_[1].camera_;
 
 	//// カメラ1の作成(プレイヤー1用)
 	//camera1_ = new Camera();

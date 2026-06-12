@@ -47,32 +47,30 @@ void GameScene::Init(void)
 
 	// 分割画面用のスクリーン作成(左右画面)
 	int halfWidth = screenWidth_ / 2;
-	screenHandle1_ = MakeScreen(halfWidth, screenHeight_, TRUE);
-	screenHandle2_ = MakeScreen(halfWidth, screenHeight_, TRUE);
+	screenHandle1_ = MakeScreen(halfWidth, screenHeight_, true);
+	screenHandle2_ = MakeScreen(halfWidth, screenHeight_, true);
 
-	// カメラ1の作成(プレイヤー1用)
-	camera1_ = new Camera();
-	camera1_->Init();
+	players_.resize(2);
 
-	// カメラ2の作成(プレイヤー2用)
-	camera2_ = new Camera();
-	camera2_->Init();
+	for (int i = 0; i < 2; i++)
+	{
+		players_[i].camera_ = new Camera();
+		players_[i].camera_->Init();
 
-	// プレイヤー1
-	player1_ = new Player(Player::PLAYER_NO::PLAYER1, *camera1_);
-	player1_->Init();
+		// プレイヤー番号を設定
+		Player::PLAYER_NO pno = (i == 0) ? Player::PLAYER_NO::PLAYER1 : Player::PLAYER_NO::PLAYER2;
+		players_[i].player_ = new Player(pno, *players_[i].camera_);
+		players_[i].player_->Init();
 
-	camera1_->SetFollow(&player1_->GetTransform());
-	camera1_->ChangeMode(Camera::MODE::FOLLOW);
+		players_[i].camera_->SetFollow(&players_[i].player_->GetTransform());
+		players_[i].camera_->ChangeMode(Camera::MODE::FOLLOW);
+	}
 
-
-	// プレイヤー2(プレイヤー1を複製)
-	player2_ = new Player(Player::PLAYER_NO::PLAYER2, *camera2_);
-	player2_->Init();
-
-	camera2_->SetFollow(&player2_->GetTransform());
-	camera2_->ChangeMode(Camera::MODE::FOLLOW);
-
+	// メンバ変数に紐付け
+	player1_ = players_[0].player_;
+	player2_ = players_[1].player_;
+	camera1_ = players_[0].camera_;
+	camera2_ = players_[1].camera_;
 
 	// ステージ
 	stageManager_ = new StageManager();
