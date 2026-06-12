@@ -93,4 +93,7 @@ private:
 
 	// 衝突判定チェック
 	void CheckCollisions(void);
+
+	// オブジェクトを生成（今は樽だけ）
+	const void MakeNewObject(std::vector<Object*>& newObjects);
 };

@@ -138,52 +138,27 @@ void Object::UpdateProcess(void)
 	// PUSH_BUTTON タイプの場合、プレイヤーが乗っているか判定
 	if (type_ == OBJECT_TYPE::PUSH_BUTTON)
 	{
-		// hitColliders_ に登録されているコライダをチェック
 		for (const auto& hitCol : hitColliders_)
 		{
 			if (hitCol == nullptr) continue;
-
-			// プレイヤーのコライダのみをチェック
 			if (hitCol->GetTag() != ColliderBase::TAG::PLAYER) continue;
 
 			const Transform* playerTransform = hitCol->GetFollow();
 			if (playerTransform == nullptr) continue;
 
-			// プレイヤーの足元から下方への線分を定義
-			// （プレイヤーのコライダから相対位置を計算）
 			VECTOR playerPos = playerTransform->pos;
-			auto distance = 1000;
+			VECTOR diff = VSub(playerPos, transform_.pos);
+			
+			// 3D距離を計算
+			float distance = VSize(diff);
+			const float BUTTON_TRIGGER_DISTANCE = 100.0f; // 適切な値に調整
 
-			if (playerPos.x < transform_.pos.x + distance &&
-				playerPos.x > transform_.pos.x - distance &&
-				playerPos.z < transform_.pos.z + distance &&
-				playerPos.z > transform_.pos.z - distance)
+			if (distance < BUTTON_TRIGGER_DISTANCE)
 			{
-				int a = 0;
-			}
-
-			//playerFootPos.y -= 50.0f; // 足元の高さ
-
-			//// ボタンの上面の高さ範囲
-			//float buttonTopY = transform_.pos.y + 30.0f; // ボタンの上面
-			//float buttonBottomY = transform_.pos.y - 20.0f;
-
-			//// 水平距離でボタンの範囲内か判定
-			//VECTOR diff = VSub(playerTransform->pos, transform_.pos);
-			//float horizDist = sqrtf(diff.x * diff.x + diff.z * diff.z);
-
-			//// プレイヤーの足がボタンの上面より下、ボタンのY範囲にあるか
-			//// 且つ水平距離がボタンのサイズ内か
-			//const float HORIZ_THRESHOLD = 80.0f; // ボタンのサイズに合わせて調整
-			//const float VERT_THRESHOLD = 100.0f; // プレイヤーの足がボタンの高さ範囲内
-
-			/*if (horizDist < HORIZ_THRESHOLD && 
-				playerTransform->pos.y < buttonTopY &&
-				playerTransform->pos.y > (buttonBottomY - VERT_THRESHOLD))
-			{
+				// 踏んだ時の処理
 				isPushButtom_ = true;
 				break;
-			}*/
+			}
 		}
 	}
 
