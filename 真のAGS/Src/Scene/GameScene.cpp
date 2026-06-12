@@ -124,7 +124,7 @@ void GameScene::Init(void)
 	objects_.back()->SetPosition({ -1260.0f, -720.0f, -50.5f });
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 
-	objects_.push_back(new ObjectBase(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[3], ObjectBase::OBJECT_TYPE::BUTTOM));
+	objects_.push_back(new ObjectBase(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[3], ObjectBase::OBJECT_TYPE::BUTTON));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ 1000.0f, -720.0f, -50.5f });
 	//objects_.back()->SetPosition({ 1260.0f, -720.0f, -50.5f });
@@ -207,43 +207,43 @@ void GameScene::CheckCollisions(void)
 
 	std::vector<ObjectBase*> newObjects;  // 新規オブジェクト用
 
-	for (auto* obj : objects_)
+	for (auto& obj : objects_)
 	{
 		if (obj == nullptr) continue;
 
 		VECTOR objectPos = obj->GetTransform().pos;
 
 		// ボタンタイプの場合は専用処理
-		if (obj->GetType() == ObjectBase::OBJECT_TYPE::BUTTOM)
+		if (obj->GetType() == ObjectBase::OBJECT_TYPE::BUTTON)
 		{
-			bool isNearButton = false;
+			ButtonProcess(*obj, newObjects);
+			//bool isNearButton = false;
 
-			// プレイヤー1との距離チェック
+			//// プレイヤー1との距離チェック
+			//VECTOR player1Pos = player1_->GetTransform().pos;
+			//float distance1 = VSize(VSub(player1Pos, objectPos));
+			//if (distance1 < 180.0f)
+			//{
+			//	isNearButton = true;
+			//	// ボタンが押されたときの処理（例：ゲームクリア、ドアが開くなど）
+			//}
 
-			VECTOR player1Pos = player1_->GetTransform().pos;
-			float distance1 = VSize(VSub(player1Pos, objectPos));
-			if (distance1 < 180.0f)
-			{
-				isNearButton = true;
-				// ボタンが押されたときの処理（例：ゲームクリア、ドアが開くなど）
-			}
+			//// プレイヤー2も同様にチェック
+			//VECTOR player2Pos = player2_->GetTransform().pos;
+			//float distance2 = VSize(VSub(player2Pos, objectPos));
+			//if (distance2 < 180.0f)
+			//{
+			//	isNearButton = true;
+			//}
 
-			// プレイヤー2も同様にチェック
-			VECTOR player2Pos = player2_->GetTransform().pos;
-			float distance2 = VSize(VSub(player2Pos, objectPos));
-			if (distance2 < 180.0f)
-			{
-				isNearButton = true;
-			}
-
-			// ボタンの近くにいて、スペースキーが押されたら
-			if (isNearButton && InputManager::GetInstance().IsTrgDown(KEY_INPUT_SPACE))
-			{
-				obj->SetButtomPushed(true);
-				// 直接追加せず、一時リストに格納
-				ObjectBase* newObj = new ObjectBase(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::AKEG);
-				newObjects.push_back(newObj);
-			}
+			//// ボタンの近くにいて、スペースキーが押されたら
+			//if (isNearButton && InputManager::GetInstance().IsTrgDown(KEY_INPUT_SPACE))
+			//{
+			//	obj->SetButtomPushed(true);
+			//	// 直接追加せず、一時リストに格納
+			//	ObjectBase* newObj = new ObjectBase(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::AKEG);
+			//	newObjects.push_back(newObj);
+			//}
 			continue;
 		}
 
@@ -279,6 +279,39 @@ void GameScene::CheckCollisions(void)
 	MakeNewObject(newObjects);
 }
 
+const void GameScene::ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*>& newObjects)
+{
+	VECTOR objectPos = obj.GetTransform().pos;
+
+	bool isNearButton = false;
+
+	// プレイヤー1との距離チェック
+	VECTOR player1Pos = player1_->GetTransform().pos;
+	float distance1 = VSize(VSub(player1Pos, objectPos));
+	if (distance1 < 180.0f)
+	{
+		isNearButton = true;
+		// ボタンが押されたときの処理（例：ゲームクリア、ドアが開くなど）
+	}
+
+	// プレイヤー2も同様にチェック
+	VECTOR player2Pos = player2_->GetTransform().pos;
+	float distance2 = VSize(VSub(player2Pos, objectPos));
+	if (distance2 < 180.0f)
+	{
+		isNearButton = true;
+	}
+
+	// ボタンの近くにいて、スペースキーが押されたら
+	if (isNearButton && InputManager::GetInstance().IsTrgDown(KEY_INPUT_SPACE))
+	{
+		obj.SetButtomPushed(true);
+		// 直接追加せず、一時リストに格納
+		ObjectBase* newObj = new ObjectBase(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::AKEG);
+		newObjects.push_back(newObj);
+	}
+}
+
 const void GameScene::MakeNewObject(std::vector<ObjectBase*>& newObjects)
 {
 	for (auto* newObj : newObjects)
@@ -288,12 +321,14 @@ const void GameScene::MakeNewObject(std::vector<ObjectBase*>& newObjects)
 		newObj->SetScale({ 3.0, 3.0, 3.0 });
 		for (const auto& stage : stageManager_->GetStage())
 		{
-			// ステージモデルのコライダーを全オブジェクトに登録
+			// ステージモデルのコライダーをオブジェクトに登録
 			const ColliderBase* stageCollider =
 				stage->GetOwnCollider(static_cast<int>(Stage::COLLIDER_TYPE::MODEL));
+
+			newObj->AddHitCollider(stageCollider);
 		}
 
-		// 各オブジェクトの衝突コライダをプレイヤーに登録
+		// オブジェクトの衝突コライダをプレイヤーに登録
 		const ColliderBase* objCaps = newObj->GetOwnCollider(static_cast<int>(ObjectBase::COLLIDER_TYPE::CAPSULE));
 		if (objCaps) player1_->AddHitCollider(objCaps);
 		if (objCaps) player2_->AddHitCollider(objCaps);

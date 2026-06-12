@@ -1,5 +1,5 @@
 #include "Button.h"
-void Botane::ButtonProcess(void)
+void Button::ButtonProcess(void)
 {
 	// 
 }

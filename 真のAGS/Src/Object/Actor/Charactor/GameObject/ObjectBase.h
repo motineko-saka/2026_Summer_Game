@@ -13,7 +13,7 @@ public:
 		WBOX,
 		AKEG,
 		SCENE_PROP,
-		BUTTOM,
+		BUTTON,
 		PUSH_BUTTON,
 	};
 
@@ -25,9 +25,9 @@ public:
 	void Draw(void)override;
 	void Release(void)override;
 
-	SceneBase::WORLD GetViewWorld(void) { return viewWorld_; }
+	SceneBase::WORLD GetViewWorld(void) const{ return viewWorld_; }
 
-	SceneBase::WORLD GetWorld(void) { return world_; }
+	SceneBase::WORLD GetWorld(void) const{ return world_; }
 
 	void SetViewWorld(SceneBase::WORLD world) { viewWorld_ = world; }
 
@@ -57,7 +57,7 @@ public:
 	void SetScale(const VECTOR& scl) { transform_.scl = scl; transform_.Update(); }
 	VECTOR GetScale() const { return transform_.scl; }
 
-	bool isPushButtom(void) { return isButtomPushed_; }
+	bool isPushButtom(void) const{ return isButtomPushed_; }
 
 	void PushButton(void);
 

@@ -1,9 +1,9 @@
 #pragma once
 #include "ObjectBase.h"
 
-class ObjectBase : public ObjectBase
+class Object : public ObjectBase
 {
 public:
-	using ObjectBase::ObjectBase;
-	virtual ~ObjectBase() override = default;
+	//using ObjectBase::ObjectBase;
+	virtual ~Object() override = default;
 };

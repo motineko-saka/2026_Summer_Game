@@ -1,7 +1,7 @@
 #pragma once
 #include "ObjectBase.h"
 
-class Botane : public ObjectBase
+class Button : public ObjectBase
 {
 public:
 	void ButtonProcess(void) override;

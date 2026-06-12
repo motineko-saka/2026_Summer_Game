@@ -126,7 +126,7 @@ void TutorialScene::Init(void)
 	objects_.back()->SetPosition({ -1260.0f, -720.0f, -50.5f });
 	objects_.back()->SetScale({ 0.5, 0.5, 0.5 });
 
-	objects_.push_back(new ObjectBase(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[3], ObjectBase::OBJECT_TYPE::BUTTOM));
+	objects_.push_back(new ObjectBase(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[3], ObjectBase::OBJECT_TYPE::BUTTON));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ 0.0f, 80.0f, -50.0f });
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
@@ -235,7 +235,7 @@ void TutorialScene::Init(void)
 	ObjectBase* buttonObj = nullptr;
 	for (auto* o : objects_)
 	{
-		if (o && o->GetType() == ObjectBase::OBJECT_TYPE::BUTTOM) { buttonObj = o; break; }
+		if (o && o->GetType() == ObjectBase::OBJECT_TYPE::BUTTON) { buttonObj = o; break; }
 	}
 	tutorial_.AddStep(
 		"ボタン操作の練習：ボタンの近くで Space を押してください。\nボタンを押すと次へ進みます。",
@@ -275,7 +275,7 @@ void TutorialScene::CheckCollisions(void)
 		VECTOR objectPos = obj->GetTransform().pos;
 
 		// ボタンタイプの場合は専用処理
-		if (obj->GetType() == ObjectBase::OBJECT_TYPE::BUTTOM)
+		if (obj->GetType() == ObjectBase::OBJECT_TYPE::BUTTON)
 		{
 			bool isNearButton = false;
 
@@ -325,7 +325,7 @@ void TutorialScene::CheckCollisions(void)
 		{
 			if (obj == nullptr) continue;
 
-			if (obj->GetType() == ObjectBase::OBJECT_TYPE::BUTTOM)
+			if (obj->GetType() == ObjectBase::OBJECT_TYPE::BUTTON)
 			{
 				VECTOR objectPos = obj->GetTransform().pos;
 
