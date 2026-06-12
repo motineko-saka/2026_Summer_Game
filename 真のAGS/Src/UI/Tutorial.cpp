@@ -64,7 +64,7 @@ void Tutorial::Update()
 {
 	if (!active_) return;
 
-	// アニメーションカウンタ更新（描画で使用）
+	// アニメーションカウンタ更新
 	++animCounter_;
 	if (inputDelay_ > 0) --inputDelay_;
 
@@ -74,7 +74,7 @@ void Tutorial::Update()
 	bool ready = false;
 	if (curStep.condition)
 	{
-		// 条件チェック（描画でも使うため副作用を避ける設計が望ましい）
+		// 条件チェック
 		ready = curStep.condition();
 	}
 	else
@@ -165,11 +165,11 @@ void Tutorial::Draw() const
 	const auto& curStep = steps_[currentIndex_];
 	if (curStep.condition)
 	{
-		// 条件関数は副作用を起こさない想定で呼ぶ（安全のため設計注意）
+		// 条件関数は副作用を起こさない想定で呼ぶ
 		stepReady = curStep.condition();
 	}
 
-	// プログレスバーの塗り（色をゆらがせる）
+	// プログレスバーの塗り
 	float t = animCounter_ * 0.06f;
 	int r = static_cast<int>(160 + 40.0f * std::sin(t));
 	int g = static_cast<int>(200 + 20.0f * std::sin(t * 0.9f));

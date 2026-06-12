@@ -53,7 +53,7 @@ void ResourceManager::Init(void)
 
 	// ステージモデル
 	res = new RES(RES_T::MODEL, PATH_MDL + "Stage/Stage.mv1");
-	res = new RES(RES_T::MODEL, PATH_MDL + "Stage/野本アレン.mv1");
+	res = new RES(RES_T::MODEL, PATH_MDL + "Stage/NOMOTOAREN 1.mv1");
 	resourcesMap_.emplace(SRC::MAIN_STAGE, res);
 
 	// スカイドーム

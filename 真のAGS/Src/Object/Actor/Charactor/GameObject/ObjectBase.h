@@ -1,35 +1,25 @@
 #pragma once
 #include <DxLib.h>
-#include "../Charactor/CharactorBase.h"
-#include "../../../Scene/SceneBase.h"
+#include "../../Charactor/CharactorBase.h"
+#include "../../../../Scene/SceneBase.h"
 
-class Object : public CharactorBase
+class ObjectBase : public CharactorBase
 {
 public:
-	// 衝突判定種別
-	enum class COLLIDER_TYPE
-	{
-		LINE,
-		MODEL,
-		CAPSULE,
-		MAX,
-		VIEW_RANGE,
-	};
-
 	// オブジェクトの種類
 	enum class OBJECT_TYPE
 	{
-		DEFAULT,   
-		WBOX,    
-		AKEG,   
+		DEFAULT,
+		WBOX,
+		AKEG,
 		SCENE_PROP,
 		BUTTOM,
 		PUSH_BUTTON,
 	};
 
 	// world と種類を指定可能に
-	Object(SceneBase::WORLD world,VECTOR ansVec, OBJECT_TYPE type = OBJECT_TYPE::DEFAULT);
-	virtual ~Object(void);
+	ObjectBase(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type = OBJECT_TYPE::DEFAULT);
+	virtual ~ObjectBase(void);
 
 	//void Update(void)override;
 	void Draw(void)override;
@@ -64,7 +54,7 @@ public:
 	bool IsAnswerPosition() const { return isAnswerPosition_; }
 
 	// スケール設定/取得
-	void SetScale(const VECTOR& scl) {transform_.scl = scl; transform_.Update(); }
+	void SetScale(const VECTOR& scl) { transform_.scl = scl; transform_.Update(); }
 	VECTOR GetScale() const { return transform_.scl; }
 
 	bool isPushButtom(void) { return isButtomPushed_; }
@@ -98,6 +88,8 @@ protected:
 
 	void UpdateProcessPost(void) override;
 
+	// ボタンの処理
+	virtual void ButtonProcess(void) {};
 private:
 	// 衝突判定用ライン開始
 	static constexpr VECTOR COL_LINE_START_LOCAL_POS = { 0.0f, 80.0f, 0.0f };

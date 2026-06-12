@@ -10,7 +10,7 @@
 #include "../Object/Actor/SkyDome.h"
 #include "../Object/Actor/Charactor/Player.h"
 #include "../Object/Actor/Charactor/Enemy/EnemyRat.h"
-#include "../Object/Actor/Charactor/Object.h"
+#include "../Object/Actor/Charactor/GameObject/ObjectBase.h"
 #include "../Object/Actor/Wall.h"
 #include "../Object/Collider/ColliderBase.h"
 #include "GameScene.h"
@@ -47,44 +47,45 @@ void GameScene::Init(void)
 
 	// 分割画面用のスクリーン作成(左右画面)
 	int halfWidth = screenWidth_ / 2;
-	screenHandle1_ = MakeScreen(halfWidth, screenHeight_, TRUE);
-	screenHandle2_ = MakeScreen(halfWidth, screenHeight_, TRUE);
+	screenHandle1_ = MakeScreen(halfWidth, screenHeight_, true);
+	screenHandle2_ = MakeScreen(halfWidth, screenHeight_, true);
 
-	// カメラ1の作成(プレイヤー1用)
+	//// カメラ1の作成(プレイヤー1用)
+	//for (int i = 0; i < 2; i++)
+	//{
+	//	players_.resize(2);
+	//	players_[i].camera_ = new Camera();
+	//	players_[i].camera_->Init();
+	//	players_[i].player_ = new Player(Player::PLAYER_NO::PLAYER1, *players_[i].camera_);
+	//	players_[i].player_->Init();
+
+	//	players_[i].camera_->SetFollow(&players_[i].player_->GetTransform());
+	//	players_[i].camera_->ChangeMode(Camera::MODE::FOLLOW);
+	//}
+
+	//camera1_ = new Camera();
+	//camera1_->Init();
+	players_.resize(2);
+
 	for (int i = 0; i < 2; i++)
 	{
-		players_.resize(2);
 		players_[i].camera_ = new Camera();
 		players_[i].camera_->Init();
-		players_[i].player_ = new Player(Player::PLAYER_NO::PLAYER1, *players_[i].camera_);
+
+		// プレイヤー番号を設定
+		Player::PLAYER_NO pno = (i == 0) ? Player::PLAYER_NO::PLAYER1 : Player::PLAYER_NO::PLAYER2;
+		players_[i].player_ = new Player(pno, *players_[i].camera_);
 		players_[i].player_->Init();
 
 		players_[i].camera_->SetFollow(&players_[i].player_->GetTransform());
 		players_[i].camera_->ChangeMode(Camera::MODE::FOLLOW);
 	}
 
-	camera1_ = new Camera();
-	camera1_->Init();
-
-	// カメラ2の作成(プレイヤー2用)
-	camera2_ = new Camera();
-	camera2_->Init();
-
-	// プレイヤー1
-	player1_ = new Player(Player::PLAYER_NO::PLAYER1, *camera1_);
-	player1_->Init();
-
-	camera1_->SetFollow(&player1_->GetTransform());
-	camera1_->ChangeMode(Camera::MODE::FOLLOW);
-
-
-	// プレイヤー2(プレイヤー1を複製)
-	player2_ = new Player(Player::PLAYER_NO::PLAYER2, *camera2_);
-	player2_->Init();
-
-	camera2_->SetFollow(&player2_->GetTransform());
-	camera2_->ChangeMode(Camera::MODE::FOLLOW);
-
+	// メンバ変数に紐付け
+	player1_ = players_[0].player_;
+	player2_ = players_[1].player_;
+	camera1_ = players_[0].camera_;
+	camera2_ = players_[1].camera_;
 
 	// ステージ
 	stageManager_ = new StageManager();
@@ -104,7 +105,7 @@ void GameScene::Init(void)
 	// オブジェクト作成（複数）
 	objects_.reserve(5);
 
-	objects_.push_back(new Object(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[0], Object::OBJECT_TYPE::DEFAULT));
+	objects_.push_back(new ObjectBase(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::DEFAULT));
 	objects_.back()->Init();
 
 	objects_.back()->SetPosition({ 1260.0f, -720.0f, -50.5f });
@@ -113,24 +114,24 @@ void GameScene::Init(void)
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 
 
-	objects_.push_back(new Object(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], Object::OBJECT_TYPE::WBOX));
+	objects_.push_back(new ObjectBase(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::WBOX));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ 1260.0f, -720.0f, -50.5f });
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 
-	objects_.push_back(new Object(GameScene::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[2], Object::OBJECT_TYPE::AKEG));
+	objects_.push_back(new ObjectBase(GameScene::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[2], ObjectBase::OBJECT_TYPE::AKEG));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ -1260.0f, -720.0f, -50.5f });
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 
-	objects_.push_back(new Object(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[3], Object::OBJECT_TYPE::BUTTOM));
+	objects_.push_back(new ObjectBase(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[3], ObjectBase::OBJECT_TYPE::BUTTOM));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ 1000.0f, -720.0f, -50.5f });
 	//objects_.back()->SetPosition({ 1260.0f, -720.0f, -50.5f });
 	objects_.back()->SetPosition({ 0.0f, 80.0f, -50.0f });
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 
-	objects_.push_back(new Object(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], Object::OBJECT_TYPE::PUSH_BUTTON));
+	objects_.push_back(new ObjectBase(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::PUSH_BUTTON));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ -900.0f, -500.0f, 900.5f });
 	//objects_.back()->SetPosition({500.0f, -720.0f, -50.5f });
@@ -170,7 +171,7 @@ void GameScene::Init(void)
 	// 各オブジェクトの衝突コライダをプレイヤーに登録
 	for (auto* obj : objects_)
 	{
-		const ColliderBase* objCaps = obj->GetOwnCollider(static_cast<int>(Object::COLLIDER_TYPE::CAPSULE));
+		const ColliderBase* objCaps = obj->GetOwnCollider(static_cast<int>(ObjectBase::COLLIDER_TYPE::CAPSULE));
 		if (objCaps) player1_->AddHitCollider(objCaps);
 		if (objCaps) player2_->AddHitCollider(objCaps);
 	}
@@ -204,7 +205,7 @@ void GameScene::CheckCollisions(void)
 	isPlayer1HitObject_ = false;
 	isPlayer2HitObject_ = false;
 
-	std::vector<Object*> newObjects;  // 新規オブジェクト用
+	std::vector<ObjectBase*> newObjects;  // 新規オブジェクト用
 
 	for (auto* obj : objects_)
 	{
@@ -212,11 +213,13 @@ void GameScene::CheckCollisions(void)
 
 		VECTOR objectPos = obj->GetTransform().pos;
 
-		if (obj->GetType() == Object::OBJECT_TYPE::BUTTOM)
+		// ボタンタイプの場合は専用処理
+		if (obj->GetType() == ObjectBase::OBJECT_TYPE::BUTTOM)
 		{
 			bool isNearButton = false;
 
 			// プレイヤー1との距離チェック
+
 			VECTOR player1Pos = player1_->GetTransform().pos;
 			float distance1 = VSize(VSub(player1Pos, objectPos));
 			if (distance1 < 180.0f)
@@ -238,7 +241,7 @@ void GameScene::CheckCollisions(void)
 			{
 				obj->SetButtomPushed(true);
 				// 直接追加せず、一時リストに格納
-				Object* newObj = new Object(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], Object::OBJECT_TYPE::AKEG);
+				ObjectBase* newObj = new ObjectBase(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::AKEG);
 				newObjects.push_back(newObj);
 			}
 			continue;
@@ -276,7 +279,7 @@ void GameScene::CheckCollisions(void)
 	MakeNewObject(newObjects);
 }
 
-const void GameScene::MakeNewObject(std::vector<Object*>& newObjects)
+const void GameScene::MakeNewObject(std::vector<ObjectBase*>& newObjects)
 {
 	for (auto* newObj : newObjects)
 	{
@@ -288,12 +291,10 @@ const void GameScene::MakeNewObject(std::vector<Object*>& newObjects)
 			// ステージモデルのコライダーを全オブジェクトに登録
 			const ColliderBase* stageCollider =
 				stage->GetOwnCollider(static_cast<int>(Stage::COLLIDER_TYPE::MODEL));
-
-			newObj->AddHitCollider(stageCollider);
 		}
 
 		// 各オブジェクトの衝突コライダをプレイヤーに登録
-		const ColliderBase* objCaps = newObj->GetOwnCollider(static_cast<int>(Object::COLLIDER_TYPE::CAPSULE));
+		const ColliderBase* objCaps = newObj->GetOwnCollider(static_cast<int>(ObjectBase::COLLIDER_TYPE::CAPSULE));
 		if (objCaps) player1_->AddHitCollider(objCaps);
 		if (objCaps) player2_->AddHitCollider(objCaps);
 
@@ -370,7 +371,7 @@ void GameScene::Update(void)
 	// 踏む
 	for (auto* obj : objects_)
 	{
-		if (obj && obj->GetType() == Object::OBJECT_TYPE::PUSH_BUTTON)
+		if (obj && obj->GetType() == ObjectBase::OBJECT_TYPE::PUSH_BUTTON)
 		{
 			if (obj->IsPushButtonPressed())
 			{

@@ -19,9 +19,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Button.cpp" />
+    <ClCompile Include="Src\Object\Actor\Charactor\GameObject\ObjectBase.cpp" />
     <ClCompile Include="Src\Scene\GameClearScene.cpp" />
     <ClCompile Include="Src\Object\Actor\Stage\AnswerStage.cpp" />
-    <ClCompile Include="Src\Object\Actor\Charactor\Object.cpp" />
+    <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Object.cpp" />
     <ClCompile Include="Src\Manager\EnemyManager.cpp" />
     <ClCompile Include="Src\Object\Actor\Charactor\Enemy\EnemyBase.cpp" />
     <ClCompile Include="Src\Object\Actor\Charactor\Enemy\EnemyRat.cpp" />
@@ -62,9 +64,11 @@
     <ClCompile Include="Src\UI\Tutorial.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Src\Object\Actor\Charactor\GameObject\Button.h" />
+    <ClInclude Include="Src\Object\Actor\Charactor\GameObject\ObjectBase.h" />
     <ClInclude Include="Src\Scene\GameClearScene.h" />
     <ClInclude Include="Src\Object\Actor\Stage\AnswerStage.h" />
-    <ClInclude Include="Src\Object\Actor\Charactor\Object.h" />
+    <ClInclude Include="Src\Object\Actor\Charactor\GameObject\Object.h" />
     <ClInclude Include="Src\Manager\EnemyManager.h" />
     <ClInclude Include="Src\Object\Actor\Charactor\Enemy\EnemyBase.h" />
     <ClInclude Include="Src\Object\Actor\Charactor\Enemy\EnemyRat.h" />

@@ -373,19 +373,11 @@ void Player::ProcessPickup(void)
 {
 	auto& ins = InputManager::GetInstance();
 
-	// 押下トリガのみ受け付ける（長押し無効）
+	// 押下トリガのみ受け付ける
 	bool btnTrg = false;
 
-	if (playerNo_ == PLAYER_NO::PLAYER1)
-	{
-		btnTrg = ins.IsTrgDown(KEY_INPUT_E)
-			|| ins.IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::TOP);
-	}
-	//else // PLAYER2
-	//{
-	//	btnTrg = ins.IsTrgDown(KEY_INPUT_U)
-	//		|| ins.IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD2, InputManager::JOYPAD_BTN::TOP);
-	//}
+	btnTrg = ins.IsTrgDown(KEY_INPUT_E)
+		|| ins.IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::TOP);
 
 	if (btnTrg)
 	{

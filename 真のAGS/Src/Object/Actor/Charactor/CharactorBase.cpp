@@ -8,7 +8,6 @@
 #include "../../../Manager/Resource.h"
 #include "../../../Manager/ResourceManager.h"
 #include "CharactorBase.h"
-//#include "../Object.h"
 
 CharactorBase::CharactorBase(void)
 	:

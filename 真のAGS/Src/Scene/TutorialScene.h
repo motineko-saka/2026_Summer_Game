@@ -10,11 +10,16 @@ class SkyDome;
 class Player;
 class EnemyManager;
 class Camera;
-class Object;
+class ObjectBase;
 class Wall;
 
 class TutorialScene : public SceneBase
 {
+	struct PlayerS
+	{
+		Player* player_;
+		Camera* camera_;
+	};
 
 public:
 	// 世界
@@ -65,11 +70,12 @@ private:
 	Camera* camera2_;
 
 	//EnemyManager* enemyManager_;
+	std::vector<PlayerS> players_;
 
 	std::unique_ptr<Wall> wall_;
 
 	// 複数のオブジェクトを管理
-	std::vector<Object*> objects_;
+	std::vector<ObjectBase*> objects_;
 
 	// 画面分割用のスクリーンハンドル
 	int screenHandle1_;
@@ -96,5 +102,8 @@ private:
 	void CheckCollisions(void);
 
 	// チュートリアル
+	//--------------------------------------------
 	Tutorial tutorial_; // 追加
+	int moveStepe_ = 800; // 移動する距離
+
 };

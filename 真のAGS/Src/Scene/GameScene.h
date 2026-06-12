@@ -9,8 +9,10 @@ class SkyDome;
 class Player;
 class EnemyManager;
 class Camera;
-class Object;
+class ObjectBase;
 class Wall;
+
+
 
 class GameScene : public SceneBase
 {
@@ -61,14 +63,14 @@ private:
 	Player* player2_;
 	Camera* camera2_;
 
+	std::vector<PlayerS> players_;
+
 	//EnemyManager* enemyManager_;
 
 	std::unique_ptr<Wall> wall_;
 
 	// 複数のオブジェクトを管理
-	std::vector<Object*> objects_;
-
-	std::vector<PlayerS> players_;
+	std::vector<ObjectBase*> objects_;
 
 	// 画面分割用のスクリーンハンドル
 	int screenHandle1_;
@@ -95,5 +97,5 @@ private:
 	void CheckCollisions(void);
 
 	// オブジェクトを生成（今は樽だけ）
-	const void MakeNewObject(std::vector<Object*>& newObjects);
+	const void MakeNewObject(std::vector<ObjectBase*>& newObjects);
 };
