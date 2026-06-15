@@ -27,6 +27,7 @@ public:
 		WOODBOX,
 		BUTTON,
 		CUBE,
+		PIN,
 	};
 
 	// 明示的にインステンスを生成する

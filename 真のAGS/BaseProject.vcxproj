@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Src\AudioManager.cpp" />
     <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Button.cpp" />
     <ClCompile Include="Src\Object\Actor\Charactor\GameObject\ObjectBase.cpp" />
     <ClCompile Include="Src\Scene\GameClearScene.cpp" />
@@ -54,6 +55,7 @@
     <ClCompile Include="Src\Scene\GameScene.cpp" />
     <ClCompile Include="Src\Scene\SceneBase.cpp" />
     <ClCompile Include="Src\Scene\TitleScene.cpp" />
+    <ClCompile Include="Src\SoundTable.cpp" />
     <ClCompile Include="Src\Utility\AsoUtility.cpp" />
     <ClCompile Include="Src\Utility\MatrixUtility.cpp" />
     <ClCompile Include="Src\Object\Actor\Stage\Stage.cpp" />
@@ -64,6 +66,7 @@
     <ClCompile Include="Src\UI\Tutorial.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Src\AudioManager.h" />
     <ClInclude Include="Src\Object\Actor\Charactor\GameObject\Button.h" />
     <ClInclude Include="Src\Object\Actor\Charactor\GameObject\ObjectBase.h" />
     <ClInclude Include="Src\Scene\GameClearScene.h" />
@@ -99,6 +102,7 @@
     <ClInclude Include="Src\Scene\GameScene.h" />
     <ClInclude Include="Src\Scene\SceneBase.h" />
     <ClInclude Include="Src\Scene\TitleScene.h" />
+    <ClInclude Include="Src\SoundTable.h" />
     <ClInclude Include="Src\Utility\AsoUtility.h" />
     <ClInclude Include="Src\Utility\MatrixUtility.h" />
     <ClInclude Include="Src\Object\Actor\Stage\Stage.h" />

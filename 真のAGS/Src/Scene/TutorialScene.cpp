@@ -108,7 +108,7 @@ void TutorialScene::Init(void)
 	wall_->Init();
 
 	// オブジェクト作成（複数）
-	objects_.reserve(4);
+	objects_.reserve(5);
 
 	objects_.push_back(new ObjectBase(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::DEFAULT));
 	objects_.back()->Init();
@@ -128,8 +128,17 @@ void TutorialScene::Init(void)
 
 	objects_.push_back(new ObjectBase(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[3], ObjectBase::OBJECT_TYPE::BUTTON));
 	objects_.back()->Init();
-	objects_.back()->SetPosition({ 0.0f, 80.0f, -50.0f });
+	objects_.back()->SetPosition({ 1100.0f, -0.0f, 200.5f }); 
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
+
+	objects_.push_back(new ObjectBase(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[3], ObjectBase::OBJECT_TYPE::PUSH_BUTTON));
+	objects_.back()->Init();
+	objects_.back()->SetPosition({ -900.0f, -500.0f, 900.5f });
+	//objects_.back()->SetPosition({500.0f, -720.0f, -50.5f });
+	//objects_.back()->SetPosition({ 1260.0f, -720.0f, -50.5f });
+	//objects_.back()->SetPosition({ 0.0f, 80.0f, -50.0f });
+	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
+
 
 	// ステージの各コライダをプレイヤー／カメラ／オブジェクトに登録
 	for (const auto& stage : stageManager_->GetStage())
@@ -144,7 +153,7 @@ void TutorialScene::Init(void)
 		camera1_->AddHitCollider(stageCollider);
 		camera2_->AddHitCollider(stageCollider);
 
-		for (auto* obj : objects_)
+		for (auto& obj : objects_)
 		{
 			obj->AddHitCollider(stageCollider);
 		}
@@ -152,12 +161,37 @@ void TutorialScene::Init(void)
 		if (stageCollider == nullptr) DrawFormatString(100, 100, 0xffffff, "stageCollider is null\n");
 	}
 
-	// 各オブジェクトの衝突コライダをプレイヤーに登録
-	for (auto* obj : objects_)
+	// 踏むButtonのindexをとる
+	std::vector<int> pushButtonIndex = {};
+
+	for (int i = 0; i < objects_.size(); i++)
 	{
-		const ColliderBase* objCaps = obj->GetOwnCollider(static_cast<int>(ObjectBase::COLLIDER_TYPE::CAPSULE));
-		if (objCaps) player1_->AddHitCollider(objCaps);
-		if (objCaps) player2_->AddHitCollider(objCaps);
+		auto& obj = objects_[i];
+
+		if (obj->GetObjectType() != ObjectBase::OBJECT_TYPE::PUSH_BUTTON) continue;
+
+		pushButtonIndex.push_back(i);
+	}
+
+	// 各オブジェクトの衝突コライダをプレイヤーに登録
+	for (int i = 0; i < objects_.size(); i++)
+	{
+		auto& obj = objects_[i];
+
+		const auto* objCaps = obj->GetOwnCollider(static_cast<int>(ObjectBase::COLLIDER_TYPE::CAPSULE));
+
+		if (!objCaps) continue;
+
+		player1_->AddHitCollider(objCaps);
+		player2_->AddHitCollider(objCaps);
+
+		for (auto index : pushButtonIndex)
+		{
+			if (i != index)
+			{
+				objects_[index]->AddHitCollider(objCaps);
+			}
+		}
 	}
 
 	const ColliderBase* wallCollider =
@@ -165,6 +199,12 @@ void TutorialScene::Init(void)
 
 	player1_->AddHitCollider(wallCollider);
 	player2_->AddHitCollider(wallCollider);
+
+	const ColliderBase* playerCollider =
+		player1_->GetOwnCollider(static_cast<int>(Player::COLLIDER_TYPE::LINE));
+
+	// Buttonだけ
+	objects_[4]->AddHitCollider(playerCollider);
 
 	// 衝突フラグの初期化
 	isPlayer1HitObject_ = false;

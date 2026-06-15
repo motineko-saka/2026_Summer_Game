@@ -80,6 +80,8 @@ private:
 	int screenWidth_;
 	int screenHeight_;
 
+	int pinID_;
+
 	// Õ“Ë”»’èƒtƒ‰ƒO
 	bool isPlayer1HitObject_;
 	bool isPlayer2HitObject_;

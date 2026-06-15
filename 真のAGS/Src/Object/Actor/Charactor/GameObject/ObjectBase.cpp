@@ -25,7 +25,7 @@ ObjectBase::ObjectBase(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type)
 	CharactorBase(),
 	isAnswerPosition_(false),
 	isGrabbed_(false),
-	isPushButtom_(false),
+	isPushButton_(false),
 	world_(world),
 	viewWorld_(world),
 	ansVec_(ansVec),
@@ -139,33 +139,34 @@ void ObjectBase::UpdateProcess(void)
 	}
 
 	isGrabbed_ = false; // デフォルトはつかまれていない
-	isPushButtom_ = false; // デフォルトはボタンが踏まれていない
+	isPushButton_ = false; // デフォルトはボタンが踏まれていない
 
 	// PUSH_BUTTON タイプの場合、プレイヤーが乗っているか判定
 	if (type_ == OBJECT_TYPE::PUSH_BUTTON)
 	{
-		for (const auto& hitCol : hitColliders_)
-		{
-			if (hitCol == nullptr) continue;
-			if (hitCol->GetTag() != ColliderBase::TAG::PLAYER) continue;
-
-			const Transform* playerTransform = hitCol->GetFollow();
-			if (playerTransform == nullptr) continue;
-
-			VECTOR playerPos = playerTransform->pos;
-			VECTOR diff = VSub(playerPos, transform_.pos);
-			
-			// 3D距離を計算
-			float distance = VSize(diff);
-			const float BUTTON_TRIGGER_DISTANCE = 100.0f; // 適切な値に調整
-
-			if (distance < BUTTON_TRIGGER_DISTANCE)
-			{
-				// 踏んだ時の処理
-				isPushButtom_ = true;
-				break;
-			}
-		}
+		PressButton();
+		//for (const auto& hitCol : hitColliders_)
+		//{
+		//	if (hitCol == nullptr) continue;
+		//	if (hitCol->GetTag() != ColliderBase::TAG::PLAYER) continue;
+		//
+		//	const Transform* playerTransform = hitCol->GetFollow();
+		//	if (playerTransform == nullptr) continue;
+		//
+		//	VECTOR playerPos = playerTransform->pos;
+		//	VECTOR diff = VSub(playerPos, transform_.pos);
+		//	
+		//	// 3D距離を計算
+		//	float distance = VSize(diff);
+		//	const float BUTTON_TRIGGER_DISTANCE = 100.0f; // 適切な値に調整
+		//
+		//	if (distance < BUTTON_TRIGGER_DISTANCE)
+		//	{
+		//		// 踏んだ時の処理
+		//		isPushButtom_ = true;
+		//		break;
+		//	}
+		//}
 	}
 
 	// 掴まれているコライダがあれば transform をそれに同期する
@@ -205,6 +206,32 @@ void ObjectBase::UpdateProcess(void)
 void ObjectBase::PushButton(void)
 {
 
+}
+
+void ObjectBase::PressButton(void)
+{
+	for (const auto& hitCol : hitColliders_)
+	{
+		if (hitCol == nullptr) continue;
+		if (hitCol->GetTag() != ColliderBase::TAG::PLAYER) continue;
+
+		const Transform* playerTransform = hitCol->GetFollow();
+		if (playerTransform == nullptr) continue;
+
+		VECTOR playerPos = playerTransform->pos;
+		VECTOR diff = VSub(playerPos, transform_.pos);
+
+		// 3D距離を計算
+		float distance = VSize(diff);
+		const float BUTTON_TRIGGER_DISTANCE = 100.0f; // 適切な値に調整
+
+		if (distance < BUTTON_TRIGGER_DISTANCE)
+		{
+			// 踏んだ時の処理
+			isPushButton_ = true;
+			break;
+		}
+	}
 }
 
 void ObjectBase::UpdateProcessPost(void)

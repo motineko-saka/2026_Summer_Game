@@ -59,13 +59,16 @@ public:
 
 	bool isPushButtom(void) const{ return isButtomPushed_; }
 
+	const bool IsGrabbed(void) const { return isGrabbed_; }
+
 	void PushButton(void);
+	void PressButton(void);
 
 	// PUSH_BUTTON が踏まれているか取得
-	bool IsPushButtonPressed(void) const { return isPushButtom_; }
+	bool IsPushButtonPressed(void) const { return isPushButton_; }
 
 	// PUSH_BUTTON のリセット（次のフレーム判定のため）
-	void ResetPushButton(void) { isPushButtom_ = false; }
+	void ResetPushButton(void) { isPushButton_ = false; }
 
 protected:
 
@@ -133,7 +136,7 @@ private:
 	bool isButtomPushed_ = false;
 
 	// PUSH_BUTTON が踏まれているか
-	bool isPushButtom_ = false;
+	bool isPushButton_ = false;
 
 	// 設置済みフラグ（true のとき掴めない、動かせない）
 	bool placed_{ false };

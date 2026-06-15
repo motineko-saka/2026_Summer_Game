@@ -50,6 +50,8 @@ void GameScene::Init(void)
 	screenHandle1_ = MakeScreen(halfWidth, screenHeight_, true);
 	screenHandle2_ = MakeScreen(halfWidth, screenHeight_, true);
 
+	pinID_ = MV1LoadModel((Application::PATH_MODEL + "Object/torii.mv1").c_str());
+
 	//// カメラ1の作成(プレイヤー1用)
 	//for (int i = 0; i < 2; i++)
 	//{
@@ -168,12 +170,37 @@ void GameScene::Init(void)
 		if (stageCollider == nullptr) DrawFormatString(100, 100, 0xffffff, "stageCollider is null\n");
 	}
 
-	// 各オブジェクトの衝突コライダをプレイヤーに登録
-	for (auto* obj : objects_)
+	// 踏むButtonのindexをとる
+	std::vector<int> pushButtonIndex = {};
+
+	for (int i = 0; i < objects_.size(); i++)
 	{
-		const ColliderBase* objCaps = obj->GetOwnCollider(static_cast<int>(ObjectBase::COLLIDER_TYPE::CAPSULE));
-		if (objCaps) player1_->AddHitCollider(objCaps);
-		if (objCaps) player2_->AddHitCollider(objCaps);
+		auto& obj = objects_[i];
+
+		if (obj->GetObjectType() != ObjectBase::OBJECT_TYPE::PUSH_BUTTON) continue;
+
+		pushButtonIndex.push_back(i);
+	}
+
+	// 各オブジェクトの衝突コライダをプレイヤーに登録
+	for (int i = 0; i < objects_.size(); i++)
+	{
+		auto& obj = objects_[i];
+
+		const auto* objCaps = obj->GetOwnCollider(static_cast<int>(ObjectBase::COLLIDER_TYPE::CAPSULE));
+
+		if (!objCaps) continue;
+
+		player1_->AddHitCollider(objCaps);
+		player2_->AddHitCollider(objCaps);
+
+		for (auto index : pushButtonIndex)
+		{
+			if (i != index)
+			{
+				objects_[index]->AddHitCollider(objCaps);
+			}
+		}
 	}
 
 	const ColliderBase* wallCollider =
@@ -185,6 +212,7 @@ void GameScene::Init(void)
 	const ColliderBase* playerCollider =
 		player1_->GetOwnCollider(static_cast<int>(Player::COLLIDER_TYPE::LINE));
 
+	// Buttonだけ
 	objects_[4]->AddHitCollider(playerCollider);
 
 	// 衝突フラグの初期化
@@ -416,6 +444,18 @@ void GameScene::Update(void)
 		}
 	}
 
+	for (int i = 0; i < objects_.size(); i++)
+	{
+		auto& obj = objects_[i];
+		if (obj->IsGrabbed())
+		{
+			DrawSphere3D(ANSWER_VECTOR_LENGTH[i], 20.0f, 180, 0xffffff, 0xffffff, true);
+			
+		}
+	}
+	DrawSphere3D(ANSWER_VECTOR_LENGTH[0], 80.0f, 16, GetColor(255, 0, 0), GetColor(0, 0, 0), FALSE);
+	//DrawSphere3D(ANSWER_VECTOR_LENGTH[1], 20.0f, 180, 0xffffff, 0xffffff, true);
+
 	// 答えの場所に全てのオブジェクトがあるか判定
 	bool isAnswer = true;
 
@@ -443,6 +483,20 @@ void GameScene::DrawPlayer1Screen(void)
 	skyDome_->Draw();
 	player1_->Draw();
 	player2_->Draw(); // プレイヤー2も描画(同じ世界にいる場合)
+
+	// 答えの描画
+	for (int i = 0; i < objects_.size(); i++)
+	{
+		auto& obj = objects_[i];
+
+		if (!obj->IsGrabbed()) continue;
+		
+		DrawSphere3D(ANSWER_VECTOR_LENGTH[i], 80.0f, 16, GetColor(255, 0, 0), GetColor(0, 0, 0), FALSE);
+
+		MV1SetPosition(pinID_, ANSWER_VECTOR_LENGTH[i]);
+		MV1DrawModel(pinID_);
+	}
+	
 	//wall_->Draw();
 
 	// 全オブジェクトを順に描画（それぞれの viewWorld を設定）
@@ -464,6 +518,19 @@ void GameScene::DrawPlayer2Screen(void)
 	skyDome_->Draw();
 	player1_->Draw(); // プレイヤー1も描画(同じ世界にいる場合)
 	player2_->Draw();
+
+	// 答えの描画
+	for (int i = 0; i < objects_.size(); i++)
+	{
+		auto& obj = objects_[i];
+
+		if (!obj->IsGrabbed()) continue;
+
+		DrawSphere3D(ANSWER_VECTOR_LENGTH[i], 80.0f, 16, GetColor(255, 0, 0), GetColor(0, 0, 0), FALSE);
+
+		MV1SetPosition(pinID_, ANSWER_VECTOR_LENGTH[i]);
+		MV1DrawModel(pinID_);
+	}
 	//wall_->Draw();
 
 	for (auto* obj : objects_)
