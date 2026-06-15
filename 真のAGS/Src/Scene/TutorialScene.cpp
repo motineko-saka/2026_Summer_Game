@@ -215,7 +215,7 @@ void TutorialScene::Init(void)
 
 	// ステップ4: オブジェクト操作（オブジェクトに近づいて E）
 	tutorial_.AddStep(
-		"オブジェクト操作の練習：オブジェクトに近づいて E を押してください。\nオブジェクトを押すと次へ進みます。",
+		"オブジェクト操作の練習1：オブジェクトに近づいて E を押してください。\nオブジェクトを押すと次へ進みます。",
 		[this]() -> bool {
 			for (auto* obj : objects_)
 			{
@@ -231,6 +231,20 @@ void TutorialScene::Init(void)
 			return false;
 		}
 	);
+
+	// ステップ5: オブジェクトの設置(正しい位置への設置)
+	tutorial_.AddStep(
+		"オブジェクト操作の練習2 : オブジェクトを正しい位置に配置してください。\nオブジェクトを配置すると次に進む。",
+		[this]() -> bool {
+			for (auto* obj : objects_)
+			{
+				if (obj == nullptr) continue;
+				if (obj->IsAnswerPosition()) return true;
+			}
+			return false;
+		}
+	);
+
 	// ステップ4: ボタン操作（ボタン近くで Space）
 	ObjectBase* buttonObj = nullptr;
 	for (auto* o : objects_)

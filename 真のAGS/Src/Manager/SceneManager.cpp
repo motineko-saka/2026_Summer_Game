@@ -51,7 +51,7 @@ void SceneManager::Init(void)
 	Init3D();
 
 	// 初期シーンの設定
-	DoChangeScene(SCENE_ID::TITLE);
+	DoChangeScene(SCENE_ID::TUTORIAL);
 	//DoChangeScene(SCENE_ID::DEBUG);
 	//DoChangeScene(SCENE_ID::GAME);
 	//DoChangeScene(SCENE_ID::GAME);
@@ -148,7 +148,6 @@ void SceneManager::Draw(void)
 	
 	// 暗転・明転
 	fader_->Draw();
-
 }
 
 void SceneManager::Destroy(void)
@@ -166,10 +165,8 @@ void SceneManager::Destroy(void)
 	camera_->Release();
 	delete camera_;
 
-
 	// インスタンスのメモリ解放
 	delete instance_;
-
 }
 
 void SceneManager::ChangeScene(SCENE_ID nextId)
@@ -182,7 +179,6 @@ void SceneManager::ChangeScene(SCENE_ID nextId)
 	// フェードアウト(暗転)を開始する
 	fader_->SetFade(Fader::STATE::FADE_OUT);
 	isSceneChanging_ = true;
-
 }
 
 SceneManager::SCENE_ID SceneManager::GetSceneID(void)
