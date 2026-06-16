@@ -10,6 +10,7 @@
 #include "GameScene.h"
 #include "PauseScene.h"
 #include "TutorialScene.h"
+#include "../Application.h"
 
 TitleScene::TitleScene(void)
 {
@@ -22,14 +23,21 @@ TitleScene::~TitleScene(void)
 
 void TitleScene::Init(void)
 {
-	// 画像読み込み
-	imgTitle_ = resMng_.Load(ResourceManager::SRC::TITLE_IMG).handleId_;
-
-	imgPushSpace_ = resMng_.Load(ResourceManager::SRC::TITLE_PUSH_SPACE).handleId_;
+	// ムービーを再生状態にします
+	PlayMovieToGraph(movTitle_);
 }
 
 void TitleScene::Load(void)
 {
+	// 画像読み込み
+	imgTitle_ = resMng_.Load(ResourceManager::SRC::TITLE_IMG).handleId_;
+
+	imgPushSpace_ = resMng_.Load(ResourceManager::SRC::TITLE_PUSH_SPACE).handleId_;
+
+	imgHondana_ = resMng_.Load(ResourceManager::SRC::HONDANA_IMG).handleId_;
+
+	// 動画読み込み
+	movTitle_ = resMng_.Load(ResourceManager::SRC::TITLE_MOV).handleId_;
 }
 
 void TitleScene::LoadEnd(void)
@@ -39,6 +47,8 @@ void TitleScene::LoadEnd(void)
 
 void TitleScene::Update(void)
 {
+
+
 	// ポーズ画面を積む
 	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_ESCAPE))
 	{
@@ -54,12 +64,21 @@ void TitleScene::Update(void)
 
 void TitleScene::Draw(void)
 {
-	// 2D描画
+	int screenX = Application::SCREEN_SIZE_X;
+	int screenY = Application::SCREEN_SIZE_Y;
+
+	DrawGraph(screenX, screenY, imgHondana_, true);
+
+	DrawExtendGraph(0, 0, screenX, screenY, movTitle_, FALSE);
+
+	// 2D描画（ムービーの上にUIを重ねる）
 	DrawRotaGraph(IMG_TITLE_POS_X, IMG_TITLE_POS_Y, 1.0f, 0.0f, imgTitle_, true);
 	DrawRotaGraph(IMG_PUSH_SPACE_POS_X, IMG_PUSH_SPACE_POS_Y, 1.0f, 0.0f, imgPushSpace_, true);
+
+	// ウエイトをかけます、あまり速く描画すると画面がちらつくからです
+	WaitTimer(17);
 }
 
 void TitleScene::Release(void)
 {
-
 }

@@ -28,6 +28,8 @@ public:
 		BUTTON,
 		CUBE,
 		PIN,
+		TITLE_MOV,
+		HONDANA_IMG,
 	};
 
 	// 明示的にインステンスを生成する

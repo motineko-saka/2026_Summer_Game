@@ -76,6 +76,11 @@ void Resource::Load(void)
 		handleId_ = LoadEffekseerEffect(path_.c_str());
 		break;
 
+	case Resource::TYPE::MOVIE:
+		// ‰f‘œ
+		handleId_ = LoadGraph(path_.c_str());
+		break;
+
 	}
 
 }
@@ -109,6 +114,10 @@ void Resource::Release(void)
 			MV1DeleteModel(id);
 		}
 	}
+		break;
+
+	case Resource::TYPE::MOVIE:
+		DeleteGraph(handleId_);
 		break;
 
 	case Resource::TYPE::EFFEKSEER:

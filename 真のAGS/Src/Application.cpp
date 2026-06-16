@@ -12,6 +12,7 @@ const std::string Application::PATH_IMAGE = "Data/Image/";
 const std::string Application::PATH_MODEL = "Data/Model/";
 const std::string Application::PATH_EFFECT = "Data/Effect/";
 const std::string Application::PATH_CSV = "Data/Csv/";
+const std::string Application::PATH_MOV = "Data/Movie/";
 
 void Application::CreateInstance(void)
 {
@@ -52,6 +53,9 @@ void Application::Init(void)
 	// Effekseerの初期化
 	InitEffekseer();
 
+	// 3Dオブジェクトの初期化
+	Init3D();
+
 	// 乱数のシード値を設定する
 	DATEDATA date;
 
@@ -75,6 +79,35 @@ void Application::Init(void)
 	SceneManager::CreateInstance();
 	SceneManager::GetInstance()->Init();
 
+}
+
+void Application::Init3D(void)
+{
+	// 背景色設定
+	SetBackgroundColor(
+		BACKGROUND_COLOR_R,
+		BACKGROUND_COLOR_G,
+		BACKGROUND_COLOR_B);
+
+	// Zバッファを有効にする
+	SetUseZBuffer3D(true);
+
+	// Zバッファへの書き込みを有効にする
+	SetWriteZBuffer3D(true);
+
+	// バックカリングを有効にする
+	SetUseBackCulling(true);
+
+	// ライトの設定
+	SetUseLighting(true);
+
+	// ライトの設定
+	ChangeLightTypeDir({ 0.3f, -0.7f, 0.8f });
+
+	// フォグ設定
+	SetFogEnable(true);
+	SetFogColor(5, 5, 5);
+	SetFogStartEnd(10000.0f, 20000.0f);
 }
 
 void Application::Run(void)

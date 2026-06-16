@@ -43,5 +43,8 @@ private:
 
 	int imgTitle_;
 	int imgPushSpace_;
+	int imgHondana_;
+
+	int movTitle_;
 
 };

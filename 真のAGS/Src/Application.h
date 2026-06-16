@@ -18,6 +18,11 @@ public:
 	static constexpr float GRAVITY = 9.81f * 100.0f;
 	static constexpr float GRAVITY_SCALE = 0.7f;
 
+	// 背景色
+	static constexpr int BACKGROUND_COLOR_R = 0;
+	static constexpr int BACKGROUND_COLOR_G = 139;
+	static constexpr int BACKGROUND_COLOR_B = 139;
+
 	static const std::string PATH_CSV;	
 
 	// 重力の取得
@@ -29,6 +34,7 @@ public:
 	static const std::string PATH_IMAGE;
 	static const std::string PATH_MODEL;
 	static const std::string PATH_EFFECT;
+	static const std::string PATH_MOV;
 
 	static const std::string PATH_KEY_CONFIG;
 	static const std::string PATH_KEY_CONFIG_GAMEPAD;
@@ -43,6 +49,9 @@ public:
 
 	// 初期化
 	void Init(void);
+
+	// 3Dオブジェクトの初期化
+	void Init3D(void);
 
 	// ゲームループの開始
 	void Run(void);
