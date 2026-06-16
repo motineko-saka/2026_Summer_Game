@@ -35,11 +35,11 @@ void SkyDome::Update(void)
 
 void SkyDome::Draw(void)
 {
-	SetUseLighting(FALSE);
+	SetUseLighting(false);
 	ActorBase::Draw();
 	
 	//MV1DrawModel(transform_.modelId);
-	SetUseLighting(TRUE);
+	SetUseLighting(true);
 }
 
 void SkyDome::Release(void)
