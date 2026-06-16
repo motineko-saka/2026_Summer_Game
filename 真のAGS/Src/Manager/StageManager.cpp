@@ -51,6 +51,18 @@ void StageManager::Draw(void)
 	}
 }
 
+void StageManager::DrawDebug(void)
+{
+	for (const auto& stage : stages_)
+	{
+		// デバッグ出力
+		int modelId = stage->GetTransform().modelId;
+		VECTOR pos = stage->GetTransform().pos;
+		DrawFormatString(0, 200, 0xffffff, "Stage ModelID: %d, Pos: (%.1f, %.1f, %.1f)",
+			modelId, pos.x, pos.y, pos.z);
+	}
+}
+
 void StageManager::Release(void)
 {
 	for (const auto& stage : stages_)

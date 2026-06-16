@@ -110,18 +110,7 @@ void TutorialScene::Init(void)
 	wall_->Init();
 
 	// オブジェクト作成（複数）
-	objects_.reserve(5);
-
-	objects_.push_back(new ObjectBase(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::DEFAULT));
-	objects_.back()->Init();
-	objects_.back()->SetPosition({ 1260.0f, -720.0f, -50.5f });
-	objects_.back()->SetPosition({ 1260.0f, -500.0f, -50.5f });
-	objects_.back()->SetScale({ 0.5, 0.5, 0.5 });
-
-	objects_.push_back(new ObjectBase(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::WBOX));
-	objects_.back()->Init();
-	objects_.back()->SetPosition({ 1260.0f, -720.0f, -50.5f });
-	objects_.back()->SetScale({ 0.5, 0.5, 0.5 });
+	objects_.reserve(3);
 
 	objects_.push_back(new ObjectBase(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[2], ObjectBase::OBJECT_TYPE::AKEG));
 	objects_.back()->Init();
@@ -528,6 +517,7 @@ void TutorialScene::DrawPlayer1Screen(void)
 	skyDome_->Draw();
 	player1_->Draw();
 	player2_->Draw(); // プレイヤー2も描画
+	wall_->Draw();
 
 	for (auto* obj : objects_)
 	{
@@ -550,6 +540,15 @@ void TutorialScene::DrawPlayer2Screen(void)
 	for (auto* obj : objects_)
 	{
 		if (obj == nullptr) continue;
+
+		if (obj->GetObjectType() == ObjectBase::OBJECT_TYPE::BUTTON)
+		{
+			auto buttonPos = ConvWorldPosToScreenPos(obj->GetPos());
+			DrawFormatString(buttonPos.x, buttonPos.y - 120, 0xffff00, "ボタン");
+			DrawFormatString(buttonPos.x, buttonPos.y - 100, 0xffff00, "　↓");
+			//DrawCircle(buttonPos.x, buttonPos.y - 100, 10, 0xffffff, true);
+		}
+
 		obj->Draw();
 	}
 }
@@ -650,6 +649,8 @@ void TutorialScene::Draw(void)
 		y += 40;
 	}
 #pragma endregion
+
+	stageManager_->DrawDebug();
 
 	// チュートリアル描画（最前面）
 	tutorial_.Draw();

@@ -550,6 +550,8 @@ void GameScene::DrawPlayer2Screen(void)
 	for (auto* obj : objects_)
 	{
 		if (obj == nullptr) continue;
+
+		
 		//obj->SetViewWorld(WORLD::RIGHT);
 		obj->Draw();
 	}
@@ -595,6 +597,9 @@ void GameScene::Draw(void)
 	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 
 #pragma region デバッグ表示
+
+#ifdef _DEBUG
+
 	// デバッグ表示
 	DrawFormatString(0, 0, GetColor(255, 255, 255), "P1角度:(%.1f, %.1f, %.1f)",
 		player1_->GetTransform().quaRot.ToEuler().x,
@@ -650,6 +655,7 @@ void GameScene::Draw(void)
 
 		y += 40;
 	}
+#endif // _DEBUG
 #pragma endregion
 }
 

@@ -19,6 +19,7 @@ public:
 
 	// •`‰æ
 	void Draw(void);
+	void DrawDebug(void);
 
 	// ‰ð•ú
 	void Release(void);

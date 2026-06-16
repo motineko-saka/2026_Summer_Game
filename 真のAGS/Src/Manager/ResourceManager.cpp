@@ -52,7 +52,7 @@ void ResourceManager::Init(void)
 	resourcesMap_.emplace(SRC::PLAYER, res);
 
 	// ステージモデル
-	res = new RES(RES_T::MODEL, PATH_MDL + "Stage/Stage.mv1");
+	//res = new RES(RES_T::MODEL, PATH_MDL + "Stage/Stage.mv1");
 	res = new RES(RES_T::MODEL, PATH_MDL + "Stage/NOMOTOAREN 1.mv1");
 	resourcesMap_.emplace(SRC::MAIN_STAGE, res);
 
@@ -96,7 +96,7 @@ void ResourceManager::Init(void)
 	resourcesMap_.emplace(SRC::BUTTON, res);
 
 	// ゴールピン
-	res = new RES(RES_T::MODEL, PATH_MDL + "Object/kinoko01.mv1");
+	res = new RES(RES_T::MODEL, PATH_MDL + "Object/torii.mv1");
 	resourcesMap_.emplace(SRC::BUTTON, res);
 }
 
