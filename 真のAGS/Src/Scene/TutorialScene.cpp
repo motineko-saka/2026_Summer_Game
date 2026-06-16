@@ -16,6 +16,55 @@
 #include "TutorialScene.h"
 #include "../UI/Tutorial.h" 
 
+// ワールド座標をカメラ（ビュー）に基づきスクリーン座標へ射影するヘルパー
+// vpW/vpH は描画対象のビューポート幅・高さ（ここでは各スクリーンハンドルのサイズ）
+// 返り値: true=カメラ前方にあり射影可能 / false=背面（描画しない）
+static bool WorldToScreen(const VECTOR& worldPos, const Camera* cam, int vpW, int vpH, float& outX, float& outY)
+{
+	// カメラ情報取得
+	const VECTOR camPos = cam->GetPos();
+	const VECTOR camTarget = cam->GetTargetPos();
+
+	// 前方ベクトル
+	VECTOR forward = VSub(camTarget, camPos);
+	forward = VNorm(forward);
+
+	// カメラの上ベクトル（Quaternion から取得）
+	VECTOR up = cam->GetQuaRot().GetUp();
+
+	// 右ベクトル = forward x up
+	VECTOR right;
+	right.x = forward.y * up.z - forward.z * up.y;
+	right.y = forward.z * up.x - forward.x * up.z;
+	right.z = forward.x * up.y - forward.y * up.x;
+	right = VNorm(right);
+
+	// ワールド空間での対象位置をカメラローカルに変換（内積で座標取得）
+	VECTOR dir = VSub(worldPos, camPos);
+	float z = forward.x * dir.x + forward.y * dir.y + forward.z * dir.z;
+
+	// カメラの後ろにあるなら描画しない
+	if (z <= 0.001f) return false;
+
+	float x = right.x * dir.x + right.y * dir.y + right.z * dir.z;
+	float y = up.x * dir.x + up.y * dir.y + up.z * dir.z;
+
+	// 単純な透視投影 (FOV は DxLib デフォルトに合わせておおよそ 60deg)
+	const float fovY = 60.0f * (DX_PI_F / 180.0f);
+	const float tanHalf = tanf(fovY * 0.5f);
+	const float aspect = static_cast<float>(vpW) / static_cast<float>(vpH);
+
+	// 正規化デバイス座標（-1..1）
+	float ndcX = (x / z) / (tanHalf * aspect);
+	float ndcY = (y / z) / tanHalf;
+
+	// スクリーン座標に変換（左上が (0,0)）
+	outX = (ndcX * 0.5f + 0.5f) * vpW;
+	outY = (-ndcY * 0.5f + 0.5f) * vpH;
+
+	return true;
+}
+
 TutorialScene::TutorialScene(void)
 	:
 	stageManager_(nullptr),
@@ -36,7 +85,6 @@ TutorialScene::TutorialScene(void)
 
 TutorialScene::~TutorialScene(void)
 {
-	Release();
 }
 
 void TutorialScene::Init(void)
@@ -72,29 +120,6 @@ void TutorialScene::Init(void)
 	player2_ = players_[1].player_;
 	camera1_ = players_[0].camera_;
 	camera2_ = players_[1].camera_;
-
-	//// カメラ1の作成(プレイヤー1用)
-	//camera1_ = new Camera();
-	//camera1_->Init();
-
-	//// カメラ2の作成(プレイヤー2用)
-	//camera2_ = new Camera();
-	//camera2_->Init();
-
-	//// プレイヤー1
-	//player1_ = new Player(Player::PLAYER_NO::PLAYER1, *camera1_);
-	//player1_->Init();
-
-	//camera1_->SetFollow(&player1_->GetTransform());
-	//camera1_->ChangeMode(Camera::MODE::FOLLOW);
-
-
-	//// プレイヤー2(プレイヤー1を複製)
-	//player2_ = new Player(Player::PLAYER_NO::PLAYER2, *camera2_);
-	//player2_->Init();
-
-	//camera2_->SetFollow(&player2_->GetTransform());
-	//camera2_->ChangeMode(Camera::MODE::FOLLOW);
 
 	// ステージ
 	stageManager_ = new StageManager();
@@ -134,9 +159,6 @@ void TutorialScene::Init(void)
 	objects_.push_back(new ObjectBase(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[3], ObjectBase::OBJECT_TYPE::PRESS_BUTTON));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ -900.0f, -500.0f, 900.5f });
-	//objects_.back()->SetPosition({500.0f, -720.0f, -50.5f });
-	//objects_.back()->SetPosition({ 1260.0f, -720.0f, -50.5f });
-	//objects_.back()->SetPosition({ 0.0f, 80.0f, -50.0f });
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 
 
@@ -521,6 +543,11 @@ void TutorialScene::DrawPlayer1Screen(void)
 	{
 		if (obj == nullptr) continue;
 		obj->Draw();
+		// ボタンオブジェクトがどれかわかるようにオブジェクトの上に↓を描画してわかるようにする
+		if (obj->GetType() == ObjectBase::OBJECT_TYPE::BUTTON)
+		{
+
+		}
 	}
 }
 
@@ -539,6 +566,11 @@ void TutorialScene::DrawPlayer2Screen(void)
 	{
 		if (obj == nullptr) continue;
 		obj->Draw();
+		// 右側スクリーンでも同様にマーカー表示
+		if (obj->GetType() == ObjectBase::OBJECT_TYPE::BUTTON)
+		{
+
+		}
 	}
 }
 
@@ -580,6 +612,10 @@ void TutorialScene::Draw(void)
 		DrawBox(0, 0, halfWidth, screenHeight_, GetColor(0, 0, 0), TRUE);
 	}
 	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+	// BUTTONの上の位置にマーカーを描画
+
+
 
 #pragma region デバッグ表示
 	// デバッグ表示
