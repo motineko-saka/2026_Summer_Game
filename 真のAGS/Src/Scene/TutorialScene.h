@@ -39,6 +39,12 @@ public:
 	// 初期化
 	void Init(void) override;
 
+	// ロード
+	void Load(void) override;
+
+	// ロード後の初期化
+	void LoadEnd(void) override;
+
 	// 更新
 	void Update(void) override;
 

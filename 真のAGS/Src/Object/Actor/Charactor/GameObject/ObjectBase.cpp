@@ -132,7 +132,7 @@ void ObjectBase::InitPost(void)
 
 void ObjectBase::UpdateProcess(void)
 {
-	if (InputManager::GetInstance().IsTrgDown(KEY_INPUT_C))
+	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_C))
 	{
 		world_ = (world_ == SceneBase::WORLD::LEFT) ? SceneBase::WORLD::RIGHT : SceneBase::WORLD::LEFT;
 		transform_.pos.x = -transform_.pos.x;

@@ -14,6 +14,8 @@
 #include "../Object/Actor/Wall.h"
 #include "../Object/Collider/ColliderBase.h"
 #include "GameScene.h"
+#include "GameClearScene.h"
+#include "PauseScene.h"
 
 GameScene::GameScene(void)
 	:
@@ -35,7 +37,7 @@ GameScene::GameScene(void)
 
 GameScene::~GameScene(void)
 {
-	Release();
+	//Release();
 }
 
 void GameScene::Init(void)
@@ -225,6 +227,15 @@ void GameScene::Init(void)
 	camera2_->SetControlEnabled(false);
 }
 
+void GameScene::Load(void)
+{
+}
+
+void GameScene::LoadEnd(void)
+{
+	Init();
+}
+
 void GameScene::CheckCollisions(void)
 {
 	isPlayer1HitObject_ = false;
@@ -329,7 +340,7 @@ const void GameScene::ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*>& n
 
 	// ボタンの近くにいて、スペースキーか左ボタンが押されたら
 	if (isNearButton &&
-		(InputManager::GetInstance().IsTrgDown(KEY_INPUT_SPACE) || InputManager::GetInstance().IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::LEFT)))
+		(InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE) || InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::LEFT)))
 	{
 		obj.SetButtomPushed(true);
 		// 直接追加せず、一時リストに格納
@@ -365,11 +376,15 @@ const void GameScene::MakeNewObject(std::vector<ObjectBase*>& newObjects)
 
 void GameScene::Update(void)
 {
-	// シーン遷移
-	auto const& ins = InputManager::GetInstance();
+
+	// ポーズ画面を積む
+	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_ESCAPE))
+	{
+		SceneManager::GetInstance()->PushScene(std::make_shared<PauseScene>());
+	}
 
 	// プレイヤー選択切替
-	if (ins.IsTrgDown(KEY_INPUT_TAB))
+	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_TAB))
 	{
 		if (activePlayer_ == Player::PLAYER_NO::PLAYER1)
 		{
@@ -390,7 +405,7 @@ void GameScene::Update(void)
 	}
 
 	// 右クリックでもプレイヤー切替
-	if (ins.IsTrgMouseRight())
+	if (InputManager::GetInstance()->IsTrgMouseRight())
 	{
 		if (activePlayer_ == Player::PLAYER_NO::PLAYER1)
 		{
@@ -467,7 +482,7 @@ void GameScene::Update(void)
 
 	if (isAnswer)
 	{
-		sceMng_.ChangeScene(SceneManager::SCENE_ID::GAMECLEAR);
+		SceneManager::GetInstance()->ChangeScene(std::make_shared<GameClearScene>());
 	}
 }
 

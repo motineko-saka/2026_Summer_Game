@@ -341,7 +341,7 @@ void EnemyRobot::UpdateThink(void)
 
 void EnemyRobot::UpdateIdle(void)
 {
-	step_ -= scnMng_.GetDeltaTime();
+	step_ -= SceneManager::GetInstance()->GetDeltaTime();
 	if (step_ < 0.0f)
 	{
 		// ‘Ò‹@I—¹

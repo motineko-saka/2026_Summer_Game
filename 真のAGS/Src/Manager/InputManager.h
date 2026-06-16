@@ -1,20 +1,11 @@
 #pragma once
-#include <vector>
 #include <map>
 #include <Dxlib.h>
 #include "../Common/Vector2.h"
 
 class InputManager
 {
-
 public:
-
-	// アナログキーの最大値
-	static constexpr float AKEY_VAL_MAX = 1000.0f;
-
-	// アナログキーの入力受付しきい値(0.0～1.0)
-	static constexpr float THRESHOLD = 0.35f;
-
 	// ゲームコントローラーの認識番号
 	// DxLib定数、DX_INPUT_PAD1等に対応
 	enum class JOYPAD_NO
@@ -69,20 +60,21 @@ public:
 		int AKeyRY;
 	};
 
-	// インスタンスを明示的に生成
-	static void CreateInstance(void);
+	// アナログキーの最大値
+	static constexpr float AKEY_VAL_MAX = 1000.0f;
 
-	// インスタンスの取得
-	static InputManager& GetInstance(void);
+	// アナログキーの入力受付しきい値(0.0～1.0)
+	static constexpr float THRESHOLD = 0.35f;
 
-	// 初期化
-	void Init(void);
+public:
+	// シングルトン（生成・取得・削除）
+	static void CreateInstance(void) { if (instance_ == nullptr) { instance_ = new InputManager(); } };
+	static InputManager* GetInstance(void) { return instance_; };
+	static void DeleteInstance(void) { if (instance_ != nullptr) { delete instance_; instance_ = nullptr; } }
 
-	// 更新
-	void Update(void);
-
-	// リソースの破棄
-	void Destroy(void);
+public:
+	void Init(void);	// 初期化
+	void Update(void);	// 更新
 
 	// 判定を行うキーを追加
 	void Add(int key);
@@ -150,6 +142,7 @@ private:
 		bool keyTrgUp;		// 現フレームでボタンが離されたか
 	};
 
+private:
 	// コントローラ情報
 	DINPUT_JOYSTATE joyDInState_;
 
@@ -169,7 +162,7 @@ private:
 
 	// マウスカーソルの位置
 	Vector2 mousePos_;
-	
+
 	// マウスボタンの入力状態
 	int mouseInput_;
 
@@ -179,12 +172,8 @@ private:
 	// デフォルトコンストラクタをprivateにして、
 	// 外部から生成できない様にする
 	InputManager(void);
-
-	// コピーコンストラクタも同様
-	InputManager(const InputManager& instance) = default;
-
-	// デストラクタも同様
-	~InputManager(void) = default;
+	InputManager(const InputManager& manager);
+	~InputManager(void);
 
 	// 配列の中からキー情報を取得する
 	const InputManager::Info& Find(int key) const;
@@ -193,7 +182,7 @@ private:
 	const InputManager::MouseInfo& FindMouse(int key) const;
 
 	// 接続されたコントローラの種別を取得する
-	JOYPAD_TYPE GetJPadType(JOYPAD_NO no) const;
+	JOYPAD_TYPE GetJPadType(JOYPAD_NO no);
 
 	// コントローラの入力情報を取得する
 	DINPUT_JOYSTATE GetJPadDInputState(JOYPAD_NO no);
