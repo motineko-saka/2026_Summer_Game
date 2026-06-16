@@ -65,29 +65,32 @@ void Application::Init(void)
 	// 入力制御初期化
 	SetUseDirectInputFlag(true);
 	InputManager::CreateInstance();
+	// キー登録等の初期化
+	InputManager::GetInstance()->Init();
 
 	// リソース管理初期化
 	ResourceManager::CreateInstance();
 
 	// シーン管理初期化
 	SceneManager::CreateInstance();
+	SceneManager::GetInstance()->Init();
 
 }
 
 void Application::Run(void)
 {
 
-	InputManager& inputManager = InputManager::GetInstance();
-	SceneManager& sceneManager = SceneManager::GetInstance();
 
 	// ゲームループ
-	while (ProcessMessage() == 0 && CheckHitKey(KEY_INPUT_ESCAPE) == 0)
+	while (ProcessMessage() == 0 && !SceneManager::GetInstance()->GetGameEnd())
 	{
+		InputManager::GetInstance()->Update();
+		SceneManager::GetInstance()->Update();
 
-		inputManager.Update();
-		sceneManager.Update();
+		SetDrawScreen(DX_SCREEN_BACK);
+		ClearDrawScreen();
 
-		sceneManager.Draw();
+		SceneManager::GetInstance()->Draw();
 
 #ifdef _DEBUG
 		// 平均FPS描画
@@ -104,14 +107,18 @@ void Application::Run(void)
 
 void Application::Destroy(void)
 {
+	// 入力制御の開放
+	InputManager::DeleteInstance();
+
 	// FPS制御メモリ解放
 	delete fpsController_;
 
-	InputManager::GetInstance().Destroy();
-	ResourceManager::GetInstance().Destroy();
-	
 	// シーン管理解放
-	SceneManager::GetInstance().Destroy();
+	SceneManager::GetInstance()->Release();
+	SceneManager::DeleteInstance();
+
+	ResourceManager::GetInstance().Destroy();
+
 
 	// Effekseerを終了する。
 	Effkseer_End();

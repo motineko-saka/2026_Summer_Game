@@ -32,6 +32,12 @@ public:
 	// ‰Šú‰»
 	void Init(void) override;
 
+	// “Ç‚İ‚İ
+	void Load(void)		override;
+
+	// “Ç‚İ‚İŒã‚Ì‰Šú‰»
+	void LoadEnd(void)	override;
+
 	// XV
 	void Update(void) override;
 

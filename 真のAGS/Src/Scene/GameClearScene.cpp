@@ -1,6 +1,8 @@
 #include "../Manager/InputManager.h"
 #include "../Manager/SceneManager.h"
 #include "GameClearScene.h"
+#include "TitleScene.h"
+
 
 GameClearScene::GameClearScene(void)
 {
@@ -15,13 +17,21 @@ void GameClearScene::Init(void)
 {
 }
 
+void GameClearScene::Load(void)
+{
+}
+
+void GameClearScene::LoadEnd(void)
+{
+	Init();
+}
+
 void GameClearScene::Update(void)
 {
 	// ƒV[ƒ“‘JˆÚ
-	auto const& ins = InputManager::GetInstance();
-	if (ins.IsTrgDown(KEY_INPUT_SPACE))
+	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE))
 	{
-		sceMng_.ChangeScene(SceneManager::SCENE_ID::TITLE);
+		SceneManager::GetInstance()->ChangeScene(std::make_shared<TitleScene>());
 	}
 }
 
