@@ -114,22 +114,22 @@ void TutorialScene::Init(void)
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ 1260.0f, -720.0f, -50.5f });
 	objects_.back()->SetPosition({ 1260.0f, -500.0f, -50.5f });
-	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
+	objects_.back()->SetScale({ 0.5, 0.5, 0.5 });
 
 	objects_.push_back(new ObjectBase(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::WBOX));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ 1260.0f, -720.0f, -50.5f });
-	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
+	objects_.back()->SetScale({ 0.5, 0.5, 0.5 });
 
 	objects_.push_back(new ObjectBase(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[2], ObjectBase::OBJECT_TYPE::AKEG));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ -1260.0f, -720.0f, -50.5f });
-	objects_.back()->SetScale({ 0.5, 0.5, 0.5 });
+	objects_.back()->SetScale({ 0.2, 0.2, 0.2 });
 
 	objects_.push_back(new ObjectBase(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[3], ObjectBase::OBJECT_TYPE::BUTTOM));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ 0.0f, 80.0f, -50.0f });
-	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
+	objects_.back()->SetScale({ 0.5, 0.5, 0.5 });
 
 	// ステージの各コライダをプレイヤー／カメラ／オブジェクトに登録
 	for (const auto& stage : stageManager_->GetStage())
@@ -253,13 +253,33 @@ void TutorialScene::Init(void)
 	}
 	tutorial_.AddStep(
 		"ボタン操作の練習：ボタンの近くで Space を押してください。\nボタンを押すと次へ進みます。",
-		[this, buttonObj]() -> bool {
-			if (!buttonObj) return false;
-			VECTOR bpos = buttonObj->GetTransform().pos;
-			VECTOR p1 = player1_->GetTransform().pos;
-			if (VSize(VSub(p1, bpos)) < 180.0f && InputManager::GetInstance().IsTrgDown(KEY_INPUT_SPACE)) return true;
-			VECTOR p2 = player2_->GetTransform().pos;
-			if (VSize(VSub(p2, bpos)) < 180.0f && InputManager::GetInstance().IsTrgDown(KEY_INPUT_SPACE)) return true;
+		[this]() -> bool {
+			if (InputManager::GetInstance().IsTrgDown(KEY_INPUT_SPACE))
+			{
+				for (auto* obj : objects_)
+				{
+					if (obj == nullptr) continue;
+
+					if (obj->GetType() == ObjectBase::OBJECT_TYPE::BUTTOM)
+					{
+						VECTOR objectPos = obj->GetTransform().pos;
+
+						VECTOR player1Pos = player1_->GetTransform().pos;
+						float distance1 = VSize(VSub(player1Pos, objectPos));
+						if (distance1 < 180.0f)
+						{
+							obj->SetButtomPushed(true);
+						}
+
+						VECTOR player2Pos = player2_->GetTransform().pos;
+						float distance2 = VSize(VSub(player2Pos, objectPos));
+						if (distance2 < 180.0f)
+						{
+							obj->SetButtomPushed(true);
+						}
+					}
+				}
+			}
 			return false;
 		}
 	);
@@ -365,7 +385,6 @@ void TutorialScene::Update(void)
 {
 	// チュートリアル更新
 	tutorial_.Update();
-	// 注意：チュートリアル中もプレイヤー／カメラの Update を行うため early return は行わない
 
 	// シーン遷移
 	auto const& ins = InputManager::GetInstance();
@@ -456,7 +475,7 @@ void TutorialScene::DrawPlayer1Screen(void)
 	stageManager_->Draw();
 	skyDome_->Draw();
 	player1_->Draw();
-	player2_->Draw(); // プレイヤー2も描画(同じ世界にいる場合)
+	player2_->Draw(); // プレイヤー2も描画
 
 	for (auto* obj : objects_)
 	{
