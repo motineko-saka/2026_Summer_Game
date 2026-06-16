@@ -37,9 +37,10 @@ void Camera::Update(void)
 	if (!controlEnabled_) return;
 
 	// Ctrlキーで TOP モードと前のモードを切り替える
+	auto& ins = InputManager::GetInstance();
 
 	// 押下トリガーで切替（左または右 Ctrl）
-	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_LCONTROL) || InputManager::GetInstance()->IsTrgDown(KEY_INPUT_RCONTROL))
+	if (ins.IsTrgDown(KEY_INPUT_LCONTROL) || ins.IsTrgDown(KEY_INPUT_RCONTROL))
 	{
 		if (mode_ != MODE::TOP)
 		{
@@ -139,8 +140,8 @@ void Camera::InitAnimation(void)
 
 void Camera::InitPost(void)
 {
-	InputManager::GetInstance()->Add(KEY_INPUT_LCONTROL);
-	InputManager::GetInstance()->Add(KEY_INPUT_RCONTROL);
+	InputManager::GetInstance().Add(KEY_INPUT_LCONTROL);
+	InputManager::GetInstance().Add(KEY_INPUT_RCONTROL);
 	ChangeMode(MODE::FIXED_POINT);
 
 	isCollision_ = false;
@@ -265,23 +266,24 @@ void Camera::ProcessMove(void)
 {
 	if (!controlEnabled_) return;
 
+	auto& ins = InputManager::GetInstance();
 
 	VECTOR moveDir = AsoUtility::VECTOR_ZERO;
 
 	if (GetJoypadNum() == 0)
 	{
-		if (InputManager::GetInstance()->IsNew(KEY_INPUT_W)) { moveDir = AsoUtility::DIR_F; }
-		if (InputManager::GetInstance()->IsNew(KEY_INPUT_S)) { moveDir = AsoUtility::DIR_B; }
-		if (InputManager::GetInstance()->IsNew(KEY_INPUT_A)) { moveDir = AsoUtility::DIR_L; }
-		if (InputManager::GetInstance()->IsNew(KEY_INPUT_D)) { moveDir = AsoUtility::DIR_R; }
+		if (ins.IsNew(KEY_INPUT_W)) { moveDir = AsoUtility::DIR_F; }
+		if (ins.IsNew(KEY_INPUT_S)) { moveDir = AsoUtility::DIR_B; }
+		if (ins.IsNew(KEY_INPUT_A)) { moveDir = AsoUtility::DIR_L; }
+		if (ins.IsNew(KEY_INPUT_D)) { moveDir = AsoUtility::DIR_R; }
 	}
 	else
 	{
 		InputManager::JOYPAD_IN_STATE padState =
-			InputManager::GetInstance()->GetJPadInputState(InputManager::JOYPAD_NO::PAD1);
+			ins.GetJPadInputState(InputManager::JOYPAD_NO::PAD1);
 
 		// 左スティックの傾き
-		moveDir = InputManager::GetInstance()->GetDirectionXZAKey(padState.AKeyLX, padState.AKeyLY);
+		moveDir = ins.GetDirectionXZAKey(padState.AKeyLX, padState.AKeyLY);
 	}
 
 	// 移動処理
@@ -426,21 +428,22 @@ void Camera::Collision(void)
 
 void Camera::RotKeyboard(bool isLimit)
 {
+	const auto& ins = InputManager::GetInstance();
 
 	// カメラ回転
-	if (InputManager::GetInstance()->IsNew(KEY_INPUT_RIGHT))
+	if (ins.IsNew(KEY_INPUT_RIGHT))
 	{
 		// 右回転
 		angles_.y += ROT_POW_RAD;
 	}
-	if (InputManager::GetInstance()->IsNew(KEY_INPUT_LEFT))
+	if (ins.IsNew(KEY_INPUT_LEFT))
 	{
 		// 左回転
 		angles_.y -= ROT_POW_RAD;
 	}
 
 	// 上回転
-	if (InputManager::GetInstance()->IsNew(KEY_INPUT_UP))
+	if (ins.IsNew(KEY_INPUT_UP))
 	{
 		angles_.x += ROT_POW_RAD;
 		if (isLimit && angles_.x > LIMIT_X_UP_RAD)
@@ -450,7 +453,7 @@ void Camera::RotKeyboard(bool isLimit)
 	}
 
 	// 下回転
-	if (InputManager::GetInstance()->IsNew(KEY_INPUT_DOWN))
+	if (ins.IsNew(KEY_INPUT_DOWN))
 	{
 		angles_.x -= ROT_POW_RAD;
 		if (isLimit && angles_.x < -LIMIT_X_DW_RAD)
@@ -463,12 +466,14 @@ void Camera::RotKeyboard(bool isLimit)
 void Camera::RotGamePad(bool isLimit)
 {
 
+	auto& ins = InputManager::GetInstance();
+
 	// 接続されているゲームパッド１の情報を取得
 	InputManager::JOYPAD_IN_STATE padState =
-		InputManager::GetInstance()->GetJPadInputState(InputManager::JOYPAD_NO::PAD1);
+		ins.GetJPadInputState(InputManager::JOYPAD_NO::PAD1);
 
 	// 右スティックの傾き
-	VECTOR dir = InputManager::GetInstance()->GetDirectionXZAKey(padState.AKeyRX, padState.AKeyRY);
+	VECTOR dir = ins.GetDirectionXZAKey(padState.AKeyRX, padState.AKeyRY);
 
 	// 右スティック左右の傾き
 	angles_.y += dir.x * ROT_POW_RAD;

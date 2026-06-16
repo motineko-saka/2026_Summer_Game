@@ -26,7 +26,7 @@ void DebugScene::Init(void)
 	stage_->Init();
 
 	// カメラの追従設定
-	Camera* camera = SceneManager::GetInstance()->GetCamera();
+	Camera* camera = sceMng_.GetCamera();
 	camera->ChangeMode(Camera::MODE::FREE);
 }
 
@@ -74,11 +74,13 @@ void DebugScene::Release(void)
 }
 void DebugScene::PlaceDebugPoint(void)
 {
+	const auto& ins = InputManager::GetInstance();
+
 	// クリックした場所にデバッグポイントを配置
-	if (InputManager::GetInstance()->IsTrgMouseLeft())
+	if (ins.IsTrgMouseLeft())
 	{
 		// マウス座標の取得
-		Vector2 mousePos = InputManager::GetInstance()->GetMousePos();
+		Vector2 mousePos = ins.GetMousePos();
 
 		// スクリーン座標をVECTOR構造体に変換
 		VECTOR screenPos = VECTOR();
@@ -104,11 +106,12 @@ void DebugScene::PlaceDebugPoint(void)
 			dynamic_cast<const ColliderModel*>(collider);
 
 		// カメラ情報を取得
+		const auto& camera = SceneManager::GetInstance().GetCamera();
 
 		// カメラの位置からカメラ最奥のワールド座標へ向けてレイを飛ばす
 		auto hit = MV1CollCheck_Line(
 			colliderModel->GetFollow()->modelId, -1,
-			SceneManager::GetInstance()->GetCamera()->GetPos(),
+			camera->GetPos(),
 			worldPos
 		);
 
@@ -120,7 +123,7 @@ void DebugScene::PlaceDebugPoint(void)
 	}
 
 	// 右クリックで最後のデバッグポイントを削除
-	if (InputManager::GetInstance()->IsTrgMouseRight())
+	if (ins.IsTrgMouseRight())
 	{
 		if (points_.size() > 0)
 		{
@@ -128,7 +131,7 @@ void DebugScene::PlaceDebugPoint(void)
 		}
 	}
 
-	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE))
+	if (ins.IsTrgDown(KEY_INPUT_SPACE))
 	{
 		// デバッグポイントの保存
 		SavePoints();

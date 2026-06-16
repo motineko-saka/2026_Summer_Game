@@ -6,6 +6,7 @@
 ActorBase::ActorBase(void)
 	: 
 	resMng_(ResourceManager::GetInstance()),
+	scnMng_(SceneManager::GetInstance()),
 	transform_()
 {
 }

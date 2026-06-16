@@ -5,6 +5,7 @@
 #include "../Common/Transform.h"
 
 class ResourceManager;
+class SceneManager;
 
 class ActorBase
 {
@@ -51,6 +52,7 @@ protected:
 
 	// シングルトン参照
 	ResourceManager& resMng_;
+	SceneManager& scnMng_;
 
 	// モデル制御の基本情報
 	Transform transform_;

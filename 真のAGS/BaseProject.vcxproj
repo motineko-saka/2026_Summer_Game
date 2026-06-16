@@ -20,7 +20,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\Audio\AudioManager.cpp" />
-    <ClCompile Include="Src\Loading\Loading.cpp" />
     <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Button.cpp" />
     <ClCompile Include="Src\Object\Actor\Charactor\GameObject\ObjectBase.cpp" />
     <ClCompile Include="Src\Scene\GameClearScene.cpp" />
@@ -54,7 +53,6 @@
     <ClCompile Include="Src\Object\Common\Transform.cpp" />
     <ClCompile Include="Src\Scene\DebugScene.cpp" />
     <ClCompile Include="Src\Scene\GameScene.cpp" />
-    <ClCompile Include="Src\Scene\PauseScene.cpp" />
     <ClCompile Include="Src\Scene\SceneBase.cpp" />
     <ClCompile Include="Src\Scene\TitleScene.cpp" />
     <ClCompile Include="Src\Audio\SoundTable.cpp" />
@@ -69,7 +67,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Src\Audio\AudioManager.h" />
-    <ClInclude Include="Src\Loading\Loading.h" />
     <ClInclude Include="Src\Object\Actor\Charactor\GameObject\Button.h" />
     <ClInclude Include="Src\Object\Actor\Charactor\GameObject\ObjectBase.h" />
     <ClInclude Include="Src\Scene\GameClearScene.h" />
@@ -103,7 +100,6 @@
     <ClInclude Include="Src\Object\Common\Transform.h" />
     <ClInclude Include="Src\Scene\DebugScene.h" />
     <ClInclude Include="Src\Scene\GameScene.h" />
-    <ClInclude Include="Src\Scene\PauseScene.h" />
     <ClInclude Include="Src\Scene\SceneBase.h" />
     <ClInclude Include="Src\Scene\TitleScene.h" />
     <ClInclude Include="Src\Audio\SoundTable.h" />

@@ -1,71 +1,60 @@
 #pragma once
-
-#include<memory>
-#include<list>
-#include<chrono>
-
+#include <chrono>
+#include <DxLib.h>
 class SceneBase;
 class Fader;
 class Camera;
 
 class SceneManager
 {
+
 public:
-	static constexpr float DEFAULT_FPS = 60.0f;
 
 	// 背景色
 	static constexpr int BACKGROUND_COLOR_R = 0;
 	static constexpr int BACKGROUND_COLOR_G = 139;
 	static constexpr int BACKGROUND_COLOR_B = 139;
 
-public:
-	// シングルトン（生成・取得・削除）
-	static void CreateInstance(void) { if (instance_ == nullptr) { instance_ = new SceneManager(); } };
-	static SceneManager* GetInstance(void) { return instance_; };
-	static void DeleteInstance(void) { if (instance_ != nullptr) { delete instance_; instance_ = nullptr; } }
+	// ディレクショナルライトの方向
+	static constexpr VECTOR LIGHT_DIRECTION = { 0.3f, -0.7f, 0.8f };
 
-private:
-	// デフォルトコンストラクタをprivateにして、
-	// 外部から生成できない様にする
-	SceneManager(void);
-	// デストラクタも同様
-	~SceneManager(void);
+	// シーン管理用
+	enum class SCENE_ID
+	{
+		NONE,
+		TITLE,
+		TUTORIAL,
+		GAME,
+		GAMECLEAR,
+		DEBUG,
+	};
+	
+	// インスタンスの生成
+	static void CreateInstance(void);
 
-	// コピー・ムーブ操作を禁止
-	SceneManager(const SceneManager&) = delete;
-	SceneManager& operator=(const SceneManager&) = delete;
-	SceneManager(SceneManager&&) = delete;
-	SceneManager& operator=(SceneManager&&) = delete;
+	// インスタンスの取得
+	static SceneManager& GetInstance(void);
 
-	// 下記をコンパイルエラーさせるため 上記を追加
-	// SceneManager copy = *SceneManager::GetInstance();
-	// SceneManager copied(*SceneManager::GetInstance());
-	// SceneManager moved = std::move(*SceneManager::GetInstance());
-public:
+	// 初期化
+	void Init(void);
+	
+	// 3Dの初期化
+	void Init3D(void);
 
-	void Init(void);	// 初期化
-	void Init3D(void);  // 3Dオブジェクトの初期化
-	void Update(void);	// 更新
-	void Draw(void);	// 描画
-	void Release(void);	// 解放
+	// 更新
+	void Update(void);
+
+	// 描画
+	void Draw(void);
+
+	// リソースの破棄
+	void Destroy(void);
 
 	// 状態遷移
-	void ChangeScene(std::shared_ptr<SceneBase> scene);
+	void ChangeScene(SCENE_ID nextId);
 
-	// シーンを新しく積む
-	void PushScene(std::shared_ptr<SceneBase> scene);
-
-	// 最後に追加したシーンを削除する。
-	void PopScene(void);
-
-	// 強制的に特定のシーンに飛ぶ。リセットをかけ特定のシーンのみにする。
-	void JumpScene(std::shared_ptr<SceneBase> scene);
-
-	// ゲーム終了
-	void GameEnd(void) { isGameEnd_ = true; }
-
-	// ゲーム終了取得
-	bool GetGameEnd(void) { return isGameEnd_; }
+	// シーンIDの取得
+	SCENE_ID GetSceneID(void);
 
 	// デルタタイムの取得
 	float GetDeltaTime(void) const;
@@ -73,25 +62,47 @@ public:
 	// カメラの取得
 	Camera* GetCamera(void) const;
 
-
 private:
 
 	// 静的インスタンス
 	static SceneManager* instance_;
 
-	//Drawの関係上Backを最新のシーンとする
-	//基本的には要素は一つだけだがポーズシーンなどが積み重なる形
-	std::list<std::shared_ptr<SceneBase>>scenes_;
+	SCENE_ID sceneId_;
+	SCENE_ID waitSceneId_;
+
+	// フェード
+	Fader* fader_;
+
+	// 各種シーン
+	SceneBase* scene_;
 
 	// カメラ
 	Camera* camera_;
 
-	// ゲーム終了
-	bool isGameEnd_;
+	// シーン遷移中判定
+	bool isSceneChanging_;
 
+	// デルタタイム
 	std::chrono::system_clock::time_point preTime_;
 	float deltaTime_;
+	
+	// デフォルトコンストラクタをprivateにして、
+	// 外部から生成できない様にする
+	SceneManager(void);
+
+	// コピーコンストラクタも同様
+	SceneManager(const SceneManager& instance) = default;
+
+	// デストラクタも同様
+	~SceneManager(void) = default;
 
 	// デルタタイムをリセットする
 	void ResetDeltaTime(void);
+
+	// シーン遷移
+	void DoChangeScene(SCENE_ID sceneId);
+
+	// フェード
+	void Fade(void);
+
 };

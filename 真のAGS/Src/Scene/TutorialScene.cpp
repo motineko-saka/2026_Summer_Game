@@ -15,8 +15,6 @@
 #include "../Object/Collider/ColliderBase.h"
 #include "TutorialScene.h"
 #include "../UI/Tutorial.h" 
-#include "GameClearScene.h"
-#include "PauseScene.h"
 
 TutorialScene::TutorialScene(void)
 	:
@@ -38,7 +36,7 @@ TutorialScene::TutorialScene(void)
 
 TutorialScene::~TutorialScene(void)
 {
-	//Release();
+	Release();
 }
 
 void TutorialScene::Init(void)
@@ -250,7 +248,8 @@ void TutorialScene::Init(void)
 	tutorial_.AddStep(
 		"キャラクター切替の練習：Tab または 右クリックで操作キャラを切り替えてください。\n切替操作を行うと次へ進みます。",
 		[]() -> bool {
-			return InputManager::GetInstance()->IsTrgDown(KEY_INPUT_TAB) || InputManager::GetInstance()->IsTrgMouseRight();
+			auto const& in = InputManager::GetInstance();
+			return in.IsTrgDown(KEY_INPUT_TAB) || in.IsTrgMouseRight();
 		}
 	);
 
@@ -264,10 +263,10 @@ void TutorialScene::Init(void)
 				VECTOR objPos = obj->GetTransform().pos;
 				VECTOR p1Pos = player1_->GetTransform().pos;
 				float dist1 = VSize(VSub(p1Pos, objPos));
-				if (dist1 < 180.0f && InputManager::GetInstance()->IsTrgDown(KEY_INPUT_E)) return true;
+				if (dist1 < 180.0f && InputManager::GetInstance().IsTrgDown(KEY_INPUT_E)) return true;
 				VECTOR p2Pos = player2_->GetTransform().pos;
 				float dist2 = VSize(VSub(p2Pos, objPos));
-				if (dist2 < 180.0f && InputManager::GetInstance()->IsTrgDown(KEY_INPUT_E)) return true;
+				if (dist2 < 180.0f && InputManager::GetInstance().IsTrgDown(KEY_INPUT_E)) return true;
 			}
 			return false;
 		}
@@ -295,7 +294,7 @@ void TutorialScene::Init(void)
 	tutorial_.AddStep(
 		"ボタン操作の練習：ボタンの近くで Space を押してください。\nボタンを押すと次へ進みます。",
 		[this]() -> bool {
-			if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE))
+			if (InputManager::GetInstance().IsTrgDown(KEY_INPUT_SPACE))
 			{
 				for (auto* obj : objects_)
 				{
@@ -337,15 +336,6 @@ void TutorialScene::Init(void)
 	tutorial_.Start();
 }
 
-void TutorialScene::Load(void)
-{
-}
-
-void TutorialScene::LoadEnd(void)
-{
-	Init();
-}
-
 void TutorialScene::CheckCollisions(void)
 {
 	// 各オブジェクトに対してプレイヤーとの距離判定を行う
@@ -377,7 +367,7 @@ void TutorialScene::CheckCollisions(void)
 				isNearButton = true;
 			}
 
-			if (isNearButton && InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE))
+			if (isNearButton && InputManager::GetInstance().IsTrgDown(KEY_INPUT_SPACE))
 			{
 				obj->SetButtomPushed(true);
 			}
@@ -403,7 +393,7 @@ void TutorialScene::CheckCollisions(void)
 		}
 	}
 
-	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE))
+	if (InputManager::GetInstance().IsTrgDown(KEY_INPUT_SPACE))
 	{
 		for (auto* obj : objects_)
 		{
@@ -437,12 +427,10 @@ void TutorialScene::Update(void)
 	tutorial_.Update();
 
 	// シーン遷移
-	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_ESCAPE))
-	{
-		SceneManager::GetInstance()->PushScene(std::make_shared<PauseScene>());
-	}
+	auto const& ins = InputManager::GetInstance();
+
 	// プレイヤー選択切替
-	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_TAB))
+	if (ins.IsTrgDown(KEY_INPUT_TAB))
 	{
 		if (activePlayer_ == Player::PLAYER_NO::PLAYER1)
 		{
@@ -463,7 +451,7 @@ void TutorialScene::Update(void)
 	}
 
 	// 右クリックでもプレイヤー切替
-	if (InputManager::GetInstance()->IsTrgMouseRight())
+	if (ins.IsTrgMouseRight())
 	{
 		if (activePlayer_ == Player::PLAYER_NO::PLAYER1)
 		{
@@ -514,7 +502,7 @@ void TutorialScene::Update(void)
 
 	if (isAnswer)
 	{
-		SceneManager::GetInstance()->ChangeScene(std::make_shared<GameClearScene>());
+		sceMng_.ChangeScene(SceneManager::SCENE_ID::GAMECLEAR);
 	}
 }
 

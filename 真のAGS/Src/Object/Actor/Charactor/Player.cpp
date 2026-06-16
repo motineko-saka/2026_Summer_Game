@@ -164,6 +164,7 @@ void Player::UpdateProcessPost(void)
 
 void Player::ProcessMove(void)
 {
+	auto& ins = InputManager::GetInstance();
 
 	VECTOR dir = AsoUtility::VECTOR_ZERO;
 
@@ -177,28 +178,28 @@ void Player::ProcessMove(void)
 	if (GetJoypadNum() == 0)
 	{
 		// WASD で移動処理
-		if (InputManager::GetInstance()->IsNew(KEY_INPUT_W)) { dir = AsoUtility::DIR_F; }
-		if (InputManager::GetInstance()->IsNew(KEY_INPUT_A)) { dir = AsoUtility::DIR_L; }
-		if (InputManager::GetInstance()->IsNew(KEY_INPUT_S)) { dir = AsoUtility::DIR_B; }
-		if (InputManager::GetInstance()->IsNew(KEY_INPUT_D)) { dir = AsoUtility::DIR_R; }
+		if (ins.IsNew(KEY_INPUT_W)) { dir = AsoUtility::DIR_F; }
+		if (ins.IsNew(KEY_INPUT_A)) { dir = AsoUtility::DIR_L; }
+		if (ins.IsNew(KEY_INPUT_S)) { dir = AsoUtility::DIR_B; }
+		if (ins.IsNew(KEY_INPUT_D)) { dir = AsoUtility::DIR_R; }
 
-		if (InputManager::GetInstance()->IsNew(KEY_INPUT_W) && InputManager::GetInstance()->IsNew(KEY_INPUT_A)) { dir = AsoUtility::DIR_FL; }
-		if (InputManager::GetInstance()->IsNew(KEY_INPUT_W) && InputManager::GetInstance()->IsNew(KEY_INPUT_D)) { dir = AsoUtility::DIR_FR; }
-		if (InputManager::GetInstance()->IsNew(KEY_INPUT_S) && InputManager::GetInstance()->IsNew(KEY_INPUT_A)) { dir = AsoUtility::DIR_BL; }
-		if (InputManager::GetInstance()->IsNew(KEY_INPUT_S) && InputManager::GetInstance()->IsNew(KEY_INPUT_D)) { dir = AsoUtility::DIR_BR; }
+		if (ins.IsNew(KEY_INPUT_W) && ins.IsNew(KEY_INPUT_A)) { dir = AsoUtility::DIR_FL; }
+		if (ins.IsNew(KEY_INPUT_W) && ins.IsNew(KEY_INPUT_D)) { dir = AsoUtility::DIR_FR; }
+		if (ins.IsNew(KEY_INPUT_S) && ins.IsNew(KEY_INPUT_A)) { dir = AsoUtility::DIR_BL; }
+		if (ins.IsNew(KEY_INPUT_S) && ins.IsNew(KEY_INPUT_D)) { dir = AsoUtility::DIR_BR; }
 
-		if (InputManager::GetInstance()->IsNew(KEY_INPUT_RSHIFT)) { isDash = true; }
+		if (ins.IsNew(KEY_INPUT_RSHIFT)) { isDash = true; }
 	}
 	else
 	{
 		// 接続しているゲームパッド1の情報取得（既存の構成に合わせる）
 		InputManager::JOYPAD_IN_STATE padState =
-			InputManager::GetInstance()->GetJPadInputState(InputManager::JOYPAD_NO::PAD1);
+			ins.GetJPadInputState(InputManager::JOYPAD_NO::PAD1);
 
 		// アナログキーの入力値を正規化して取得
-		dir = InputManager::GetInstance()->GetDirectionXZAKey(padState.AKeyLX, padState.AKeyLY);
+		dir = ins.GetDirectionXZAKey(padState.AKeyLX, padState.AKeyLY);
 
-		if (InputManager::GetInstance()->IsPadBtnNew(InputManager::JOYPAD_NO::PAD1,
+		if (ins.IsPadBtnNew(InputManager::JOYPAD_NO::PAD1,
 			InputManager::JOYPAD_BTN::R_TRIGGER))
 		{
 			isDash = true;
@@ -255,16 +256,18 @@ void Player::ProcessMove(void)
 
 void Player::ProcessJump(void)
 {
+	auto& ins = InputManager::GetInstance();
+
 	// プレイヤー番号に応じてジャンプキーを変更
 	bool isHitKeyNew = false;
 	bool isHitKey = false;
 
 	if (playerNo_ == PLAYER_NO::PLAYER1)
 	{
-		isHitKeyNew = InputManager::GetInstance()->IsNew(KEY_INPUT_BACKSLASH)
-			|| InputManager::GetInstance()->IsPadBtnNew(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::DOWN);
-		isHitKey = InputManager::GetInstance()->IsTrgDown(KEY_INPUT_BACKSLASH)
-			|| InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::DOWN);
+		isHitKeyNew = ins.IsNew(KEY_INPUT_BACKSLASH)
+			|| ins.IsPadBtnNew(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::DOWN);
+		isHitKey = ins.IsTrgDown(KEY_INPUT_BACKSLASH)
+			|| ins.IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::DOWN);
 	}
 	//else if (playerNo_ == PLAYER_NO::PLAYER2)
 	//{
@@ -276,11 +279,11 @@ void Player::ProcessJump(void)
 	if (isHitKeyNew)
 	{
 		// ジャンプの入力受付時間加算
-		stepJump_ += SceneManager::GetInstance()->GetDeltaTime();
+		stepJump_ += scnMng_.GetDeltaTime();
 		if (stepJump_ < TIME_JUMP_INPUT)
 		{
 			// ジャンプ力の計算
-			float jumpSpeed = POW_JUMP_KEEP * SceneManager::GetInstance()->GetDeltaTime();
+			float jumpSpeed = POW_JUMP_KEEP * scnMng_.GetDeltaTime();
 			jumpPow_ = VAdd(jumpPow_, VScale(AsoUtility::DIR_U, jumpSpeed));
 		}
 	}
@@ -294,7 +297,7 @@ void Player::ProcessJump(void)
 	if (isHitKey && !isJump_)
 	{
 		// ジャンプ力の計算
-		float jumpSpeed = POW_JUMP_INIT * SceneManager::GetInstance()->GetDeltaTime();
+		float jumpSpeed = POW_JUMP_INIT * scnMng_.GetDeltaTime();
 		jumpPow_ = VScale(AsoUtility::DIR_U, jumpSpeed);
 		isJump_ = true;
 
@@ -368,11 +371,13 @@ void Player::CollisionReserve(void)
 
 void Player::ProcessPickup(void)
 {
+	auto& ins = InputManager::GetInstance();
+
 	// 押下トリガのみ受け付ける
 	bool btnTrg = false;
 
-	btnTrg = InputManager::GetInstance()->IsTrgDown(KEY_INPUT_E)
-		|| InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::TOP);
+	btnTrg = ins.IsTrgDown(KEY_INPUT_E)
+		|| ins.IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::TOP);
 
 	if (btnTrg)
 	{

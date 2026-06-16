@@ -81,7 +81,7 @@ void AnimationController::Update(void)
 {
 
 	// Œo‰ßŠÔ‚Ìæ“¾
-	float deltaTime = SceneManager::GetInstance()->GetDeltaTime();
+	float deltaTime = SceneManager::GetInstance().GetDeltaTime();
 
 	// Ä¶
 	playAnim_.step += (deltaTime * playAnim_.speed);
