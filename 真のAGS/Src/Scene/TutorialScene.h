@@ -51,10 +51,10 @@ public:
 private:
 	constexpr static VECTOR ANSWER_VECTOR = { 1260.0f, -720.0f, -50.5f };
 
-	constexpr static VECTOR ANSWER_VECTOR_LENGTH[] = { {-1260.0f, -720.0f, -50.5f} ,
-														{-1260.0f, -720.0f, -50.5f},
+	constexpr static VECTOR ANSWER_VECTOR_LENGTH[] = { {1260.0f, -720.0f, -50.5f} ,
 														{1260.0f, -720.0f, -50.5f},
 														{-1260.0f, -720.0f, -50.5f},
+														{1260.0f, -720.0f, -50.5f},
 	};
 
 	StageManager* stageManager_;

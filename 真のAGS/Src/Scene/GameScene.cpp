@@ -50,7 +50,7 @@ void GameScene::Init(void)
 	screenHandle1_ = MakeScreen(halfWidth, screenHeight_, true);
 	screenHandle2_ = MakeScreen(halfWidth, screenHeight_, true);
 
-	pinID_ = MV1LoadModel((Application::PATH_MODEL + "Object/torii.mv1").c_str());
+	pinID_ = MV1LoadModel((Application::PATH_MODEL + "Object/kinoko1.mv1").c_str());
 
 	//// カメラ1の作成(プレイヤー1用)
 	//for (int i = 0; i < 2; i++)
@@ -142,6 +142,8 @@ void GameScene::Init(void)
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 
 
+#pragma region MyRegion
+
 	// ステージの各コライダをプレイヤー／カメラ／オブジェクトに登録
 	for (const auto& stage : stageManager_->GetStage())
 	{
@@ -208,12 +210,7 @@ void GameScene::Init(void)
 
 	player1_->AddHitCollider(wallCollider);
 	player2_->AddHitCollider(wallCollider);
-
-	const ColliderBase* playerCollider =
-		player1_->GetOwnCollider(static_cast<int>(Player::COLLIDER_TYPE::LINE));
-
-	// Buttonだけ
-	objects_[4]->AddHitCollider(playerCollider);
+#pragma endregion
 
 	// 衝突フラグの初期化
 	isPlayer1HitObject_ = false;

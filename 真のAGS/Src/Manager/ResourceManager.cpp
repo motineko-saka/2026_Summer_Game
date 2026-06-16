@@ -76,8 +76,7 @@ void ResourceManager::Init(void)
 	res = new RES(RES_T::MODEL, PATH_MDL + "Enemy/Robot/Cone.mv1");
 	resourcesMap_.emplace(SRC::VIEW_RANGE, res);
 
-	// ” 
-
+	// ’M
 	res = new RES(RES_T::MODEL, PATH_MDL + "Object/barrel.mv1");
 	resourcesMap_.emplace(SRC::BARREL, res);
 
