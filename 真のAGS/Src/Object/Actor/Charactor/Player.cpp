@@ -199,7 +199,7 @@ void Player::ProcessMove(void)
 		// アナログキーの入力値を正規化して取得
 		dir = ins.GetDirectionXZAKey(padState.AKeyLX, padState.AKeyLY);
 
-		if (ins.IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1,
+		if (ins.IsPadBtnNew(InputManager::JOYPAD_NO::PAD1,
 			InputManager::JOYPAD_BTN::R_TRIGGER))
 		{
 			isDash = true;

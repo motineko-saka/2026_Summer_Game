@@ -99,7 +99,7 @@ void TitleScene::Update(void)
 
 	// ÉVÅ[ÉìëJà⁄
 	auto const& ins = InputManager::GetInstance();
-	if (ins.IsTrgDown(KEY_INPUT_SPACE))
+	if (InputManager::GetInstance().IsTrgDown(KEY_INPUT_SPACE) || InputManager::GetInstance().IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::DOWN))
 	{
 		sceMng_.ChangeScene(SceneManager::SCENE_ID::GAME);
 	}

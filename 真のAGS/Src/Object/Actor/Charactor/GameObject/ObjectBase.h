@@ -14,7 +14,7 @@ public:
 		AKEG,
 		SCENE_PROP,
 		BUTTON,
-		PUSH_BUTTON,
+		PRESS_BUTTON,
 	};
 
 	// world ‚ÆŽí—Þ‚ðŽw’è‰Â”\‚É

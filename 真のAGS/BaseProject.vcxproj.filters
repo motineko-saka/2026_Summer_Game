@@ -186,10 +186,10 @@
     <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Button.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Src\AudioManager.cpp">
+    <ClCompile Include="Src\Audio\AudioManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Src\SoundTable.cpp">
+    <ClCompile Include="Src\Audio\SoundTable.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -323,10 +323,10 @@
     <ClInclude Include="Src\Object\Actor\Charactor\GameObject\Button.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Src\AudioManager.h">
+    <ClInclude Include="Src\Audio\AudioManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Src\SoundTable.h">
+    <ClInclude Include="Src\Audio\SoundTable.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

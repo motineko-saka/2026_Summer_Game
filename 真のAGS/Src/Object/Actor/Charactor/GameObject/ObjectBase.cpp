@@ -77,9 +77,9 @@ void ObjectBase::InitLoad(void)
 		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::BUTTON));
 		break;
 	case OBJECT_TYPE::DEFAULT:
-		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::BARREL));
+		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::CUBE));
 		break;
-	case OBJECT_TYPE::PUSH_BUTTON:
+	case OBJECT_TYPE::PRESS_BUTTON:
 		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::CUBE));
 		break;
 	default:
@@ -142,7 +142,7 @@ void ObjectBase::UpdateProcess(void)
 	isPushButton_ = false; // デフォルトはボタンが踏まれていない
 
 	// PUSH_BUTTON タイプの場合、プレイヤーが乗っているか判定
-	if (type_ == OBJECT_TYPE::PUSH_BUTTON)
+	if (type_ == OBJECT_TYPE::PRESS_BUTTON)
 	{
 		PressButton();
 		//for (const auto& hitCol : hitColliders_)

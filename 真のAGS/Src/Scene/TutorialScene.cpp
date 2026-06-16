@@ -131,7 +131,7 @@ void TutorialScene::Init(void)
 	objects_.back()->SetPosition({ 1100.0f, -0.0f, 200.5f }); 
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 
-	objects_.push_back(new ObjectBase(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[3], ObjectBase::OBJECT_TYPE::PUSH_BUTTON));
+	objects_.push_back(new ObjectBase(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[3], ObjectBase::OBJECT_TYPE::PRESS_BUTTON));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ -900.0f, -500.0f, 900.5f });
 	//objects_.back()->SetPosition({500.0f, -720.0f, -50.5f });
@@ -168,7 +168,7 @@ void TutorialScene::Init(void)
 	{
 		auto& obj = objects_[i];
 
-		if (obj->GetObjectType() != ObjectBase::OBJECT_TYPE::PUSH_BUTTON) continue;
+		if (obj->GetObjectType() != ObjectBase::OBJECT_TYPE::PRESS_BUTTON) continue;
 
 		pushButtonIndex.push_back(i);
 	}

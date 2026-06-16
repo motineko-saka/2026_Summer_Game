@@ -133,7 +133,7 @@ void GameScene::Init(void)
 	objects_.back()->SetPosition({ 0.0f, 80.0f, -50.0f });
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 
-	objects_.push_back(new ObjectBase(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::PUSH_BUTTON));
+	objects_.push_back(new ObjectBase(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::PRESS_BUTTON));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ -900.0f, -500.0f, 900.5f });
 	//objects_.back()->SetPosition({500.0f, -720.0f, -50.5f });
@@ -177,7 +177,7 @@ void GameScene::Init(void)
 	{
 		auto& obj = objects_[i];
 
-		if (obj->GetObjectType() != ObjectBase::OBJECT_TYPE::PUSH_BUTTON) continue;
+		if (obj->GetObjectType() != ObjectBase::OBJECT_TYPE::PRESS_BUTTON) continue;
 
 		pushButtonIndex.push_back(i);
 	}
@@ -330,8 +330,9 @@ const void GameScene::ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*>& n
 		isNearButton = true;
 	}
 
-	// ボタンの近くにいて、スペースキーが押されたら
-	if (isNearButton && InputManager::GetInstance().IsTrgDown(KEY_INPUT_SPACE))
+	// ボタンの近くにいて、スペースキーか左ボタンが押されたら
+	if (isNearButton &&
+		(InputManager::GetInstance().IsTrgDown(KEY_INPUT_SPACE) || InputManager::GetInstance().IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::LEFT)))
 	{
 		obj.SetButtomPushed(true);
 		// 直接追加せず、一時リストに格納
@@ -434,7 +435,7 @@ void GameScene::Update(void)
 	// 踏む
 	for (auto* obj : objects_)
 	{
-		if (obj && obj->GetType() == ObjectBase::OBJECT_TYPE::PUSH_BUTTON)
+		if (obj && obj->GetType() == ObjectBase::OBJECT_TYPE::PRESS_BUTTON)
 		{
 			if (obj->IsPushButtonPressed())
 			{
@@ -490,7 +491,8 @@ void GameScene::DrawPlayer1Screen(void)
 		auto& obj = objects_[i];
 
 		if (!obj->IsGrabbed()) continue;
-		
+		// 持っている
+		// 答えの場所に描画
 		DrawSphere3D(ANSWER_VECTOR_LENGTH[i], 80.0f, 16, GetColor(255, 0, 0), GetColor(0, 0, 0), FALSE);
 
 		MV1SetPosition(pinID_, ANSWER_VECTOR_LENGTH[i]);
