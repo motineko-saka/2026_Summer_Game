@@ -75,6 +75,8 @@ void TutorialScene::Init(void)
 	camera1_ = players_[0].camera_;
 	camera2_ = players_[1].camera_;
 
+	pinID_ = MV1LoadModel((Application::PATH_MODEL + "Object/chair.mv1").c_str());
+
 	//// カメラ1の作成(プレイヤー1用)
 	//camera1_ = new Camera();
 	//camera1_->Init();
@@ -112,17 +114,18 @@ void TutorialScene::Init(void)
 	// オブジェクト作成（複数）
 	objects_.reserve(3);
 
-	objects_.push_back(new ObjectBase(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[2], ObjectBase::OBJECT_TYPE::AKEG));
+	objects_.push_back(new ObjectBase(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::AKEG));
 	objects_.back()->Init();
-	objects_.back()->SetPosition({ -1260.0f, -720.0f, -50.5f });
+	//objects_.back()->SetPosition({ 1260.0f, -500.0f, -50.5f });
+	objects_.back()->SetPosition({ 1260.0f, -500.0f, -50.5f });
 	objects_.back()->SetScale({ 0.2, 0.2, 0.2 });
 
-	objects_.push_back(new ObjectBase(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[3], ObjectBase::OBJECT_TYPE::BUTTON));
+	objects_.push_back(new ObjectBase(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::BUTTON));
 	objects_.back()->Init();
-	objects_.back()->SetPosition({ 0.0f, 80.0f, -50.0f });
+	objects_.back()->SetPosition({ 0.0f, -600.0f, -50.0f });
 	objects_.back()->SetScale({ 0.5, 0.5, 0.5 });
 
-	objects_.push_back(new ObjectBase(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[3], ObjectBase::OBJECT_TYPE::PRESS_BUTTON));
+	objects_.push_back(new ObjectBase(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[2], ObjectBase::OBJECT_TYPE::PRESS_BUTTON));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ -900.0f, -500.0f, 900.5f });
 	//objects_.back()->SetPosition({500.0f, -720.0f, -50.5f });
@@ -195,7 +198,11 @@ void TutorialScene::Init(void)
 		player1_->GetOwnCollider(static_cast<int>(Player::COLLIDER_TYPE::LINE));
 
 	// Buttonだけ
-	objects_[4]->AddHitCollider(playerCollider);
+	for (auto index : pushButtonIndex)
+	{
+		objects_[index]->AddHitCollider(playerCollider);
+	}
+	//objects_[4]->AddHitCollider(playerCollider);
 
 	// 衝突フラグの初期化
 	isPlayer1HitObject_ = false;
@@ -490,6 +497,11 @@ void TutorialScene::Update(void)
 		if (obj) obj->Update();
 	}
 
+	AnswerChack();
+}
+
+void TutorialScene::AnswerChack(void)
+{
 	// 答えの場所に全てのオブジェクトがあるか判定
 	bool isAnswer = true;
 
@@ -513,11 +525,11 @@ void TutorialScene::DrawPlayer1Screen(void)
 	camera1_->SetBeforeDraw();
 
 	// 3D描画
-	stageManager_->Draw();
 	skyDome_->Draw();
+	stageManager_->Draw();
+	//wall_->Draw();
 	player1_->Draw();
 	player2_->Draw(); // プレイヤー2も描画
-	wall_->Draw();
 
 	for (auto* obj : objects_)
 	{
@@ -532,25 +544,48 @@ void TutorialScene::DrawPlayer2Screen(void)
 	camera2_->SetBeforeDraw();
 
 	// 3D描画
-	stageManager_->Draw();
 	skyDome_->Draw();
+	stageManager_->Draw();
 	player1_->Draw();
 	player2_->Draw();
+
+	// 答えの描画
+	for (int i = 0; i < objects_.size(); i++)
+	{
+		auto& obj = objects_[i];
+
+		if (!obj->IsGrabbed()) continue;
+
+		DrawSphere3D(ANSWER_VECTOR_LENGTH[i], 80.0f, 16, GetColor(255, 0, 0), GetColor(0, 0, 0), FALSE);
+
+		MV1SetPosition(pinID_, ANSWER_VECTOR_LENGTH[i]);
+		MV1DrawModel(pinID_);
+	}
+	//wall_->Draw();
 
 	for (auto* obj : objects_)
 	{
 		if (obj == nullptr) continue;
 
-		if (obj->GetObjectType() == ObjectBase::OBJECT_TYPE::BUTTON)
-		{
-			auto buttonPos = ConvWorldPosToScreenPos(obj->GetPos());
-			DrawFormatString(buttonPos.x, buttonPos.y - 120, 0xffff00, "ボタン");
-			DrawFormatString(buttonPos.x, buttonPos.y - 100, 0xffff00, "　↓");
-			//DrawCircle(buttonPos.x, buttonPos.y - 100, 10, 0xffffff, true);
-		}
 
+		//obj->SetViewWorld(WORLD::RIGHT);
 		obj->Draw();
 	}
+
+	//for (auto* obj : objects_)
+	//{
+	//	if (obj == nullptr) continue;
+
+	//	if (obj->GetObjectType() == ObjectBase::OBJECT_TYPE::BUTTON)
+	//	{
+	//		auto buttonPos = ConvWorldPosToScreenPos(obj->GetPos());
+	//		DrawFormatString(buttonPos.x, buttonPos.y - 120, 0xffff00, "ボタン");
+	//		DrawFormatString(buttonPos.x, buttonPos.y - 100, 0xffff00, "　↓");
+	//		//DrawCircle(buttonPos.x, buttonPos.y - 100, 10, 0xffffff, true);
+	//	}
+
+	//	obj->Draw();
+	//}
 }
 
 void TutorialScene::Draw(void)

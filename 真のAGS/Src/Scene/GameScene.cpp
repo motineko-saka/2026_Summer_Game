@@ -52,7 +52,7 @@ void GameScene::Init(void)
 	screenHandle1_ = MakeScreen(halfWidth, screenHeight_, true);
 	screenHandle2_ = MakeScreen(halfWidth, screenHeight_, true);
 
-	pinID_ = MV1LoadModel((Application::PATH_MODEL + "Object/kinoko1.mv1").c_str());
+	pinID_ = MV1LoadModel((Application::PATH_MODEL + "Object/torii.mv1").c_str());
 
 	//// カメラ1の作成(プレイヤー1用)
 	//for (int i = 0; i < 2; i++)
@@ -111,9 +111,7 @@ void GameScene::Init(void)
 
 	objects_.push_back(new ObjectBase(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::DEFAULT));
 	objects_.back()->Init();
-
 	objects_.back()->SetPosition({ 1260.0f, -720.0f, -50.5f });
-
 	objects_.back()->SetPosition({ 1260.0f, -500.0f, -50.5f });
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 

@@ -132,10 +132,14 @@ void ObjectBase::InitPost(void)
 
 void ObjectBase::UpdateProcess(void)
 {
-	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_C))
+	if (!(type_ == OBJECT_TYPE::BUTTON ||
+		type_ == OBJECT_TYPE::PRESS_BUTTON))
 	{
-		world_ = (world_ == SceneBase::WORLD::LEFT) ? SceneBase::WORLD::RIGHT : SceneBase::WORLD::LEFT;
-		transform_.pos.x = -transform_.pos.x;
+		if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_C))
+		{
+			world_ = (world_ == SceneBase::WORLD::LEFT) ? SceneBase::WORLD::RIGHT : SceneBase::WORLD::LEFT;
+			transform_.pos.x = -transform_.pos.x;
+		}
 	}
 
 	isGrabbed_ = false; // デフォルトはつかまれていない

@@ -57,10 +57,9 @@ public:
 private:
 	constexpr static VECTOR ANSWER_VECTOR = { 1260.0f, -720.0f, -50.5f };
 
-	constexpr static VECTOR ANSWER_VECTOR_LENGTH[] = { {1260.0f, -720.0f, -50.5f} ,
-														{1260.0f, -720.0f, -50.5f},
-														{-1260.0f, -720.0f, -50.5f},
-														{1260.0f, -720.0f, -50.5f},
+	constexpr static VECTOR ANSWER_VECTOR_LENGTH[] = { {1000.0f, -500.0f, -50.5f} ,
+														{0.0f, -600.0f, -50.0f},
+														{-900.0f, -500.0f, 900.5f},
 	};
 
 	StageManager* stageManager_;
@@ -97,6 +96,8 @@ private:
 
 	VECTOR ansVec_ = {};
 
+	int pinID_;
+
 	// 現在選択中のプレイヤー
 	Player::PLAYER_NO activePlayer_{ Player::PLAYER_NO::PLAYER1 };
 
@@ -106,6 +107,9 @@ private:
 
 	// 衝突判定チェック
 	void CheckCollisions(void);
+
+	// 答えの場所にあるのか判定
+	void AnswerChack(void);
 
 	// チュートリアル
 	//--------------------------------------------
