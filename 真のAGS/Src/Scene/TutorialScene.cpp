@@ -77,6 +77,9 @@ void TutorialScene::Init(void)
 
 	pinID_ = MV1LoadModel((Application::PATH_MODEL + "Object/chair.mv1").c_str());
 
+	endTimer_ = 0.0f;
+	isEndTutorial_ = false;
+
 	//// カメラ1の作成(プレイヤー1用)
 	//camera1_ = new Camera();
 	//camera1_->Init();
@@ -291,6 +294,7 @@ void TutorialScene::Init(void)
 	tutorial_.AddStep(
 		"ボタン操作の練習：ボタンの近くで Space を押してください。\nボタンを押すと次へ進みます。",
 		[this]() -> bool {
+			bool ret = false;
 			if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE))
 			{
 				for (auto* obj : objects_)
@@ -306,6 +310,7 @@ void TutorialScene::Init(void)
 						if (distance1 < 180.0f)
 						{
 							obj->SetButtomPushed(true);
+							ret = true;
 						}
 
 						VECTOR player2Pos = player2_->GetTransform().pos;
@@ -313,18 +318,25 @@ void TutorialScene::Init(void)
 						if (distance2 < 180.0f)
 						{
 							obj->SetButtomPushed(true);
+							ret = true;
 						}
 					}
 				}
 			}
-			return false;
+			return ret;
 		}
 	);
 
 	// 最終ステップ: 確認して終了
 	tutorial_.AddStep(
 		"チュートリアル完了：Z / Enter / Space でチュートリアルを終了します。",
-		[]() -> bool {
+		[this]() -> bool {
+			bool ret = false;
+			if (CheckHitKey(KEY_INPUT_Z) || CheckHitKey(KEY_INPUT_RETURN) || CheckHitKey(KEY_INPUT_SPACE))
+			{
+				ret = true;
+				isEndTutorial_ = true;
+			}
 			return CheckHitKey(KEY_INPUT_Z) || CheckHitKey(KEY_INPUT_RETURN) || CheckHitKey(KEY_INPUT_SPACE);
 		}
 	);
@@ -513,7 +525,13 @@ void TutorialScene::AnswerChack(void)
 		}
 	}
 
-	if (isAnswer)
+	if (isAnswer && isEndTutorial_)
+	{
+		endTimer_ += SceneManager::GetInstance()->GetDeltaTime(); 
+		//SceneManager::GetInstance()->ChangeScene(std::make_shared<GameClearScene>());
+	}
+
+	if(endTimer_ > END_TIME)
 	{
 		SceneManager::GetInstance()->ChangeScene(std::make_shared<GameClearScene>());
 	}

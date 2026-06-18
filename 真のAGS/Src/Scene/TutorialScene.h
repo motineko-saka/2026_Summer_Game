@@ -57,10 +57,13 @@ public:
 private:
 	constexpr static VECTOR ANSWER_VECTOR = { 1260.0f, -720.0f, -50.5f };
 
-	constexpr static VECTOR ANSWER_VECTOR_LENGTH[] = { {1000.0f, -500.0f, -50.5f} ,
+	constexpr static VECTOR ANSWER_VECTOR_LENGTH[] = { {760.0f, -520.0f, 600.0f} ,
 														{0.0f, -600.0f, -50.0f},
 														{-900.0f, -500.0f, 900.5f},
 	};
+
+	// ゲームクリアまでの時間（秒）
+	constexpr static float END_TIME = 3.0f;
 
 	StageManager* stageManager_;
 
@@ -98,6 +101,8 @@ private:
 
 	int pinID_;
 
+	float endTimer_ = 0.0f;
+
 	// 現在選択中のプレイヤー
 	Player::PLAYER_NO activePlayer_{ Player::PLAYER_NO::PLAYER1 };
 
@@ -115,5 +120,6 @@ private:
 	//--------------------------------------------
 	Tutorial tutorial_; // 追加
 	int moveStepe_ = 800; // 移動する距離
+	bool isEndTutorial_ = false;
 
 };
