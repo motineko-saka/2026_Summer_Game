@@ -5,10 +5,7 @@ class SkyDome;
 
 class TitleScene : public SceneBase
 {
-
 public:
-
-
 	// コンストラクタ
 	TitleScene(void);
 
@@ -34,14 +31,29 @@ public:
 	void Release(void) override;
 
 private:
+	// UI配置用の定数
+	static constexpr int IMG_TITLE_POS_Y = 125;
+	static constexpr int IMG_TITLE_POS_X = 960;
 
-	static constexpr int IMG_TITLE_POS_Y = 260;
-	static constexpr int IMG_TITLE_POS_X = 640;
-
-	static constexpr int IMG_PUSH_SPACE_POS_Y = 410;
+	static constexpr int IMG_PUSH_SPACE_POS_Y = 690;
 	static constexpr int IMG_PUSH_SPACE_POS_X = 640;
 
-	int imgTitle_;
-	int imgPushSpace_;
+	// 縦書きテキスト用の定数
+	static constexpr int VERTICAL_TEXT_X = 100;
+	static constexpr int VERTICAL_TEXT_Y = 200;
+	static constexpr int TEXT_SCREEN_W = 400;
+	static constexpr int TEXT_SCREEN_H = 40;
 
+	// リソースハンドル
+	int imgTitle_ = -1;
+	int imgPushSpace_ = -1;
+	int imgHondana_ = -1;
+	int movTitle_ = -1;
+
+	int imgUIStart_ = -1;
+	int imgUITutorial_ = -1;
+	int imgUIExit_ = -1;
+
+	// 選択インデックス (0: Start, 1: Tutorial, 2: Exit)
+	int uiSelect_ = 0;
 };

@@ -28,6 +28,7 @@ void ResourceManager::Init(void)
 	static std::string PATH_IMG = Application::PATH_IMAGE;
 	static std::string PATH_MDL = Application::PATH_MODEL;
 	static std::string PATH_EFF = Application::PATH_EFFECT;
+	static std::string PATH_MOV = Application::PATH_MOV;
 
 	Resource* res;
 
@@ -98,6 +99,26 @@ void ResourceManager::Init(void)
 	// ゴールピン
 	res = new RES(RES_T::MODEL, PATH_MDL + "Object/torii.mv1");
 	resourcesMap_.emplace(SRC::BUTTON, res);
+
+	// タイトルムービー
+	res = new RES(RES_T::MOVIE, PATH_MOV + "Title.mp4");
+	resourcesMap_.emplace(SRC::TITLE_MOV, res);
+
+	// 本棚画像
+	res = new RES(RES_T::IMG, PATH_IMG + "hondanaTitle.png");
+	resourcesMap_.emplace(SRC::HONDANA_IMG, res);
+
+	// UIゲームスタート
+	res = new RES(RES_T::IMG, PATH_IMG + "GameStart.png");
+	resourcesMap_.emplace(SRC::UI_GAMESTART, res);
+
+	// UIチュートリアル
+	res = new RES(RES_T::IMG, PATH_IMG + "Tyutoriar.png");
+	resourcesMap_.emplace(SRC::UI_TUTORIAL, res);
+
+	// UI終了
+	res = new RES(RES_T::IMG, PATH_IMG + "End.png");
+	resourcesMap_.emplace(SRC::UI_EXIT, res);
 }
 
 void ResourceManager::Release(void)

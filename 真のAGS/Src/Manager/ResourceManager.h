@@ -28,6 +28,11 @@ public:
 		BUTTON,
 		CUBE,
 		PIN,
+		TITLE_MOV,
+		HONDANA_IMG,
+		UI_GAMESTART,
+		UI_TUTORIAL,
+		UI_EXIT,
 	};
 
 	// 明示的にインステンスを生成する

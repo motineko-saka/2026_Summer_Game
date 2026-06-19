@@ -16,6 +16,7 @@
 #include "GameScene.h"
 #include "GameClearScene.h"
 #include "PauseScene.h"
+#include "TitleScene.h"
 
 GameScene::GameScene(void)
 	:
@@ -37,7 +38,6 @@ GameScene::GameScene(void)
 
 GameScene::~GameScene(void)
 {
-	//Release();
 }
 
 void GameScene::Init(void)
@@ -379,6 +379,18 @@ void GameScene::Update(void)
 	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_ESCAPE))
 	{
 		SceneManager::GetInstance()->PushScene(std::make_shared<PauseScene>());
+	}
+
+	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_P))
+	{
+		SceneManager::GetInstance()->ChangeScene(std::make_shared<TitleScene>());
+		return;
+	}
+
+	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_Q))
+	{
+		SceneManager::GetInstance()->ChangeScene(std::make_shared<GameClearScene>());
+		return;
 	}
 
 	// プレイヤー選択切替
