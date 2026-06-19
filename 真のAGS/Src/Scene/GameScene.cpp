@@ -150,6 +150,13 @@ void GameScene::Init(void)
 		const ColliderBase* stageCollider =
 			stage->GetOwnCollider(static_cast<int>(Stage::COLLIDER_TYPE::MODEL));
 
+		//for (int i = 0; i < players_.size(); i++)
+		//{
+		//	// ステージモデルのコライダーをプレイヤーに登録
+		//	players_[i].player_->AddHitCollider(stageCollider);
+		//	players_[i].camera_->AddHitCollider(stageCollider);
+		//}
+
 		// ステージモデルのコライダーをプレイヤー1に登録
 		player1_->AddHitCollider(stageCollider);
 
@@ -193,6 +200,12 @@ void GameScene::Init(void)
 
 		if (!objCaps) continue;
 
+		//for (int i = 0; i < players_.size(); i++)
+		//{
+		//	// ステージモデルのコライダーをプレイヤーに登録
+		//	players_[i].player_->AddHitCollider(objCaps);
+		//}
+
 		player1_->AddHitCollider(objCaps);
 		player2_->AddHitCollider(objCaps);
 
@@ -210,6 +223,11 @@ void GameScene::Init(void)
 
 	player1_->AddHitCollider(wallCollider);
 	player2_->AddHitCollider(wallCollider);
+	for (int i = 0; i < players_.size(); i++)
+	{
+		// ステージモデルのコライダーをプレイヤーに登録
+		players_[i].player_->AddHitCollider(wallCollider);
+	}
 #pragma endregion
 
 	// 衝突フラグの初期化
@@ -219,6 +237,12 @@ void GameScene::Init(void)
 
 	// 初期アクティブ状態（プレイヤー1 を操作）
 	activePlayer_ = Player::PLAYER_NO::PLAYER1;
+	for (int i = 0; i < players_.size(); i++)
+	{
+		bool isActive = i == 0 ? true : false;
+		players_[i].player_->SetActive(isActive);
+		players_[i].camera_->SetControlEnabled(isActive);
+	}
 	player1_->SetActive(true);
 	player2_->SetActive(false);
 	camera1_->SetControlEnabled(true);
@@ -280,6 +304,13 @@ void GameScene::CheckCollisions(void)
 			//}
 			continue;
 		}
+
+		for (int i = 0; i < players_.size(); i++)
+		{
+			// ステージモデルのコライダーをプレイヤーに登録
+			VECTOR player1Pos = player1_->GetTransform().pos;
+		}
+
 
 		// プレイヤー1との距離
 		VECTOR player1Pos = player1_->GetTransform().pos;

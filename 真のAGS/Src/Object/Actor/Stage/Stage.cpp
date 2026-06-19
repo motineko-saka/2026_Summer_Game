@@ -17,7 +17,7 @@ Stage::~Stage(void)
 
 void Stage::InitLoad(void)
 {
-	transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::MAIN_STAGE));
+	transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::TUTORIAL_STAGE));
 }
 
 void Stage::InitTransform(void)

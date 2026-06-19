@@ -17,7 +17,7 @@ AnswerStage::~AnswerStage(void)
 
 void AnswerStage::InitLoad(void)
 {
-	transform_.SetModel(resMng_.Load(ResourceManager::SRC::MAIN_STAGE).handleId_);
+	transform_.SetModel(resMng_.Load(ResourceManager::SRC::TUTORIAL_STAGE).handleId_);
 }
 
 void AnswerStage::InitTransform(void)

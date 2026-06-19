@@ -88,7 +88,7 @@ void TitleScene::Update(void)
 		switch (uiSelect_)
 		{
 		case 0: // Start
-			SceneManager::GetInstance()->ChangeScene(std::make_shared<GameScene>());
+			//SceneManager::GetInstance()->ChangeScene(std::make_shared<GameScene>());
 			break;
 		case 1: // Tutorial
 			SceneManager::GetInstance()->ChangeScene(std::make_shared<TutorialScene>());

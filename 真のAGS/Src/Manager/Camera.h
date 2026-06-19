@@ -36,8 +36,9 @@ public:
 
 	// トップダウン用
 	// y を大きくすると遠目の俯瞰になるので実機で調整してください
-	static constexpr VECTOR TOP_CAMERA_LOCAL_POS = { 0.0f, 800.0f, 0.0f };
-	static constexpr VECTOR TOP_TARGET_LOCAL_POS = { 0.0f, 0.0f, 0.0f };
+	static constexpr VECTOR TOP_CAMERA_LOCAL_POS = { 200.0f, -800.0f, 0.0f };
+	static constexpr VECTOR TOP_TARGET_LOCAL_POS = { 0.0f, -1500.0f, 0.0f };
+
 
 	// カメラのX回転上限度角
 	static constexpr float LIMIT_X_UP_RAD = 40.0f * (DX_PI_F / 180.0f);
@@ -138,6 +139,7 @@ private:
 	// カメラの補間移動率
 	static constexpr float LERP_RATE_MOVE = 0.1f;
 
+
 	// カメラの更新前位置
 	VECTOR prePos_;
 
@@ -155,7 +157,10 @@ private:
 	// カメラ角度(rad)
 	VECTOR angles_;
 
-	// カメラ角度(Y軸のみ)
+	// カメラの角度(X軸)
+	Quaternion rotX_;
+
+	// カメラ角度(Y軸)
 	Quaternion rotY_;
 
 	// カメラ角度

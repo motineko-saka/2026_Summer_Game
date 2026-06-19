@@ -18,6 +18,55 @@
 #include "GameClearScene.h"
 #include "PauseScene.h"
 
+// ワールド座標をカメラ（ビュー）に基づきスクリーン座標へ射影するヘルパー
+// vpW/vpH は描画対象のビューポート幅・高さ（ここでは各スクリーンハンドルのサイズ）
+// 返り値: true=カメラ前方にあり射影可能 / false=背面（描画しない）
+static bool WorldToScreen(const VECTOR& worldPos, const Camera* cam, int vpW, int vpH, float& outX, float& outY)
+{
+	// カメラ情報取得
+	const VECTOR camPos = cam->GetPos();
+	const VECTOR camTarget = cam->GetTargetPos();
+
+	// 前方ベクトル
+	VECTOR forward = VSub(camTarget, camPos);
+	forward = VNorm(forward);
+
+	// カメラの上ベクトル（Quaternion から取得）
+	VECTOR up = cam->GetQuaRot().GetUp();
+
+	// 右ベクトル = forward x up
+	VECTOR right;
+	right.x = forward.y * up.z - forward.z * up.y;
+	right.y = forward.z * up.x - forward.x * up.z;
+	right.z = forward.x * up.y - forward.y * up.x;
+	right = VNorm(right);
+
+	// ワールド空間での対象位置をカメラローカルに変換（内積で座標取得）
+	VECTOR dir = VSub(worldPos, camPos);
+	float z = forward.x * dir.x + forward.y * dir.y + forward.z * dir.z;
+
+	// カメラの後ろにあるなら描画しない
+	if (z <= 0.001f) return false;
+
+	float x = right.x * dir.x + right.y * dir.y + right.z * dir.z;
+	float y = up.x * dir.x + up.y * dir.y + up.z * dir.z;
+
+	// 単純な透視投影 (FOV は DxLib デフォルトに合わせておおよそ 60deg)
+	const float fovY = 60.0f * (DX_PI_F / 180.0f);
+	const float tanHalf = tanf(fovY * 0.5f);
+	const float aspect = static_cast<float>(vpW) / static_cast<float>(vpH);
+
+	// 正規化デバイス座標（-1..1）
+	float ndcX = (x / z) / (tanHalf * aspect);
+	float ndcY = (y / z) / tanHalf;
+
+	// スクリーン座標に変換（左上が (0,0)）
+	outX = (ndcX * 0.5f + 0.5f) * vpW;
+	outY = (-ndcY * 0.5f + 0.5f) * vpH;
+
+	return true;
+}
+
 TutorialScene::TutorialScene(void)
 	:
 	stageManager_(nullptr),
@@ -46,16 +95,16 @@ void TutorialScene::Init(void)
 	// 画面サイズの取得
 	GetScreenState(&screenWidth_, &screenHeight_, nullptr);
 
-	ansVec_ = ANSWER_VECTOR;
-
 	// 分割画面用のスクリーン作成(左右画面)
 	int halfWidth = screenWidth_ / 2;
 	screenHandle1_ = MakeScreen(halfWidth, screenHeight_, true);
 	screenHandle2_ = MakeScreen(halfWidth, screenHeight_, true);
 
+	pinID_ = MV1LoadModel((Application::PATH_MODEL + "Object/torii.mv1").c_str());
+
 	players_.resize(2);
 
-	for (int i = 0; i < 2; i++)
+	for (int i = 0; i < players_.size(); i++)
 	{
 		players_[i].camera_ = new Camera();
 		players_[i].camera_->Init();
@@ -102,7 +151,7 @@ void TutorialScene::Init(void)
 
 	//camera2_->SetFollow(&player2_->GetTransform());
 	//camera2_->ChangeMode(Camera::MODE::FOLLOW);
-
+	// 
 	// ステージ
 	stageManager_ = new StageManager();
 	stageManager_->InitStage();
@@ -128,14 +177,10 @@ void TutorialScene::Init(void)
 	objects_.back()->SetPosition({ 0.0f, -600.0f, -50.0f });
 	objects_.back()->SetScale({ 0.5, 0.5, 0.5 });
 
-	objects_.push_back(new ObjectBase(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[2], ObjectBase::OBJECT_TYPE::PRESS_BUTTON));
-	objects_.back()->Init();
-	objects_.back()->SetPosition({ -900.0f, -500.0f, 900.5f });
-	//objects_.back()->SetPosition({500.0f, -720.0f, -50.5f });
-	//objects_.back()->SetPosition({ 1260.0f, -720.0f, -50.5f });
-	//objects_.back()->SetPosition({ 0.0f, 80.0f, -50.0f });
-	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
-
+	//objects_.push_back(new ObjectBase(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[2], ObjectBase::OBJECT_TYPE::PRESS_BUTTON));
+	//objects_.back()->Init();
+	//objects_.back()->SetPosition({ -900.0f, -500.0f, 900.5f });
+	//objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 
 	// ステージの各コライダをプレイヤー／カメラ／オブジェクトに登録
 	for (const auto& stage : stageManager_->GetStage())
@@ -210,7 +255,6 @@ void TutorialScene::Init(void)
 	// 衝突フラグの初期化
 	isPlayer1HitObject_ = false;
 	isPlayer2HitObject_ = false;
-	ansVec_ = ANSWER_VECTOR;
 
 	// 初期アクティブ状態（プレイヤー1 を操作）
 	activePlayer_ = Player::PLAYER_NO::PLAYER1;
@@ -247,41 +291,9 @@ void TutorialScene::Init(void)
 
 	// ステップ3: キャラ切替
 	tutorial_.AddStep(
-		"キャラクター切替の練習：Tab または 右クリックで操作キャラを切り替えてください。\n切替操作を行うと次へ進みます。",
+		"プレイヤーの切替の練習：Tab または 右クリックで操作プレイヤー2に切り替えてください。\n切替操作を行うと次へ進みます。",
 		[]() -> bool {
 			return InputManager::GetInstance()->IsTrgDown(KEY_INPUT_TAB) || InputManager::GetInstance()->IsTrgMouseRight();
-		}
-	);
-
-	// ステップ4: オブジェクト操作（オブジェクトに近づいて E）
-	tutorial_.AddStep(
-		"オブジェクト操作の練習1：オブジェクトに近づいて E を押してください。\nオブジェクトを押すと次へ進みます。",
-		[this]() -> bool {
-			for (auto* obj : objects_)
-			{
-				if (obj == nullptr) continue;
-				VECTOR objPos = obj->GetTransform().pos;
-				VECTOR p1Pos = player1_->GetTransform().pos;
-				float dist1 = VSize(VSub(p1Pos, objPos));
-				if (dist1 < 180.0f && InputManager::GetInstance()->IsTrgDown(KEY_INPUT_E)) return true;
-				VECTOR p2Pos = player2_->GetTransform().pos;
-				float dist2 = VSize(VSub(p2Pos, objPos));
-				if (dist2 < 180.0f && InputManager::GetInstance()->IsTrgDown(KEY_INPUT_E)) return true;
-			}
-			return false;
-		}
-	);
-
-	// ステップ5: オブジェクトの設置(正しい位置への設置)
-	tutorial_.AddStep(
-		"オブジェクト操作の練習2 : オブジェクトを正しい位置に配置してください。\nオブジェクトを配置すると次に進む。",
-		[this]() -> bool {
-			for (auto* obj : objects_)
-			{
-				if (obj == nullptr) continue;
-				if (obj->IsAnswerPosition()) return true;
-			}
-			return false;
 		}
 	);
 
@@ -324,6 +336,39 @@ void TutorialScene::Init(void)
 				}
 			}
 			return ret;
+		}
+	);
+
+	// ステップ4: オブジェクト操作（オブジェクトに近づいて E）
+	tutorial_.AddStep(
+		"オブジェクト操作の練習1：オブジェクトに近づいて E を押してください。\nオブジェクトを押すと次へ進みます。",
+		[this]() -> bool {
+			for (auto* obj : objects_)
+			{
+				if (obj == nullptr) continue;
+				VECTOR objPos = obj->GetTransform().pos;
+				VECTOR p1Pos = player1_->GetTransform().pos;
+				float dist1 = VSize(VSub(p1Pos, objPos));
+				if (dist1 < 180.0f && InputManager::GetInstance()->IsTrgDown(KEY_INPUT_E)) return true;
+				VECTOR p2Pos = player2_->GetTransform().pos;
+				float dist2 = VSize(VSub(p2Pos, objPos));
+				if (dist2 < 180.0f && InputManager::GetInstance()->IsTrgDown(KEY_INPUT_E)) return true;
+			}
+			return false;
+		}
+	);
+
+	// ステップ5: オブジェクトの設置(正しい位置への設置)
+	tutorial_.AddStep(
+		"オブジェクト操作の練習2 : オブジェクトを正しい位置に配置してください。\nオブジェクトを配置すると次に進む。",
+		[this]() -> bool {
+			for (auto* obj : objects_)
+			{
+				if (obj == nullptr) continue;
+				if (obj->GetObjectType() != ObjectBase::OBJECT_TYPE::AKEG) continue;
+				if (obj->IsAnswerPosition()) return true;
+			}
+			return false;
 		}
 	);
 
@@ -408,6 +453,13 @@ void TutorialScene::CheckCollisions(void)
 		if (hit2)
 		{
 			isPlayer2HitObject_ = true;
+			// プレイヤーからオブジェクトへの方向ベクトル
+			//VECTOR pushDir = VSub(objectPos, player2Pos);
+			//pushDir.y = 0.0f; // Y軸(垂直方向)は無視
+			//pushDir = VNorm(pushDir); // 正規化
+
+			//// オブジェクトを押す(速度は適度に調整)
+			//obj->Push(pushDir, 5.0f);
 		}
 	}
 
@@ -543,16 +595,45 @@ void TutorialScene::DrawPlayer1Screen(void)
 	camera1_->SetBeforeDraw();
 
 	// 3D描画
+	stageManager_->Draw();
+
+	// 同じステージ
+	for (const auto& s : stageManager_->GetStage())
+	{
+		if (s) s->DrawAtOffset({ 0.0f, -1500.0f, 0.0f });
+	}
+
 	skyDome_->Draw();
 	stageManager_->Draw();
 	//wall_->Draw();
 	player1_->Draw();
 	player2_->Draw(); // プレイヤー2も描画
 
+
+	// 答えの描画
+	for (int i = 0; i < objects_.size(); i++)
+	{
+		auto& obj = objects_[i];
+
+		if (!obj->IsGrabbed()) continue;
+		// 持っている
+		// 答えの場所に描画
+		DrawSphere3D(ANSWER_VECTOR_LENGTH[i], 80.0f, 16, GetColor(255, 0, 0), GetColor(0, 0, 0), FALSE);
+
+		MV1SetPosition(pinID_, ANSWER_VECTOR_LENGTH[i]);
+		MV1DrawModel(pinID_);
+	}
+
 	for (auto* obj : objects_)
 	{
 		if (obj == nullptr) continue;
 		obj->Draw();
+		// ボタンオブジェクトがどれかわかるようにオブジェクトの上に↓を描画してわかるようにする
+		if (obj->GetType() == ObjectBase::OBJECT_TYPE::BUTTON)
+		{
+
+		}
+
 	}
 }
 
@@ -562,6 +643,14 @@ void TutorialScene::DrawPlayer2Screen(void)
 	camera2_->SetBeforeDraw();
 
 	// 3D描画
+	stageManager_->Draw();
+
+	// 同じステージ
+	for (const auto& s : stageManager_->GetStage())
+	{
+		if (s) s->DrawAtOffset({ 0.0f, -1500.0f, 0.0f });
+	}
+
 	skyDome_->Draw();
 	stageManager_->Draw();
 	player1_->Draw();
@@ -574,6 +663,8 @@ void TutorialScene::DrawPlayer2Screen(void)
 
 		if (!obj->IsGrabbed()) continue;
 
+		// 持っている
+		// 答えの場所に描画
 		DrawSphere3D(ANSWER_VECTOR_LENGTH[i], 80.0f, 16, GetColor(255, 0, 0), GetColor(0, 0, 0), FALSE);
 
 		MV1SetPosition(pinID_, ANSWER_VECTOR_LENGTH[i]);
@@ -603,6 +694,11 @@ void TutorialScene::DrawPlayer2Screen(void)
 		}
 
 		obj->Draw();
+		// 右側スクリーンでも同様にマーカー表示
+		if (obj->GetType() == ObjectBase::OBJECT_TYPE::BUTTON)
+		{
+
+		}
 	}
 }
 
@@ -644,6 +740,10 @@ void TutorialScene::Draw(void)
 		DrawBox(0, 0, halfWidth, screenHeight_, GetColor(0, 0, 0), TRUE);
 	}
 	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+	// BUTTONの上の位置にマーカーを描画
+
+
 
 #pragma region デバッグ表示
 	// デバッグ表示

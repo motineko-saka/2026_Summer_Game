@@ -28,6 +28,8 @@ public:
 	void Draw(void)override;
 	void Release(void)override;
 
+	void DrawAtOffset(const VECTOR& offset);
+
 	// œŠOƒtƒŒ[ƒ€–¼Ì
 	const std::vector<std::string> EXCLUDE_FRAME_NAMES = { "Grass","Plant","Leaves" };
 

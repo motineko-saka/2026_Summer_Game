@@ -268,8 +268,8 @@ void Player::ProcessJump(void)
 	}
 	//else if (playerNo_ == PLAYER_NO::PLAYER2)
 	//{
-	//	isHitKeyNew = ins.IsNew(KEY_INPUT_RETURN); // Enterキー
-	//	isHitKey = ins.IsTrgDown(KEY_INPUT_RETURN);
+	//	isHitKeyNew = InputManager::GetInstance()->IsNew(KEY_INPUT_RETURN); // Enterキー
+	//	isHitKey = InputManager::GetInstance()->IsTrgDown(KEY_INPUT_RETURN);
 	//}
 
 	// 溜めジャンプ処理

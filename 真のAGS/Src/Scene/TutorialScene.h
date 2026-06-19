@@ -55,11 +55,10 @@ public:
 	void Release(void) override;
 
 private:
-	constexpr static VECTOR ANSWER_VECTOR = { 1260.0f, -720.0f, -50.5f };
 
 	constexpr static VECTOR ANSWER_VECTOR_LENGTH[] = { {760.0f, -520.0f, 600.0f} ,
 														{0.0f, -600.0f, -50.0f},
-														{-900.0f, -500.0f, 900.5f},
+	//													{-900.0f, -500.0f, 900.5f},
 	};
 
 	// ゲームクリアまでの時間（秒）
@@ -97,8 +96,6 @@ private:
 	bool isPlayer1HitObject_;
 	bool isPlayer2HitObject_;
 
-	VECTOR ansVec_ = {};
-
 	int pinID_;
 
 	float endTimer_ = 0.0f;
@@ -119,7 +116,6 @@ private:
 	// チュートリアル
 	//--------------------------------------------
 	Tutorial tutorial_; // 追加
-	int moveStepe_ = 800; // 移動する距離
+	int moveStepe_ = 650; // 移動する距離
 	bool isEndTutorial_ = false;
-
 };

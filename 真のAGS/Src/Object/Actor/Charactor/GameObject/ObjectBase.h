@@ -17,6 +17,12 @@ public:
 		PRESS_BUTTON,
 	};
 
+	struct BoundingBox
+	{
+		int minPos;
+		int maxPos;
+	};
+
 	// world ‚ÆŽí—Þ‚ðŽw’è‰Â”\‚É
 	ObjectBase(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type = OBJECT_TYPE::DEFAULT);
 	virtual ~ObjectBase(void);

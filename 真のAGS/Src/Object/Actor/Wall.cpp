@@ -5,7 +5,6 @@
 #include "../Collider/ColliderModel.h"
 #include "Wall.h"
 
-
 Wall::Wall(void)
 {
 }
