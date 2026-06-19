@@ -590,20 +590,20 @@ void TutorialScene::DrawPlayer2Screen(void)
 		obj->Draw();
 	}
 
-	//for (auto* obj : objects_)
-	//{
-	//	if (obj == nullptr) continue;
+	for (auto* obj : objects_)
+	{
+		if (obj == nullptr) continue;
 
-	//	if (obj->GetObjectType() == ObjectBase::OBJECT_TYPE::BUTTON)
-	//	{
-	//		auto buttonPos = ConvWorldPosToScreenPos(obj->GetPos());
-	//		DrawFormatString(buttonPos.x, buttonPos.y - 120, 0xffff00, "ボタン");
-	//		DrawFormatString(buttonPos.x, buttonPos.y - 100, 0xffff00, "　↓");
-	//		//DrawCircle(buttonPos.x, buttonPos.y - 100, 10, 0xffffff, true);
-	//	}
+		if (obj->GetObjectType() == ObjectBase::OBJECT_TYPE::BUTTON)
+		{
+			auto buttonPos = ConvWorldPosToScreenPos(obj->GetPos());
+			DrawFormatString(buttonPos.x, buttonPos.y - 120, 0xffff00, "ボタン");
+			DrawFormatString(buttonPos.x, buttonPos.y - 100, 0xffff00, "　↓");
+			//DrawCircle(buttonPos.x, buttonPos.y - 100, 10, 0xffffff, true);
+		}
 
-	//	obj->Draw();
-	//}
+		obj->Draw();
+	}
 }
 
 void TutorialScene::Draw(void)

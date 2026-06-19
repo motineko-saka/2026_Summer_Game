@@ -132,15 +132,15 @@ void ObjectBase::InitPost(void)
 
 void ObjectBase::UpdateProcess(void)
 {
-	if (!(type_ == OBJECT_TYPE::BUTTON ||
-		type_ == OBJECT_TYPE::PRESS_BUTTON))
-	{
-		if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_C))
-		{
-			world_ = (world_ == SceneBase::WORLD::LEFT) ? SceneBase::WORLD::RIGHT : SceneBase::WORLD::LEFT;
-			transform_.pos.x = -transform_.pos.x;
-		}
-	}
+	//if (!(type_ == OBJECT_TYPE::BUTTON ||
+	//	type_ == OBJECT_TYPE::PRESS_BUTTON))
+	//{
+	//	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_C))
+	//	{
+	//		world_ = (world_ == SceneBase::WORLD::LEFT) ? SceneBase::WORLD::RIGHT : SceneBase::WORLD::LEFT;
+	//		transform_.pos.x = -transform_.pos.x;
+	//	}
+	//}
 
 	isGrabbed_ = false; // デフォルトはつかまれていない
 	isPushButton_ = false; // デフォルトはボタンが踏まれていない

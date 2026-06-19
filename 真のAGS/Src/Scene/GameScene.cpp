@@ -441,6 +441,8 @@ void GameScene::Update(void)
 	player2_->Update();
 	//enemyManager_->Update();
 	camera1_->Update();
+	// ƒvƒŒƒCƒ„[1—p‚ÌƒJƒƒ‰Ý’è
+	camera1_->SetBeforeDraw();
 	camera2_->Update();
 	wall_->Update();
 
@@ -502,8 +504,8 @@ void GameScene::DrawPlayer1Screen(void)
 	camera1_->SetBeforeDraw();
 
 	// 3D•`‰æ
-	stageManager_->Draw();
 	skyDome_->Draw();
+	stageManager_->Draw();
 	player1_->Draw();
 	player2_->Draw(); // ƒvƒŒƒCƒ„[2‚à•`‰æ(“¯‚¶¢ŠE‚É‚¢‚éê‡)
 
@@ -538,8 +540,8 @@ void GameScene::DrawPlayer2Screen(void)
 	camera2_->SetBeforeDraw();
 
 	// 3D•`‰æ
-	stageManager_->Draw();
 	skyDome_->Draw();
+	stageManager_->Draw();
 	player1_->Draw(); // ƒvƒŒƒCƒ„[1‚à•`‰æ(“¯‚¶¢ŠE‚É‚¢‚éê‡)
 	player2_->Draw();
 
