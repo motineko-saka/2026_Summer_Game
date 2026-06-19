@@ -49,12 +49,11 @@ public:
 	void Release(void) override;
 
 private:
-	constexpr static VECTOR ANSWER_VECTOR = { 1260.0f, -720.0f, -50.5f };
 
-	constexpr static VECTOR ANSWER_VECTOR_LENGTH[] = { {-1260.0f, -720.0f, -50.5f} ,
-														{-1260.0f, -720.0f, -50.5f},
-														{1260.0f, -720.0f, -50.5f},
-														{-1260.0f, -720.0f, -50.5f},
+	constexpr static VECTOR ANSWER_VECTOR_LENGTH[] = { {1260.0f, -400.0f, -50.5f} ,
+														{-1260.0f, -400.0f, -50.5f},
+														{1260.0f, -400.0f, -50.5f},
+														{-1260.0f, -400.0f, -50.5f},
 	};
 
 	StageManager* stageManager_;
@@ -89,7 +88,7 @@ private:
 	bool isPlayer1HitObject_;
 	bool isPlayer2HitObject_;
 
-	VECTOR ansVec_ = {};
+	int pinID_;
 
 	// 現在選択中のプレイヤー
 	Player::PLAYER_NO activePlayer_{ Player::PLAYER_NO::PLAYER1 };
@@ -104,6 +103,6 @@ private:
 	// チュートリアル
 	//--------------------------------------------
 	Tutorial tutorial_; // 追加
-	int moveStepe_ = 700; // 移動する距離
+	int moveStepe_ = 650; // 移動する距離
 
 };

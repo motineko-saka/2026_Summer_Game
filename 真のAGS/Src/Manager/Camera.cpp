@@ -39,7 +39,7 @@ void Camera::Update(void)
 	// Ctrlキーで TOP モードと前のモードを切り替える
 	auto& ins = InputManager::GetInstance();
 
-	// 押下トリガーで切替（左または右 Ctrl）
+	// 押下トリガーで切替
 	if (ins.IsTrgDown(KEY_INPUT_LCONTROL) || ins.IsTrgDown(KEY_INPUT_RCONTROL))
 	{
 		if (mode_ != MODE::TOP)
@@ -196,14 +196,27 @@ void Camera::ChangeMode(MODE mode)
 	case Camera::MODE::FOLLOW:
 		break;
 	case Camera::MODE::TOP:
+		// TOPモードに入ったときに一度だけ角度を決める
+		angles_.x = -DX_PI_F * 0.5f; // 真上から見下ろす
+		angles_.y = 0.0f;
+
+		// 初期位置はここで一度だけ設定する（毎フレーム上書きしない）
+		if (followTransform_ != nullptr)
+		{
+			transform_.pos = VAdd(followTransform_->pos, TOP_CAMERA_LOCAL_POS);
+			targetPos_ = VAdd(followTransform_->pos, TOP_TARGET_LOCAL_POS);
+		}
+		else
+		{
+			transform_.pos = TOP_CAMERA_LOCAL_POS;
+			targetPos_ = TOP_TARGET_LOCAL_POS;
+		}
 		break;
 	}
-
 }
 
 void Camera::SetDefault(void)
 {
-
 	// カメラの初期設定
 	transform_.pos = DERFAULT_POS;
 
@@ -216,7 +229,6 @@ void Camera::SetDefault(void)
 
 	// カメラの上方向
 	transform_.quaRot.GetUp();
-
 }
 
 void Camera::SyncFollow(void)
@@ -357,28 +369,51 @@ void Camera::SetBeforeDrawFollow(void)
 
 void Camera::SetBeforeDrawTop(void)
 {
-	// プレイヤーがセットされていないなら何もしない
-	if (followTransform_ == nullptr) return;
-
 	if (!controlEnabled_) return;
 
-	// 注視点をプレイヤー位置に固定
-	VECTOR base = followTransform_->pos;
-	targetPos_ = VAdd(base, TOP_TARGET_LOCAL_POS);
+	// NOTE:
+	// ここでは毎フレーム transform_.pos を固定値で上書きしない。
+	// ChangeMode で初期位置を設定し、以降は入力で移動できるようにする。
 
-	// カメラ位置はプレイヤーの真上に置く
-	transform_.pos = VAdd(base, TOP_CAMERA_LOCAL_POS);
-
-	// 真上から見下ろす回転をセットする
-	angles_.x = DX_PI_F / 2.0f; 
-	angles_.y = 0.0f;
-
+	// 回転を計算
 	rotY_ = Quaternion::AngleAxis(angles_.y, AsoUtility::AXIS_Y);
 	transform_.quaRot = rotY_.Mult(Quaternion::AngleAxis(angles_.x, AsoUtility::AXIS_X));
 
+	auto& ins = InputManager::GetInstance();
+
+	// 押し続けで移動させる（連続移動）
+	VECTOR movePow = AsoUtility::VECTOR_ZERO;
+
+	if (ins.IsNew(KEY_INPUT_UP))
+	{
+		VECTOR f = VNorm(transform_.quaRot.PosAxis(AsoUtility::DIR_F));
+		movePow = VAdd(movePow, VScale(f, SPEED));
+	}
+	if (ins.IsNew(KEY_INPUT_DOWN))
+	{
+		VECTOR b = VNorm(transform_.quaRot.PosAxis(AsoUtility::DIR_B));
+		movePow = VAdd(movePow, VScale(b, SPEED));
+	}
+	if (ins.IsNew(KEY_INPUT_LEFT))
+	{
+		VECTOR l = VNorm(transform_.quaRot.PosAxis(AsoUtility::DIR_L));
+		movePow = VAdd(movePow, VScale(l, SPEED));
+	}
+	if (ins.IsNew(KEY_INPUT_RIGHT))
+	{
+		VECTOR r = VNorm(transform_.quaRot.PosAxis(AsoUtility::DIR_R));
+		movePow = VAdd(movePow, VScale(r, SPEED));
+	}
+
+	// 移動を適用（注視点も同量移動）
+	if (!AsoUtility::EqualsVZero(movePow))
+	{
+		transform_.pos = VAdd(transform_.pos, movePow);
+		targetPos_ = VAdd(targetPos_, movePow);
+	}
+
 	transform_.quaRot.GetUp();
 }
-
 void Camera::Collision(void)
 {
 	// プレイヤーのルートフレーム

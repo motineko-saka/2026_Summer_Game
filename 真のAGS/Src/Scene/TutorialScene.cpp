@@ -92,12 +92,12 @@ void TutorialScene::Init(void)
 	// 画面サイズの取得
 	GetScreenState(&screenWidth_, &screenHeight_, nullptr);
 
-	ansVec_ = ANSWER_VECTOR;
-
 	// 分割画面用のスクリーン作成(左右画面)
 	int halfWidth = screenWidth_ / 2;
 	screenHandle1_ = MakeScreen(halfWidth, screenHeight_, true);
 	screenHandle2_ = MakeScreen(halfWidth, screenHeight_, true);
+
+	pinID_ = MV1LoadModel((Application::PATH_MODEL + "Object/torii.mv1").c_str());
 
 	players_.resize(2);
 
@@ -160,7 +160,6 @@ void TutorialScene::Init(void)
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ -900.0f, -500.0f, 900.5f });
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
-
 
 	// ステージの各コライダをプレイヤー／カメラ／オブジェクトに登録
 	for (const auto& stage : stageManager_->GetStage())
@@ -231,7 +230,6 @@ void TutorialScene::Init(void)
 	// 衝突フラグの初期化
 	isPlayer1HitObject_ = false;
 	isPlayer2HitObject_ = false;
-	ansVec_ = ANSWER_VECTOR;
 
 	// 初期アクティブ状態（プレイヤー1 を操作）
 	activePlayer_ = Player::PLAYER_NO::PLAYER1;
@@ -268,7 +266,7 @@ void TutorialScene::Init(void)
 
 	// ステップ3: キャラ切替
 	tutorial_.AddStep(
-		"キャラクター切替の練習：Tab または 右クリックで操作キャラを切り替えてください。\n切替操作を行うと次へ進みます。",
+		"プレイヤーの切替の練習：Tab または 右クリックで操作プレイヤー2に切り替えてください。\n切替操作を行うと次へ進みます。",
 		[]() -> bool {
 			auto const& in = InputManager::GetInstance();
 			return in.IsTrgDown(KEY_INPUT_TAB) || in.IsTrgMouseRight();
@@ -535,9 +533,31 @@ void TutorialScene::DrawPlayer1Screen(void)
 
 	// 3D描画
 	stageManager_->Draw();
+
+	// 同じステージ
+	for (const auto& s : stageManager_->GetStage())
+	{
+		if (s) s->DrawAtOffset({ 0.0f, -1500.0f, 0.0f });
+	}
+
 	skyDome_->Draw();
 	player1_->Draw();
 	player2_->Draw(); // プレイヤー2も描画
+
+
+	// 答えの描画
+	for (int i = 0; i < objects_.size(); i++)
+	{
+		auto& obj = objects_[i];
+
+		if (!obj->IsGrabbed()) continue;
+		// 持っている
+		// 答えの場所に描画
+		DrawSphere3D(ANSWER_VECTOR_LENGTH[i], 80.0f, 16, GetColor(255, 0, 0), GetColor(0, 0, 0), FALSE);
+
+		MV1SetPosition(pinID_, ANSWER_VECTOR_LENGTH[i]);
+		MV1DrawModel(pinID_);
+	}
 
 	for (auto* obj : objects_)
 	{
@@ -548,6 +568,7 @@ void TutorialScene::DrawPlayer1Screen(void)
 		{
 
 		}
+
 	}
 }
 
@@ -558,9 +579,30 @@ void TutorialScene::DrawPlayer2Screen(void)
 
 	// 3D描画
 	stageManager_->Draw();
+
+	// 同じステージ
+	for (const auto& s : stageManager_->GetStage())
+	{
+		if (s) s->DrawAtOffset({ 0.0f, -1500.0f, 0.0f });
+	}
+
 	skyDome_->Draw();
 	player1_->Draw();
 	player2_->Draw();
+
+	// 答えの描画
+	for (int i = 0; i < objects_.size(); i++)
+	{
+		auto& obj = objects_[i];
+
+		if (!obj->IsGrabbed()) continue;
+		// 持っている
+		// 答えの場所に描画
+		DrawSphere3D(ANSWER_VECTOR_LENGTH[i], 80.0f, 16, GetColor(255, 0, 0), GetColor(0, 0, 0), FALSE);
+
+		MV1SetPosition(pinID_, ANSWER_VECTOR_LENGTH[i]);
+		MV1DrawModel(pinID_);
+	}
 
 	for (auto* obj : objects_)
 	{

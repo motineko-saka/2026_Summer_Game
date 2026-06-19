@@ -222,7 +222,6 @@ void SceneManager::ResetDeltaTime(void)
 
 void SceneManager::DoChangeScene(SCENE_ID sceneId)
 {
-
 	// ƒŠƒ\[ƒX‚Ì‰ð•ú
 	ResourceManager::GetInstance().Release();
 
@@ -260,12 +259,10 @@ void SceneManager::DoChangeScene(SCENE_ID sceneId)
 	ResetDeltaTime();
 
 	waitSceneId_ = SCENE_ID::NONE;
-
 }
 
 void SceneManager::Fade(void)
 {
-
 	Fader::STATE fState = fader_->GetState();
 	switch (fState)
 	{
@@ -289,7 +286,6 @@ void SceneManager::Fade(void)
 		}
 		break;
 	}
-
 }
 
 

@@ -54,7 +54,9 @@ void Tutorial::Start()
 		return;
 	}
 	currentIndex_ = 0;
-	active_ = true;
+	active_ = true..
+
+		.,,.
 	inputDelay_ = DELAY_MAX;
 	animCounter_ = 0;
 	if (steps_[0].onEnter) steps_[0].onEnter();
