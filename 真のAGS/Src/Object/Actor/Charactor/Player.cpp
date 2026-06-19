@@ -261,9 +261,9 @@ void Player::ProcessJump(void)
 
 	if (playerNo_ == PLAYER_NO::PLAYER1)
 	{
-		isHitKeyNew = InputManager::GetInstance()->IsNew(KEY_INPUT_BACKSLASH)
+		isHitKeyNew = InputManager::GetInstance()->IsNew(KEY_INPUT_SPACE)
 			|| InputManager::GetInstance()->IsPadBtnNew(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::DOWN);
-		isHitKey = InputManager::GetInstance()->IsTrgDown(KEY_INPUT_BACKSLASH)
+		isHitKey = InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE)
 			|| InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::DOWN);
 	}
 	//else if (playerNo_ == PLAYER_NO::PLAYER2)

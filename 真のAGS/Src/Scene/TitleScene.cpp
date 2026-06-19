@@ -11,6 +11,7 @@
 #include "PauseScene.h"
 #include "TutorialScene.h"
 #include "../Application.h"
+#include "GameClearScene.h"
 
 TitleScene::TitleScene(void)
 {
@@ -54,6 +55,17 @@ void TitleScene::LoadEnd(void)
 
 void TitleScene::Update(void)
 {
+	// ポーズ画面に遷移
+	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_ESCAPE))
+	{
+		SceneManager::GetInstance()->PushScene(std::make_shared<PauseScene>());
+	}
+
+	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_Q))
+	{
+		SceneManager::GetInstance()->ChangeScene(std::make_shared<GameClearScene>());
+	}
+
 	// 十字キー / パッドで選択移動
 	// 左に移動
 	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_LEFT)
@@ -103,7 +115,7 @@ void TitleScene::Draw(void)
 	const float posStartX = screenX * 0.55f;
 	const float posTutorialX = screenX * 0.45f;
 	const float posExitX = screenX * 0.35f;
-	const float posY = screenY / 2;
+	const float posY = screenY / 2;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              //野本アレンを倒すために俺は生まれてきたんだ
 
 	// 選択中は拡大して分かりやすくする
 	const float baseScale = 0.8f;
@@ -124,8 +136,8 @@ void TitleScene::Draw(void)
 	//DrawExtendGraph(0, 0, screenX, screenY, movTitle_, FALSE);
 
 	// 2D描画（ムービーの上にUIを重ねる）
-	//DrawRotaGraph(IMG_TITLE_POS_X, IMG_TITLE_POS_Y, 1.0f, 0.0f, imgTitle_, true);
-	//DrawRotaGraph(IMG_PUSH_SPACE_POS_X, IMG_PUSH_SPACE_POS_Y, 1.0f, 0.0f, imgPushSpace_, true);
+	DrawRotaGraph(IMG_TITLE_POS_X, IMG_TITLE_POS_Y, 0.45f, 0.0f, imgTitle_, true);
+	DrawRotaGraph(IMG_PUSH_SPACE_POS_X, IMG_PUSH_SPACE_POS_Y, 1.0f, 0.0f, imgPushSpace_, true);
 }
 
 void TitleScene::Release(void)
