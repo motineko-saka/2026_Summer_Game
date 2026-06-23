@@ -76,6 +76,8 @@ public:
 	// PUSH_BUTTON のリセット（次のフレーム判定のため）
 	void ResetPushButton(void) { isPushButton_ = false; }
 
+	//VECTOR GetScale(void){return scale}
+
 protected:
 
 	// リソースロード

@@ -38,6 +38,7 @@ void SceneManager::Init(void)
 
 	// 最初はタイトル画面から
 	ChangeScene(std::make_shared<TitleScene>());
+	//ChangeScene(std::make_shared<GameScene>());
 
 	// デルタタイム
 	preTime_ = std::chrono::system_clock::now();

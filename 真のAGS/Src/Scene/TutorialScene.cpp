@@ -12,6 +12,7 @@
 #include "../Object/Actor/Charactor/Enemy/EnemyRat.h"
 #include "../Object/Actor/Charactor/GameObject/ObjectBase.h"
 #include "../Object/Actor/Wall.h"
+#include "../Object/LightPillar.h"
 #include "../Object/Collider/ColliderBase.h"
 #include "TutorialScene.h"
 #include "../UI/Tutorial.h" 
@@ -102,6 +103,8 @@ void TutorialScene::Init(void)
 
 	pinID_ = MV1LoadModel((Application::PATH_MODEL + "Object/torii.mv1").c_str());
 
+	lightPillar_ = std::make_unique<LightPillar>();
+
 	players_.resize(2);
 
 	for (int i = 0; i < players_.size(); i++)
@@ -116,6 +119,8 @@ void TutorialScene::Init(void)
 
 		players_[i].camera_->SetFollow(&players_[i].player_->GetTransform());
 		players_[i].camera_->ChangeMode(Camera::MODE::FOLLOW);
+
+		players_[i].isPlayerHitObject_ = false;
 	}
 
 	// メンバ変数に紐付け
@@ -128,6 +133,7 @@ void TutorialScene::Init(void)
 
 	endTimer_ = 0.0f;
 	isEndTutorial_ = false;
+	isPillar_ = false;
 
 	//// カメラ1の作成(プレイヤー1用)
 	//camera1_ = new Camera();
@@ -339,7 +345,7 @@ void TutorialScene::Init(void)
 		}
 	);
 
-	// ステップ4: オブジェクト操作（オブジェクトに近づいて E）
+	// ステップ5: オブジェクト操作（オブジェクトに近づいて E）
 	tutorial_.AddStep(
 		"オブジェクト操作の練習1：オブジェクトに近づいて E を押してください。\nオブジェクトを押すと次へ進みます。",
 		[this]() -> bool {
@@ -358,7 +364,7 @@ void TutorialScene::Init(void)
 		}
 	);
 
-	// ステップ5: オブジェクトの設置(正しい位置への設置)
+	// ステップ6: オブジェクトの設置(正しい位置への設置)
 	tutorial_.AddStep(
 		"オブジェクト操作の練習2 : オブジェクトを正しい位置に配置してください。\nオブジェクトを配置すると次に進む。",
 		[this]() -> bool {
@@ -382,7 +388,7 @@ void TutorialScene::Init(void)
 				ret = true;
 				isEndTutorial_ = true;
 			}
-			return CheckHitKey(KEY_INPUT_Z) || CheckHitKey(KEY_INPUT_RETURN) || CheckHitKey(KEY_INPUT_SPACE);
+			return ret;
 		}
 	);
 
@@ -401,9 +407,16 @@ void TutorialScene::LoadEnd(void)
 
 void TutorialScene::CheckCollisions(void)
 {
+	for (auto player : players_)
+	{
+		player.isPlayerHitObject_ = false;
+	}
+
 	// 各オブジェクトに対してプレイヤーとの距離判定を行う
 	isPlayer1HitObject_ = false;
 	isPlayer2HitObject_ = false;
+
+	std::vector<ObjectBase*> newObjects;  // 新規オブジェクト用
 
 	for (auto* obj : objects_)
 	{
@@ -414,6 +427,8 @@ void TutorialScene::CheckCollisions(void)
 		// ボタンタイプの場合は専用処理
 		if (obj->GetType() == ObjectBase::OBJECT_TYPE::BUTTON)
 		{
+			//ButtonProcess(*obj, newObjects);
+
 			bool isNearButton = false;
 
 			VECTOR player1Pos = player1_->GetTransform().pos;
@@ -491,6 +506,62 @@ void TutorialScene::CheckCollisions(void)
 	}
 }
 
+const void TutorialScene::ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*>& newObjects)
+{
+	VECTOR objectPos = obj.GetTransform().pos;
+
+	bool isNearButton = false;
+
+	// プレイヤー1との距離チェック
+	VECTOR player1Pos = player1_->GetTransform().pos;
+	float distance1 = VSize(VSub(player1Pos, objectPos));
+	if (distance1 < 180.0f)
+	{
+		isNearButton = true;
+		// ボタンが押されたときの処理（例：ゲームクリア、ドアが開くなど）
+	}
+
+	// プレイヤー2も同様にチェック
+	VECTOR player2Pos = player2_->GetTransform().pos;
+	float distance2 = VSize(VSub(player2Pos, objectPos));
+	if (distance2 < 180.0f)
+	{
+		isNearButton = true;
+	}
+
+	// ボタンの近くにいて、スペースキーが押されたら
+	if (isNearButton && InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE))
+	{
+		obj.SetButtomPushed(true);
+		// 直接追加せず、一時リストに格納
+		ObjectBase* newObj = new ObjectBase(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::AKEG);
+		newObjects.push_back(newObj);
+	}
+
+	//for (auto player : players_)
+	//{
+	//	// プレイヤーとの距離チェック
+	//	VECTOR playerPos = player.player_->GetTransform().pos;
+	//	float distance1 = VSize(VSub(playerPos, objectPos));
+	//	if (distance1 < 180.0f)
+	//	{
+	//		isNearButton = true;
+	//		// ボタンが押されたときの処理（例：ゲームクリア、ドアが開くなど）
+	//	}
+	//}
+
+	//// ボタンの近くにいて、スペースキーか左ボタンが押されたら
+	//if (isNearButton &&
+	//	(InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE) || InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::LEFT)))
+	//{
+	//	obj.SetButtomPushed(true);
+	//	// 直接追加せず、一時リストに格納
+	//	ObjectBase* newObj = new ObjectBase(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::AKEG);
+	//	newObjects.push_back(newObj);
+	//}
+}
+
+
 void TutorialScene::Update(void)
 {
 	// チュートリアル更新
@@ -501,6 +572,21 @@ void TutorialScene::Update(void)
 	{
 		SceneManager::GetInstance()->PushScene(std::make_shared<PauseScene>());
 	}
+
+	// プレイヤー選択切替（TAB か 右クリック)
+	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_TAB) ||
+		InputManager::GetInstance()->IsTrgMouseRight())
+	{
+		for (int i = 0; i < players_.size(); i++)
+		{
+			bool isNo = activePlayer_ == static_cast<Player::PLAYER_NO>(i) ? false : true;
+			players_[i].player_->SetActive(isNo);
+			players_[i].camera_->SetControlEnabled(isNo);
+		}
+		activePlayer_ = (activePlayer_ == Player::PLAYER_NO::PLAYER1) ?
+			Player::PLAYER_NO::PLAYER2 : Player::PLAYER_NO::PLAYER1;
+	}
+
 	// プレイヤー選択切替
 	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_TAB))
 	{
@@ -548,6 +634,7 @@ void TutorialScene::Update(void)
 	player1_->Update();
 	player2_->Update();
 	//enemyManager_->Update();
+	lightPillar_->Update();
 	camera1_->Update();
 	camera2_->Update();
 	wall_->Update();
@@ -577,6 +664,12 @@ void TutorialScene::AnswerChack(void)
 		}
 	}
 
+	if (isAnswer && !isPillar_)
+	{
+		lightPillar_->Init(objects_[0]->GetPos());
+		isPillar_ = true;
+	}
+
 	if (isAnswer && isEndTutorial_)
 	{
 		endTimer_ += SceneManager::GetInstance()->GetDeltaTime(); 
@@ -586,6 +679,38 @@ void TutorialScene::AnswerChack(void)
 	if(endTimer_ > END_TIME)
 	{
 		SceneManager::GetInstance()->ChangeScene(std::make_shared<GameClearScene>());
+	}
+}
+
+const void TutorialScene::MakeNewObject(std::vector<ObjectBase*>& newObjects)
+{
+	for (auto& newObj : newObjects)
+	{
+		newObj->Init();
+		newObj->SetPosition({ 0.0f, 200.0f, -0.5f });
+		newObj->SetScale({ 3.0, 3.0, 3.0 });
+		for (const auto& stage : stageManager_->GetStage())
+		{
+			// ステージモデルのコライダーをオブジェクトに登録
+			const ColliderBase* stageCollider =
+				stage->GetOwnCollider(static_cast<int>(Stage::COLLIDER_TYPE::MODEL));
+
+			newObj->AddHitCollider(stageCollider);
+		}
+
+		// オブジェクトの衝突コライダをプレイヤーに登録
+		const ColliderBase* objCaps = newObj->GetOwnCollider(static_cast<int>(ObjectBase::COLLIDER_TYPE::CAPSULE));
+		if (!objCaps) return;
+
+		for (auto player : players_)
+		{
+			player.player_->AddHitCollider(objCaps);
+		}
+
+		//player1_->AddHitCollider(objCaps);
+		//player2_->AddHitCollider(objCaps);
+
+		objects_.push_back(newObj);
 	}
 }
 
@@ -606,6 +731,7 @@ void TutorialScene::DrawPlayer1Screen(void)
 	skyDome_->Draw();
 	stageManager_->Draw();
 	//wall_->Draw();
+	lightPillar_->Draw();
 	player1_->Draw();
 	player2_->Draw(); // プレイヤー2も描画
 
@@ -618,9 +744,13 @@ void TutorialScene::DrawPlayer1Screen(void)
 		if (!obj->IsGrabbed()) continue;
 		// 持っている
 		// 答えの場所に描画
-		DrawSphere3D(ANSWER_VECTOR_LENGTH[i], 80.0f, 16, GetColor(255, 0, 0), GetColor(0, 0, 0), FALSE);
+		//DrawSphere3D(ANSWER_VECTOR_LENGTH[i], 80.0f, 16, GetColor(255, 0, 0), GetColor(0, 0, 0), FALSE);
 
+		pinID_ = MV1DuplicateModel(obj->GetTransform().modelId);
+
+		MV1SetDifColorScale(pinID_, COLOR_F(0.0f, 0.5f, 1.0f, 0.5f));
 		MV1SetPosition(pinID_, ANSWER_VECTOR_LENGTH[i]);
+		MV1SetScale(pinID_, obj->GetTransform().scl);
 		MV1DrawModel(pinID_);
 	}
 
@@ -633,7 +763,6 @@ void TutorialScene::DrawPlayer1Screen(void)
 		{
 
 		}
-
 	}
 }
 
@@ -653,6 +782,8 @@ void TutorialScene::DrawPlayer2Screen(void)
 
 	skyDome_->Draw();
 	stageManager_->Draw();
+	lightPillar_->Draw();
+
 	player1_->Draw();
 	player2_->Draw();
 
@@ -665,9 +796,18 @@ void TutorialScene::DrawPlayer2Screen(void)
 
 		// 持っている
 		// 答えの場所に描画
-		DrawSphere3D(ANSWER_VECTOR_LENGTH[i], 80.0f, 16, GetColor(255, 0, 0), GetColor(0, 0, 0), FALSE);
+		//DrawSphere3D(ANSWER_VECTOR_LENGTH[i], 80.0f, 16, GetColor(255, 0, 0), GetColor(0, 0, 0), FALSE);
 
 		MV1SetPosition(pinID_, ANSWER_VECTOR_LENGTH[i]);
+		//MV1DrawModel(pinID_);
+
+		pinID_ = MV1DuplicateModel(obj->GetTransform().modelId);
+
+		
+
+		MV1SetDifColorScale(pinID_, COLOR_F(0.0, 0.5, 1.0, 0.5));
+		MV1SetPosition(pinID_, ANSWER_VECTOR_LENGTH[i]);
+		MV1SetScale(pinID_, obj->GetTransform().scl);
 		MV1DrawModel(pinID_);
 	}
 	//wall_->Draw();

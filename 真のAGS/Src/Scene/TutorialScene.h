@@ -12,6 +12,8 @@ class EnemyManager;
 class Camera;
 class ObjectBase;
 class Wall;
+class LightPillar;
+
 
 class TutorialScene : public SceneBase
 {
@@ -19,6 +21,7 @@ class TutorialScene : public SceneBase
 	{
 		Player* player_;
 		Camera* camera_;
+		bool isPlayerHitObject_;
 	};
 
 public:
@@ -68,6 +71,9 @@ private:
 
 	SkyDome* skyDome_;
 
+	std::unique_ptr<LightPillar> lightPillar_;
+	bool isPillar_ = false;
+
 	// プレイヤー1
 	Player* player1_;
 	Camera* camera1_;
@@ -106,6 +112,11 @@ private:
 	// 各プレイヤーの描画
 	void DrawPlayer1Screen(void);
 	void DrawPlayer2Screen(void);
+
+	// オブジェクトを生成（今は樽だけ）
+	const void MakeNewObject(std::vector<ObjectBase*>& newObjects);
+
+	const void ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*>& newObjects);
 
 	// 衝突判定チェック
 	void CheckCollisions(void);

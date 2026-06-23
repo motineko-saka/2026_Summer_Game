@@ -11,8 +11,7 @@ class EnemyManager;
 class Camera;
 class ObjectBase;
 class Wall;
-
-
+class LightPillar;
 
 class GameScene : public SceneBase
 {
@@ -20,6 +19,7 @@ class GameScene : public SceneBase
 	{
 		Player* player_;
 		Camera* camera_;
+		bool isPlayerHitObject_;
 	};
 
 public:
@@ -33,7 +33,7 @@ public:
 	void Init(void) override;
 
 	// 読み込み
-	void Load(void)		override;
+	void Load(void)	override;
 
 	// 読み込み後の初期化
 	void LoadEnd(void)	override;
@@ -61,13 +61,15 @@ private:
 
 	SkyDome* skyDome_;
 
+	std::unique_ptr<LightPillar> lightPillar_;
+
 	// プレイヤー1
-	Player* player1_;
-	Camera* camera1_;
+	//Player* player1_;
+	//Camera* camera1_;
 
 	// プレイヤー2
-	Player* player2_;
-	Camera* camera2_;
+	//Player* player2_;
+	//Camera* camera2_;
 
 	std::vector<PlayerS> players_;
 
@@ -89,17 +91,13 @@ private:
 	int pinID_;
 
 	// 衝突判定フラグ
-	bool isPlayer1HitObject_;
-	bool isPlayer2HitObject_;
+	//bool isPlayer1HitObject_;
+	//bool isPlayer2HitObject_;
 
 	VECTOR ansVec_ = {};
 
 	// 現在選択中のプレイヤー
 	Player::PLAYER_NO activePlayer_{ Player::PLAYER_NO::PLAYER1 };
-
-	// 各プレイヤーの描画
-	void DrawPlayer1Screen(void);
-	void DrawPlayer2Screen(void);
 
 	// 衝突判定チェック
 	void CheckCollisions(void);

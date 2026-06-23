@@ -12,6 +12,7 @@
 #include "../Object/Actor/Charactor/Enemy/EnemyRat.h"
 #include "../Object/Actor/Charactor/GameObject/ObjectBase.h"
 #include "../Object/Actor/Wall.h"
+#include "../Object/LightPillar.h"
 #include "../Object/Collider/ColliderBase.h"
 #include "GameScene.h"
 #include "GameClearScene.h"
@@ -22,16 +23,10 @@ GameScene::GameScene(void)
 	:
 	stageManager_(nullptr),
 	skyDome_(nullptr),
-	player1_(nullptr),
-	player2_(nullptr),
-	camera1_(nullptr),
-	camera2_(nullptr),
 	screenHandle1_(-1),
 	screenHandle2_(-1),
 	screenWidth_(0),
 	screenHeight_(0),
-	isPlayer1HitObject_(false),
-	isPlayer2HitObject_(false),
 	SceneBase()
 {
 }
@@ -53,6 +48,8 @@ void GameScene::Init(void)
 	screenHandle2_ = MakeScreen(halfWidth, screenHeight_, true);
 
 	pinID_ = MV1LoadModel((Application::PATH_MODEL + "Object/torii.mv1").c_str());
+
+	lightPillar_ = std::make_unique<LightPillar>();
 
 	//// カメラ1の作成(プレイヤー1用)
 	//for (int i = 0; i < 2; i++)
@@ -83,20 +80,16 @@ void GameScene::Init(void)
 
 		players_[i].camera_->SetFollow(&players_[i].player_->GetTransform());
 		players_[i].camera_->ChangeMode(Camera::MODE::FOLLOW);
-	}
 
-	// メンバ変数に紐付け
-	player1_ = players_[0].player_;
-	player2_ = players_[1].player_;
-	camera1_ = players_[0].camera_;
-	camera2_ = players_[1].camera_;
+		players_[i].isPlayerHitObject_ = false;
+	}
 
 	// ステージ
 	stageManager_ = new StageManager();
 	stageManager_->InitStage();
 
 	// スカイドーム(プレイヤー1用)
-	skyDome_ = new SkyDome(player1_->GetTransform());
+	skyDome_ = new SkyDome(players_[0].player_->GetTransform());
 	skyDome_->Init();
 
 	wall_ = std::make_unique<Wall>();
@@ -150,25 +143,12 @@ void GameScene::Init(void)
 		const ColliderBase* stageCollider =
 			stage->GetOwnCollider(static_cast<int>(Stage::COLLIDER_TYPE::MODEL));
 
-		//for (int i = 0; i < players_.size(); i++)
-		//{
-		//	// ステージモデルのコライダーをプレイヤーに登録
-		//	players_[i].player_->AddHitCollider(stageCollider);
-		//	players_[i].camera_->AddHitCollider(stageCollider);
-		//}
-
-		// ステージモデルのコライダーをプレイヤー1に登録
-		player1_->AddHitCollider(stageCollider);
-
-		// ステージモデルのコライダーをプレイヤー2に登録
-		player2_->AddHitCollider(stageCollider);
-
-		// ステージモデルのコライダーをエネミーに登録
-		//enemyManager_->AddHitCollider(stageCollider);
-
-		// ステージモデルのコライダーをカメラに登録
-		camera1_->AddHitCollider(stageCollider);
-		camera2_->AddHitCollider(stageCollider);
+		for (auto player : players_)
+		{
+			// ステージモデルのコライダーをプレイヤーに登録
+			player.player_->AddHitCollider(stageCollider);
+			player.camera_->AddHitCollider(stageCollider);
+		}
 
 		// ステージモデルのコライダーを全オブジェクトに登録
 		for (auto* obj : objects_)
@@ -200,14 +180,11 @@ void GameScene::Init(void)
 
 		if (!objCaps) continue;
 
-		//for (int i = 0; i < players_.size(); i++)
-		//{
-		//	// ステージモデルのコライダーをプレイヤーに登録
-		//	players_[i].player_->AddHitCollider(objCaps);
-		//}
-
-		player1_->AddHitCollider(objCaps);
-		player2_->AddHitCollider(objCaps);
+		for (int i = 0; i < players_.size(); i++)
+		{
+			// ステージモデルのコライダーをプレイヤーに登録
+			players_[i].player_->AddHitCollider(objCaps);
+		}
 
 		for (auto index : pushButtonIndex)
 		{
@@ -221,8 +198,6 @@ void GameScene::Init(void)
 	const ColliderBase* wallCollider =
 		wall_->GetOwnCollider(static_cast<int>(Stage::COLLIDER_TYPE::MODEL));
 
-	player1_->AddHitCollider(wallCollider);
-	player2_->AddHitCollider(wallCollider);
 	for (int i = 0; i < players_.size(); i++)
 	{
 		// ステージモデルのコライダーをプレイヤーに登録
@@ -231,8 +206,6 @@ void GameScene::Init(void)
 #pragma endregion
 
 	// 衝突フラグの初期化
-	isPlayer1HitObject_ = false;
-	isPlayer2HitObject_ = false;
 	ansVec_ = ANSWER_VECTOR;
 
 	// 初期アクティブ状態（プレイヤー1 を操作）
@@ -243,10 +216,6 @@ void GameScene::Init(void)
 		players_[i].player_->SetActive(isActive);
 		players_[i].camera_->SetControlEnabled(isActive);
 	}
-	player1_->SetActive(true);
-	player2_->SetActive(false);
-	camera1_->SetControlEnabled(true);
-	camera2_->SetControlEnabled(false);
 }
 
 void GameScene::Load(void)
@@ -260,8 +229,13 @@ void GameScene::LoadEnd(void)
 
 void GameScene::CheckCollisions(void)
 {
-	isPlayer1HitObject_ = false;
-	isPlayer2HitObject_ = false;
+	for (auto player : players_)
+	{
+		player.isPlayerHitObject_ = false;
+	}
+
+	//isPlayer1HitObject_ = false;
+	//isPlayer2HitObject_ = false;
 
 	std::vector<ObjectBase*> newObjects;  // 新規オブジェクト用
 
@@ -305,38 +279,24 @@ void GameScene::CheckCollisions(void)
 			continue;
 		}
 
-		for (int i = 0; i < players_.size(); i++)
+		for (auto& player : players_)
 		{
 			// ステージモデルのコライダーをプレイヤーに登録
-			VECTOR player1Pos = player1_->GetTransform().pos;
-		}
+			VECTOR playerPos = player.player_->GetTransform().pos;
 
+			float distance1 = VSize(VSub(playerPos, objectPos));
+			bool hit = (distance1 < 180.0f);
+			if (hit)
+			{
+				player.isPlayerHitObject_ = true;
+				// プレイヤーからオブジェクトへの方向ベクトル
+				//VECTOR pushDir = VSub(objectPos, player2Pos);
+				//pushDir.y = 0.0f; // Y軸(垂直方向)は無視
+				//pushDir = VNorm(pushDir); // 正規化
 
-		// プレイヤー1との距離
-		VECTOR player1Pos = player1_->GetTransform().pos;
-		float distance1 = VSize(VSub(player1Pos, objectPos));
-		bool hit1 = (distance1 < 180.0f);
-		if (hit1)
-		{
-			isPlayer1HitObject_ = true;
-			// 必要なら押す処理を有効化
-			// VECTOR pushDir = VSub(objectPos, player1Pos); pushDir.y = 0.0f; pushDir = VNorm(pushDir); obj->Push(pushDir, 5.0f);
-		}
-
-		// プレイヤー2との距離
-		VECTOR player2Pos = player2_->GetTransform().pos;
-		float distance2 = VSize(VSub(player2Pos, objectPos));
-		bool hit2 = (distance2 < 180.0f);
-		if (hit2)
-		{
-			isPlayer2HitObject_ = true;
-			// プレイヤーからオブジェクトへの方向ベクトル
-			//VECTOR pushDir = VSub(objectPos, player2Pos);
-			//pushDir.y = 0.0f; // Y軸(垂直方向)は無視
-			//pushDir = VNorm(pushDir); // 正規化
-
-			// オブジェクトを押す(速度は適度に調整)
-			//obj->Push(pushDir, 5.0f);
+				// オブジェクトを押す(速度は適度に調整)
+				//obj->Push(pushDir, 5.0f);
+			}
 		}
 	}
 
@@ -350,21 +310,16 @@ const void GameScene::ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*>& n
 
 	bool isNearButton = false;
 
-	// プレイヤー1との距離チェック
-	VECTOR player1Pos = player1_->GetTransform().pos;
-	float distance1 = VSize(VSub(player1Pos, objectPos));
-	if (distance1 < 180.0f)
+	for (auto player : players_)
 	{
-		isNearButton = true;
-		// ボタンが押されたときの処理（例：ゲームクリア、ドアが開くなど）
-	}
-
-	// プレイヤー2も同様にチェック
-	VECTOR player2Pos = player2_->GetTransform().pos;
-	float distance2 = VSize(VSub(player2Pos, objectPos));
-	if (distance2 < 180.0f)
-	{
-		isNearButton = true;
+		// プレイヤーとの距離チェック
+		VECTOR playerPos = player.player_->GetTransform().pos;
+		float distance1 = VSize(VSub(playerPos, objectPos));
+		if (distance1 < 180.0f)
+		{
+			isNearButton = true;
+			// ボタンが押されたときの処理（例：ゲームクリア、ドアが開くなど）
+		}
 	}
 
 	// ボタンの近くにいて、スペースキーか左ボタンが押されたら
@@ -373,14 +328,14 @@ const void GameScene::ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*>& n
 	{
 		obj.SetButtomPushed(true);
 		// 直接追加せず、一時リストに格納
-		ObjectBase* newObj = new ObjectBase(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::AKEG);
+		ObjectBase* newObj = new ObjectBase(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::AKEG);
 		newObjects.push_back(newObj);
 	}
 }
 
 const void GameScene::MakeNewObject(std::vector<ObjectBase*>& newObjects)
 {
-	for (auto* newObj : newObjects)
+	for (auto& newObj : newObjects)
 	{
 		newObj->Init();
 		newObj->SetPosition({ 0.0f, 200.0f, -0.5f });
@@ -396,8 +351,15 @@ const void GameScene::MakeNewObject(std::vector<ObjectBase*>& newObjects)
 
 		// オブジェクトの衝突コライダをプレイヤーに登録
 		const ColliderBase* objCaps = newObj->GetOwnCollider(static_cast<int>(ObjectBase::COLLIDER_TYPE::CAPSULE));
-		if (objCaps) player1_->AddHitCollider(objCaps);
-		if (objCaps) player2_->AddHitCollider(objCaps);
+		if (!objCaps) return;
+
+		for (auto player : players_)
+		{
+			player.player_->AddHitCollider(objCaps);
+		}
+
+		//player1_->AddHitCollider(objCaps);
+		//player2_->AddHitCollider(objCaps);
 
 		objects_.push_back(newObj);
 	}
@@ -424,71 +386,64 @@ void GameScene::Update(void)
 		return;
 	}
 
-	// プレイヤー選択切替
-	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_TAB))
+	// プレイヤー選択切替（TAB か 右クリック)
+	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_TAB) ||
+		InputManager::GetInstance()->IsTrgMouseRight())
 	{
-		if (activePlayer_ == Player::PLAYER_NO::PLAYER1)
+		for (int i = 0; i < players_.size(); i++)
 		{
-			activePlayer_ = Player::PLAYER_NO::PLAYER2;
-			player1_->SetActive(false);
-			player2_->SetActive(true);
-			camera1_->SetControlEnabled(false);
-			camera2_->SetControlEnabled(true);
+			bool isNo = activePlayer_ == static_cast<Player::PLAYER_NO>(i) ? false : true;
+			players_[i].player_->SetActive(isNo);
+			players_[i].camera_->SetControlEnabled(isNo);
 		}
-		else
-		{
-			activePlayer_ = Player::PLAYER_NO::PLAYER1;
-			player1_->SetActive(true);
-			player2_->SetActive(false);
-			camera1_->SetControlEnabled(true);
-			camera2_->SetControlEnabled(false);
-		}
+		activePlayer_ = (activePlayer_ == Player::PLAYER_NO::PLAYER1) ?
+			Player::PLAYER_NO::PLAYER2 : Player::PLAYER_NO::PLAYER1;
 	}
 
-	// 右クリックでもプレイヤー切替
-	if (InputManager::GetInstance()->IsTrgMouseRight())
-	{
-		if (activePlayer_ == Player::PLAYER_NO::PLAYER1)
-		{
-			activePlayer_ = Player::PLAYER_NO::PLAYER2;
-			player1_->SetActive(false);
-			player2_->SetActive(true);
-			camera1_->SetControlEnabled(false);
-			camera2_->SetControlEnabled(true);
-		}
-		else
-		{
-			activePlayer_ = Player::PLAYER_NO::PLAYER1;
-			player1_->SetActive(true);
-			player2_->SetActive(false);
-			camera1_->SetControlEnabled(true);
-			camera2_->SetControlEnabled(false);
-		}
-	}
+	//// 右クリックでもプレイヤー切替
+	//if (InputManager::GetInstance()->IsTrgMouseRight())
+	//{
+	//	if (activePlayer_ == Player::PLAYER_NO::PLAYER1)
+	//	{
+	//		activePlayer_ = Player::PLAYER_NO::PLAYER2;
+	//		player1_->SetActive(false);
+	//		player2_->SetActive(true);
+	//		camera1_->SetControlEnabled(false);
+	//		camera2_->SetControlEnabled(true);
+	//	}
+	//	else
+	//	{
+	//		activePlayer_ = Player::PLAYER_NO::PLAYER1;
+	//		player1_->SetActive(true);
+	//		player2_->SetActive(false);
+	//		camera1_->SetControlEnabled(true);
+	//		camera2_->SetControlEnabled(false);
+	//	}
+	//}
 
 	stageManager_->Update();
 	skyDome_->Update();
-	player1_->Update();
-	player2_->Update();
+	for (int i = 0; i < players_.size(); i++)
+	{
+		players_[i].player_->Update();
+		players_[i].camera_->Update();
+	}
 	//enemyManager_->Update();
-	camera1_->Update();
 	// プレイヤー1用のカメラ設定
-	camera1_->SetBeforeDraw();
-	camera2_->Update();
 	wall_->Update();
-
+	lightPillar_->Update();
 
 	// 衝突判定チェック(Objectの更新前に実行)
 	CheckCollisions();
 
 	// 全オブジェクトの更新
-	for (auto* obj : objects_)
+	for (auto& obj : objects_)
 	{
 		if (obj) obj->Update();
 	}
 
 	// 踏む
-	for (auto* obj : objects_)
+	for (auto& obj : objects_)
 	{
 		if (obj && obj->GetType() == ObjectBase::OBJECT_TYPE::PRESS_BUTTON)
 		{
@@ -515,7 +470,7 @@ void GameScene::Update(void)
 	// 答えの場所に全てのオブジェクトがあるか判定
 	bool isAnswer = true;
 
-	for (auto* obj : objects_)
+	for (auto& obj : objects_)
 	{
 		if (!obj->IsAnswerPosition())
 		{
@@ -525,78 +480,8 @@ void GameScene::Update(void)
 
 	if (isAnswer)
 	{
-		SceneManager::GetInstance()->ChangeScene(std::make_shared<GameClearScene>());
-	}
-}
-
-void GameScene::DrawPlayer1Screen(void)
-{
-	// プレイヤー1用のカメラ設定
-	camera1_->SetBeforeDraw();
-
-	// 3D描画
-	skyDome_->Draw();
-	stageManager_->Draw();
-	player1_->Draw();
-	player2_->Draw(); // プレイヤー2も描画(同じ世界にいる場合)
-
-	// 答えの描画
-	for (int i = 0; i < objects_.size(); i++)
-	{
-		auto& obj = objects_[i];
-
-		if (!obj->IsGrabbed()) continue;
-		// 持っている
-		// 答えの場所に描画
-		DrawSphere3D(ANSWER_VECTOR_LENGTH[i], 80.0f, 16, GetColor(255, 0, 0), GetColor(0, 0, 0), FALSE);
-
-		MV1SetPosition(pinID_, ANSWER_VECTOR_LENGTH[i]);
-		MV1DrawModel(pinID_);
-	}
-	
-	//wall_->Draw();
-
-	// 全オブジェクトを順に描画（それぞれの viewWorld を設定）
-	for (auto* obj : objects_)
-	{
-		if (obj == nullptr) continue;
-		//obj->SetViewWorld(WORLD::LEFT);
-		obj->Draw();
-	}
-}
-
-void GameScene::DrawPlayer2Screen(void)
-{
-	// プレイヤー2用のカメラ設定
-	camera2_->SetBeforeDraw();
-
-	// 3D描画
-	skyDome_->Draw();
-	stageManager_->Draw();
-	player1_->Draw(); // プレイヤー1も描画(同じ世界にいる場合)
-	player2_->Draw();
-
-	// 答えの描画
-	for (int i = 0; i < objects_.size(); i++)
-	{
-		auto& obj = objects_[i];
-
-		if (!obj->IsGrabbed()) continue;
-
-		DrawSphere3D(ANSWER_VECTOR_LENGTH[i], 80.0f, 16, GetColor(255, 0, 0), GetColor(0, 0, 0), FALSE);
-
-		MV1SetPosition(pinID_, ANSWER_VECTOR_LENGTH[i]);
-		MV1DrawModel(pinID_);
-	}
-	//wall_->Draw();
-
-	for (auto* obj : objects_)
-	{
-		if (obj == nullptr) continue;
-
 		
-		//obj->SetViewWorld(WORLD::RIGHT);
-		obj->Draw();
+		SceneManager::GetInstance()->ChangeScene(std::make_shared<GameClearScene>());
 	}
 }
 
@@ -604,15 +489,60 @@ void GameScene::Draw(void)
 {
 	int halfWidth = screenWidth_ / 2;
 
-	// プレイヤー1の画面を描画(左側)
-	SetDrawScreen(screenHandle1_);
-	ClearDrawScreen();
-	DrawPlayer1Screen();
+	for (int i = 0; i < players_.size(); i++)
+	{
+		auto& screenHandle_ = Player::PLAYER_NO::PLAYER1 == static_cast<Player::PLAYER_NO>(i) ?
+			screenHandle1_ : screenHandle2_;
+		SetDrawScreen(screenHandle_);
+		ClearDrawScreen();
+	
+		// プレイヤー1用のカメラ設定
+		players_[i].camera_->SetBeforeDraw();
+	
+		// 3D描画
+		skyDome_->Draw();
+		stageManager_->Draw();
+		lightPillar_->Draw();
+		
+		for (int j = 0; j < players_.size(); j++)
+		{
+			players_[j].player_->Draw();
+		}
+	
+		// 答えの描画
+		for (int i = 0; i < objects_.size(); i++)
+		{
+			auto& obj = objects_[i];
+	
+			if (!obj->IsGrabbed()) continue;
+			// 持っている
+			// 答えの場所に描画
+			DrawSphere3D(ANSWER_VECTOR_LENGTH[i], 80.0f, 16, GetColor(255, 0, 0), GetColor(0, 0, 0), FALSE);
+	
+			MV1SetPosition(pinID_, ANSWER_VECTOR_LENGTH[i]);
+			MV1DrawModel(pinID_);
+		}
+	
+		//wall_->Draw();
+	
+		// 全オブジェクトを順に描画（それぞれの viewWorld を設定）
+		for (auto* obj : objects_)
+		{
+			if (obj == nullptr) continue;
+			//obj->SetViewWorld(WORLD::LEFT);
+			obj->Draw();
+		}
+	}
 
-	// プレイヤー2の画面を描画(右側)
-	SetDrawScreen(screenHandle2_);
-	ClearDrawScreen();
-	DrawPlayer2Screen();
+	//// プレイヤー1の画面を描画(左側)
+	//SetDrawScreen(screenHandle1_);
+	//ClearDrawScreen();
+	//DrawPlayer1Screen();
+
+	//// プレイヤー2の画面を描画(右側)
+	//SetDrawScreen(screenHandle2_);
+	//ClearDrawScreen();
+	//DrawPlayer2Screen();
 
 	// メイン画面に転送
 	SetDrawScreen(DX_SCREEN_BACK);
@@ -643,35 +573,27 @@ void GameScene::Draw(void)
 
 #ifdef _DEBUG
 
-	// デバッグ表示
-	DrawFormatString(0, 0, GetColor(255, 255, 255), "P1角度:(%.1f, %.1f, %.1f)",
-		player1_->GetTransform().quaRot.ToEuler().x,
-		player1_->GetTransform().quaRot.ToEuler().y,
-		player1_->GetTransform().quaRot.ToEuler().z);
-
-	DrawFormatString(halfWidth, 0, GetColor(255, 255, 255), "P2角度:(%.1f, %.1f, %.1f)",
-		player2_->GetTransform().quaRot.ToEuler().x,
-		player2_->GetTransform().quaRot.ToEuler().y,
-		player2_->GetTransform().quaRot.ToEuler().z);
-
-	// 衝突判定結果の表示(プレイヤー1側)
-	if (isPlayer1HitObject_)
+	for (int i = 0; i < players_.size(); i++)
 	{
-		DrawFormatString(0, 40, GetColor(255, 0, 0), "P1: オブジェクトと衝突中!");
-	}
-	else
-	{
-		DrawFormatString(0, 40, GetColor(0, 255, 0), "P1: 衝突なし");
+		int w = halfWidth * i;
+		DrawFormatString(halfWidth, 0, GetColor(255, 255, 255), "P%d角度:(%.1f, %.1f, %.1f)",
+			i + 1,
+			players_[i].player_->GetTransform().quaRot.ToEuler().x,
+			players_[i].player_->GetTransform().quaRot.ToEuler().y,
+			players_[i].player_->GetTransform().quaRot.ToEuler().z);
 	}
 
-	// 衝突判定結果の表示(プレイヤー2側)
-	if (isPlayer2HitObject_)
+	for (auto& player : players_)
 	{
-		DrawFormatString(halfWidth, 40, GetColor(255, 0, 0), "P2: オブジェクトと衝突中!");
-	}
-	else
-	{
-		DrawFormatString(halfWidth, 40, GetColor(0, 255, 0), "P2: 衝突なし");
+		// 衝突判定結果の表示(プレイヤー2側)
+		if (player.isPlayerHitObject_)
+		{
+			DrawFormatString(halfWidth, 40, GetColor(255, 0, 0), "P2: オブジェクトと衝突中!");
+		}
+		else
+		{
+			DrawFormatString(halfWidth, 40, GetColor(0, 255, 0), "P2: 衝突なし");
+		}
 	}
 
 	// オブジェクト位置表示（先頭のオブジェクト）
@@ -710,12 +632,6 @@ void GameScene::Release(void)
 	skyDome_->Release();
 	delete skyDome_;
 
-	player1_->Release();
-	delete player1_;
-
-	player2_->Release();
-	delete player2_;
-
 	// 全オブジェクト解放
 	for (auto* obj : objects_)
 	{
@@ -730,11 +646,12 @@ void GameScene::Release(void)
 	//enemyManager_->Release();
 	//delete enemyManager_;
 
-	camera1_->Release();
-	delete camera1_;
-
-	camera2_->Release();
-	delete camera2_;
+	for (auto& player : players_)
+	{
+		player.player_->Release();
+		player.camera_->Release();
+	}
+	players_.clear();
 
 	// スクリーンハンドルの削除
 	if (screenHandle1_ != -1)
