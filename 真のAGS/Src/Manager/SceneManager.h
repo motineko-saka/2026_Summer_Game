@@ -13,8 +13,6 @@ class SceneManager
 public:
 	static constexpr float DEFAULT_FPS = 60.0f;
 
-
-
 public:
 	// シングルトン（生成・取得・削除）
 	static void CreateInstance(void) { if (instance_ == nullptr) { instance_ = new SceneManager(); } };
@@ -39,6 +37,12 @@ private:
 	// SceneManager copied(*SceneManager::GetInstance());
 	// SceneManager moved = std::move(*SceneManager::GetInstance());
 public:
+
+	enum SCENE
+	{
+		TUTORIAL = 0,
+		MAIN,
+	};
 
 	void Init(void);	// 初期化
 	void Update(void);	// 更新

@@ -1,12 +1,13 @@
 #pragma once
 #include "../Object/Actor/Stage/StageBase.h"
+#include "../Manager/SceneManager.h"
 #include <vector>
 
 class StageManager
 {
 public:
 	// コンストラクタ
-	StageManager();
+	StageManager(SceneManager::SCENE scene);
 
 	// デストラクタ
 	~StageManager(void);
@@ -29,5 +30,7 @@ private:
 	constexpr static int STAGE_NUM = 1;
 
 	std::vector<StageBase*> stages_;
+
+	SceneManager::SCENE scene_;
 };
 

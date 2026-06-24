@@ -6,7 +6,7 @@ class Stage : public StageBase
 {
 public:
 
-	Stage(void);
+	Stage(int modelID);
 	~Stage(void) override;
 
 	// œŠOƒtƒŒ[ƒ€–¼Ì
@@ -27,6 +27,8 @@ protected:
 	void InitPost(void)override;
 
 private:
+
+	int stageID_;
 
 	static constexpr VECTOR STAGE_DEFAULT_POS = { 0.0f, 0.0f, 0.0f };
 

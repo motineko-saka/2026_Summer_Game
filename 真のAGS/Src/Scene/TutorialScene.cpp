@@ -72,16 +72,10 @@ TutorialScene::TutorialScene(void)
 	:
 	stageManager_(nullptr),
 	skyDome_(nullptr),
-	player1_(nullptr),
-	player2_(nullptr),
-	camera1_(nullptr),
-	camera2_(nullptr),
 	screenHandle1_(-1),
 	screenHandle2_(-1),
 	screenWidth_(0),
 	screenHeight_(0),
-	isPlayer1HitObject_(false),
-	isPlayer2HitObject_(false),
 	SceneBase()
 {
 }
@@ -100,8 +94,6 @@ void TutorialScene::Init(void)
 	int halfWidth = screenWidth_ / 2;
 	screenHandle1_ = MakeScreen(halfWidth, screenHeight_, true);
 	screenHandle2_ = MakeScreen(halfWidth, screenHeight_, true);
-
-	pinID_ = MV1LoadModel((Application::PATH_MODEL + "Object/torii.mv1").c_str());
 
 	lightPillar_ = std::make_unique<LightPillar>();
 
@@ -123,47 +115,18 @@ void TutorialScene::Init(void)
 		players_[i].isPlayerHitObject_ = false;
 	}
 
-	// メンバ変数に紐付け
-	player1_ = players_[0].player_;
-	player2_ = players_[1].player_;
-	camera1_ = players_[0].camera_;
-	camera2_ = players_[1].camera_;
-
-	pinID_ = MV1LoadModel((Application::PATH_MODEL + "Object/chair.mv1").c_str());
+	pinID_ = -1;
 
 	endTimer_ = 0.0f;
 	isEndTutorial_ = false;
 	isPillar_ = false;
 
-	//// カメラ1の作成(プレイヤー1用)
-	//camera1_ = new Camera();
-	//camera1_->Init();
-
-	//// カメラ2の作成(プレイヤー2用)
-	//camera2_ = new Camera();
-	//camera2_->Init();
-
-	//// プレイヤー1
-	//player1_ = new Player(Player::PLAYER_NO::PLAYER1, *camera1_);
-	//player1_->Init();
-
-	//camera1_->SetFollow(&player1_->GetTransform());
-	//camera1_->ChangeMode(Camera::MODE::FOLLOW);
-
-
-	//// プレイヤー2(プレイヤー1を複製)
-	//player2_ = new Player(Player::PLAYER_NO::PLAYER2, *camera2_);
-	//player2_->Init();
-
-	//camera2_->SetFollow(&player2_->GetTransform());
-	//camera2_->ChangeMode(Camera::MODE::FOLLOW);
-	// 
 	// ステージ
-	stageManager_ = new StageManager();
+	stageManager_ = std::make_unique<StageManager>();
 	stageManager_->InitStage();
 
 	// スカイドーム(プレイヤー1用)
-	skyDome_ = new SkyDome(player1_->GetTransform());
+	skyDome_ = std::make_unique<SkyDome>(players_[0].player_->GetTransform());
 	skyDome_->Init();
 
 	wall_ = std::make_unique<Wall>();
@@ -176,12 +139,12 @@ void TutorialScene::Init(void)
 	objects_.back()->Init();
 	//objects_.back()->SetPosition({ 1260.0f, -500.0f, -50.5f });
 	objects_.back()->SetPosition({ 1260.0f, -500.0f, -50.5f });
-	objects_.back()->SetScale({ 0.2, 0.2, 0.2 });
+	objects_.back()->SetScale({ 0.2f, 0.2f, 0.2f });
 
 	objects_.push_back(new ObjectBase(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::BUTTON));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ 0.0f, -600.0f, -50.0f });
-	objects_.back()->SetScale({ 0.5, 0.5, 0.5 });
+	objects_.back()->SetScale({ 0.5f, 0.5f, 0.5f });
 
 	//objects_.push_back(new ObjectBase(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[2], ObjectBase::OBJECT_TYPE::PRESS_BUTTON));
 	//objects_.back()->Init();
@@ -194,12 +157,12 @@ void TutorialScene::Init(void)
 		const ColliderBase* stageCollider =
 			stage->GetOwnCollider(static_cast<int>(Stage::COLLIDER_TYPE::MODEL));
 
-		player1_->AddHitCollider(stageCollider);
-		player2_->AddHitCollider(stageCollider);
-
-		// カメラに登録
-		camera1_->AddHitCollider(stageCollider);
-		camera2_->AddHitCollider(stageCollider);
+		for (auto player : players_)
+		{
+			// ステージモデルのコライダーをプレイヤーに登録
+			player.player_->AddHitCollider(stageCollider);
+			player.camera_->AddHitCollider(stageCollider);
+		}
 
 		for (auto& obj : objects_)
 		{
@@ -230,8 +193,11 @@ void TutorialScene::Init(void)
 
 		if (!objCaps) continue;
 
-		player1_->AddHitCollider(objCaps);
-		player2_->AddHitCollider(objCaps);
+		for (int i = 0; i < players_.size(); i++)
+		{
+			// ステージモデルのコライダーをプレイヤーに登録
+			players_[i].player_->AddHitCollider(objCaps);
+		}
 
 		for (auto index : pushButtonIndex)
 		{
@@ -245,42 +211,55 @@ void TutorialScene::Init(void)
 	const ColliderBase* wallCollider =
 		wall_->GetOwnCollider(static_cast<int>(Stage::COLLIDER_TYPE::MODEL));
 
-	player1_->AddHitCollider(wallCollider);
-	player2_->AddHitCollider(wallCollider);
-
-	const ColliderBase* playerCollider =
-		player1_->GetOwnCollider(static_cast<int>(Player::COLLIDER_TYPE::LINE));
-
-	// Buttonだけ
-	for (auto index : pushButtonIndex)
+	for (int i = 0; i < players_.size(); i++)
 	{
-		objects_[index]->AddHitCollider(playerCollider);
+		// ステージモデルのコライダーをプレイヤーに登録
+		players_[i].player_->AddHitCollider(wallCollider);
 	}
-	//objects_[4]->AddHitCollider(playerCollider);
 
-	// 衝突フラグの初期化
-	isPlayer1HitObject_ = false;
-	isPlayer2HitObject_ = false;
+	// プレイヤーコライダ登録
+	for (auto& player : players_)
+	{
+		const ColliderBase* playerCollider =
+			player.player_->GetOwnCollider(static_cast<int>(Player::COLLIDER_TYPE::LINE));
+
+		// Buttonだけ
+		for (auto index : pushButtonIndex)
+		{
+			objects_[index]->AddHitCollider(playerCollider);
+		}
+	}
+
+
+	//objects_[4]->AddHitCollider(playerCollider);
 
 	// 初期アクティブ状態（プレイヤー1 を操作）
 	activePlayer_ = Player::PLAYER_NO::PLAYER1;
-	player1_->SetActive(true);
-	player2_->SetActive(false);
-	camera1_->SetControlEnabled(true);
-	camera2_->SetControlEnabled(false);
 
+	for (int i = 0; i < players_.size(); i++)
+	{
+		bool isActive = i == 0 ? true : false;
+		players_[i].player_->SetActive(isActive);
+		players_[i].camera_->SetControlEnabled(isActive);
+	}
+
+	TutorialInit();
+}
+
+void TutorialScene::TutorialInit(void)
+{
 	// チュートリアル開始（ステップ登録）
 	tutorial_.Init();
 	tutorial_.ClearSteps();
 
 	// プレイヤー1 の初期位置をキャプチャ
-	const VECTOR p1StartPos = player1_->GetTransform().pos;
+	const VECTOR p1StartPos = players_[0].player_->GetTransform().pos;
 
 	// ステップ1: 移動（位置変化で判定）
 	tutorial_.AddStep(
 		"移動の練習：W/A/S/D または 方向キーでプレイヤーを移動させてください。\n実際に移動すると次へ進みます。",
 		[this, p1StartPos]() -> bool {
-			VECTOR cur = player1_->GetTransform().pos;
+			VECTOR cur = players_[0].player_->GetTransform().pos;
 			float moved = VSize(VSub(cur, p1StartPos));
 			return moved > moveStepe_;
 		}
@@ -323,20 +302,15 @@ void TutorialScene::Init(void)
 					{
 						VECTOR objectPos = obj->GetTransform().pos;
 
-						VECTOR player1Pos = player1_->GetTransform().pos;
-						float distance1 = VSize(VSub(player1Pos, objectPos));
-						if (distance1 < 180.0f)
+						for (auto& player : players_)
 						{
-							obj->SetButtomPushed(true);
-							ret = true;
-						}
-
-						VECTOR player2Pos = player2_->GetTransform().pos;
-						float distance2 = VSize(VSub(player2Pos, objectPos));
-						if (distance2 < 180.0f)
-						{
-							obj->SetButtomPushed(true);
-							ret = true;
+							VECTOR playerPos = player.player_->GetTransform().pos;
+							float distance = VSize(VSub(playerPos, objectPos));
+							if (distance < 180.0f)
+							{
+								obj->SetButtomPushed(true);
+								ret = true;
+							}
 						}
 					}
 				}
@@ -352,13 +326,15 @@ void TutorialScene::Init(void)
 			for (auto* obj : objects_)
 			{
 				if (obj == nullptr) continue;
-				VECTOR objPos = obj->GetTransform().pos;
-				VECTOR p1Pos = player1_->GetTransform().pos;
-				float dist1 = VSize(VSub(p1Pos, objPos));
-				if (dist1 < 180.0f && InputManager::GetInstance()->IsTrgDown(KEY_INPUT_E)) return true;
-				VECTOR p2Pos = player2_->GetTransform().pos;
-				float dist2 = VSize(VSub(p2Pos, objPos));
-				if (dist2 < 180.0f && InputManager::GetInstance()->IsTrgDown(KEY_INPUT_E)) return true;
+
+				for (auto& player : players_)
+				{
+					VECTOR objPos = obj->GetTransform().pos;
+
+					VECTOR pPos = player.player_->GetTransform().pos;
+					float dist = VSize(VSub(pPos, objPos));
+					if (dist < 180.0f && InputManager::GetInstance()->IsTrgDown(KEY_INPUT_E)) return true;
+				}
 			}
 			return false;
 		}
@@ -412,10 +388,6 @@ void TutorialScene::CheckCollisions(void)
 		player.isPlayerHitObject_ = false;
 	}
 
-	// 各オブジェクトに対してプレイヤーとの距離判定を行う
-	isPlayer1HitObject_ = false;
-	isPlayer2HitObject_ = false;
-
 	std::vector<ObjectBase*> newObjects;  // 新規オブジェクト用
 
 	for (auto* obj : objects_)
@@ -431,18 +403,14 @@ void TutorialScene::CheckCollisions(void)
 
 			bool isNearButton = false;
 
-			VECTOR player1Pos = player1_->GetTransform().pos;
-			float distance1 = VSize(VSub(player1Pos, objectPos));
-			if (distance1 < 180.0f)
+			for (auto& player : players_)
 			{
-				isNearButton = true;
-			}
-
-			VECTOR player2Pos = player2_->GetTransform().pos;
-			float distance2 = VSize(VSub(player2Pos, objectPos));
-			if (distance2 < 180.0f)
-			{
-				isNearButton = true;
+				VECTOR playerPos = player.player_->GetTransform().pos;
+				float distance = VSize(VSub(playerPos, objectPos));
+				if (distance < 180.0f)
+				{
+					isNearButton = true;
+				}
 			}
 
 			if (isNearButton && InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE))
@@ -452,29 +420,33 @@ void TutorialScene::CheckCollisions(void)
 			continue;
 		}
 
-		// プレイヤー1との距離
-		VECTOR player1Pos = player1_->GetTransform().pos;
-		float distance1 = VSize(VSub(player1Pos, objectPos));
-		bool hit1 = (distance1 < 180.0f);
-		if (hit1)
+		for (auto& player : players_)
 		{
-			isPlayer1HitObject_ = true;
-		}
+			// プレイヤー1との距離
+			VECTOR playerPos = player.player_->GetTransform().pos;
+			float distance = VSize(VSub(playerPos, objectPos));
+			bool hit = (distance < 180.0f);
+			if (hit)
+			{
+				player.isPlayerHitObject_ = true;
+				//isPlayer1HitObject_ = true;
+			}
 
-		// プレイヤー2との距離
-		VECTOR player2Pos = player2_->GetTransform().pos;
-		float distance2 = VSize(VSub(player2Pos, objectPos));
-		bool hit2 = (distance2 < 180.0f);
-		if (hit2)
-		{
-			isPlayer2HitObject_ = true;
-			// プレイヤーからオブジェクトへの方向ベクトル
-			//VECTOR pushDir = VSub(objectPos, player2Pos);
-			//pushDir.y = 0.0f; // Y軸(垂直方向)は無視
-			//pushDir = VNorm(pushDir); // 正規化
+			//// プレイヤー2との距離
+			//VECTOR player2Pos = player2_->GetTransform().pos;
+			//float distance2 = VSize(VSub(player2Pos, objectPos));
+			//bool hit2 = (distance2 < 180.0f);
+			//if (hit2)
+			//{
+			//	isPlayer2HitObject_ = true;
+			//	// プレイヤーからオブジェクトへの方向ベクトル
+			//	//VECTOR pushDir = VSub(objectPos, player2Pos);
+			//	//pushDir.y = 0.0f; // Y軸(垂直方向)は無視
+			//	//pushDir = VNorm(pushDir); // 正規化
 
-			//// オブジェクトを押す(速度は適度に調整)
-			//obj->Push(pushDir, 5.0f);
+			//	//// オブジェクトを押す(速度は適度に調整)
+			//	//obj->Push(pushDir, 5.0f);
+			//}
 		}
 	}
 
@@ -488,18 +460,14 @@ void TutorialScene::CheckCollisions(void)
 			{
 				VECTOR objectPos = obj->GetTransform().pos;
 
-				VECTOR player1Pos = player1_->GetTransform().pos;
-				float distance1 = VSize(VSub(player1Pos, objectPos));
-				if (distance1 < 180.0f)
+				for (auto& player : players_)
 				{
-					obj->SetButtomPushed(true);
-				}
-
-				VECTOR player2Pos = player2_->GetTransform().pos;
-				float distance2 = VSize(VSub(player2Pos, objectPos));
-				if (distance2 < 180.0f)
-				{
-					obj->SetButtomPushed(true);
+					VECTOR playerPos = player.player_->GetTransform().pos;
+					float distance = VSize(VSub(playerPos, objectPos));
+					if (distance < 180.0f)
+					{
+						obj->SetButtomPushed(true);
+					}
 				}
 			}
 		}
@@ -512,22 +480,25 @@ const void TutorialScene::ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*
 
 	bool isNearButton = false;
 
-	// プレイヤー1との距離チェック
-	VECTOR player1Pos = player1_->GetTransform().pos;
-	float distance1 = VSize(VSub(player1Pos, objectPos));
-	if (distance1 < 180.0f)
+	for (auto& player : players_)
 	{
-		isNearButton = true;
-		// ボタンが押されたときの処理（例：ゲームクリア、ドアが開くなど）
+		// プレイヤーとの距離チェック
+		VECTOR playerPos = player.player_->GetTransform().pos;
+		float distance = VSize(VSub(playerPos, objectPos));
+		if (distance < 180.0f)
+		{
+			isNearButton = true;
+			// ボタンが押されたときの処理（例：ゲームクリア、ドアが開くなど）
+		}
 	}
 
-	// プレイヤー2も同様にチェック
-	VECTOR player2Pos = player2_->GetTransform().pos;
-	float distance2 = VSize(VSub(player2Pos, objectPos));
-	if (distance2 < 180.0f)
-	{
-		isNearButton = true;
-	}
+	//// プレイヤー2も同様にチェック
+	//VECTOR player2Pos = player2_->GetTransform().pos;
+	//float distance2 = VSize(VSub(player2Pos, objectPos));
+	//if (distance2 < 180.0f)
+	//{
+	//	isNearButton = true;
+	//}
 
 	// ボタンの近くにいて、スペースキーが押されたら
 	if (isNearButton && InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE))
@@ -587,56 +558,71 @@ void TutorialScene::Update(void)
 			Player::PLAYER_NO::PLAYER2 : Player::PLAYER_NO::PLAYER1;
 	}
 
-	// プレイヤー選択切替
-	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_TAB))
-	{
-		if (activePlayer_ == Player::PLAYER_NO::PLAYER1)
-		{
-			activePlayer_ = Player::PLAYER_NO::PLAYER2;
-			player1_->SetActive(false);
-			player2_->SetActive(true);
-			camera1_->SetControlEnabled(false);
-			camera2_->SetControlEnabled(true);
-		}
-		else
-		{
-			activePlayer_ = Player::PLAYER_NO::PLAYER1;
-			player1_->SetActive(true);
-			player2_->SetActive(false);
-			camera1_->SetControlEnabled(true);
-			camera2_->SetControlEnabled(false);
-		}
-	}
+	//// プレイヤー選択切替（TAB か 右クリック)
+	//if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_TAB) ||
+	//	InputManager::GetInstance()->IsTrgMouseRight())
+	//{
+	//	for (int i = 0; i < players_.size(); i++)
+	//	{
+	//		bool isNo = activePlayer_ == static_cast<Player::PLAYER_NO>(i) ? false : true;
+	//		players_[i].player_->SetActive(isNo);
+	//		players_[i].camera_->SetControlEnabled(isNo);
+	//	}
+	//	activePlayer_ = (activePlayer_ == Player::PLAYER_NO::PLAYER1) ?
+	//		Player::PLAYER_NO::PLAYER2 : Player::PLAYER_NO::PLAYER1;
+	//}
 
-	// 右クリックでもプレイヤー切替
-	if (InputManager::GetInstance()->IsTrgMouseRight())
-	{
-		if (activePlayer_ == Player::PLAYER_NO::PLAYER1)
-		{
-			activePlayer_ = Player::PLAYER_NO::PLAYER2;
-			player1_->SetActive(false);
-			player2_->SetActive(true);
-			camera1_->SetControlEnabled(false);
-			camera2_->SetControlEnabled(true);
-		}
-		else
-		{
-			activePlayer_ = Player::PLAYER_NO::PLAYER1;
-			player1_->SetActive(true);
-			player2_->SetActive(false);
-			camera1_->SetControlEnabled(true);
-			camera2_->SetControlEnabled(false);
-		}
-	}
+	//// プレイヤー選択切替
+	//if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_TAB))
+	//{
+	//	if (activePlayer_ == Player::PLAYER_NO::PLAYER1)
+	//	{
+	//		activePlayer_ = Player::PLAYER_NO::PLAYER2;
+	//		player1_->SetActive(false);
+	//		player2_->SetActive(true);
+	//		camera1_->SetControlEnabled(false);
+	//		camera2_->SetControlEnabled(true);
+	//	}
+	//	else
+	//	{
+	//		activePlayer_ = Player::PLAYER_NO::PLAYER1;
+	//		player1_->SetActive(true);
+	//		player2_->SetActive(false);
+	//		camera1_->SetControlEnabled(true);
+	//		camera2_->SetControlEnabled(false);
+	//	}
+	//}
+	//
+	//// 右クリックでもプレイヤー切替
+	//if (InputManager::GetInstance()->IsTrgMouseRight())
+	//{
+	//	if (activePlayer_ == Player::PLAYER_NO::PLAYER1)
+	//	{
+	//		activePlayer_ = Player::PLAYER_NO::PLAYER2;
+	//		player1_->SetActive(false);
+	//		player2_->SetActive(true);
+	//		camera1_->SetControlEnabled(false);
+	//		camera2_->SetControlEnabled(true);
+	//	}
+	//	else
+	//	{
+	//		activePlayer_ = Player::PLAYER_NO::PLAYER1;
+	//		player1_->SetActive(true);
+	//		player2_->SetActive(false);
+	//		camera1_->SetControlEnabled(true);
+	//		camera2_->SetControlEnabled(false);
+	//	}
+	//}
 
 	stageManager_->Update();
 	skyDome_->Update();
-	player1_->Update();
-	player2_->Update();
+	for (auto& player : players_)
+	{
+		player.player_->Update();
+		player.camera_->Update();
+	}
 	//enemyManager_->Update();
 	lightPillar_->Update();
-	camera1_->Update();
-	camera2_->Update();
 	wall_->Update();
 
 	// 衝突判定チェック(Objectの更新前に実行)
@@ -716,145 +702,229 @@ const void TutorialScene::MakeNewObject(std::vector<ObjectBase*>& newObjects)
 
 void TutorialScene::DrawPlayer1Screen(void)
 {
-	// プレイヤー1用のカメラ設定
-	camera1_->SetBeforeDraw();
+	//// プレイヤー1用のカメラ設定
+	//camera1_->SetBeforeDraw();
 
-	// 3D描画
-	stageManager_->Draw();
+	//// 3D描画
+	//stageManager_->Draw();
 
-	// 同じステージ
-	for (const auto& s : stageManager_->GetStage())
-	{
-		if (s) s->DrawAtOffset({ 0.0f, -1500.0f, 0.0f });
-	}
+	//// 同じステージ
+	//for (const auto& s : stageManager_->GetStage())
+	//{
+	//	if (s) s->DrawAtOffset({ 0.0f, -1500.0f, 0.0f });
+	//}
 
-	skyDome_->Draw();
-	stageManager_->Draw();
-	//wall_->Draw();
-	lightPillar_->Draw();
-	player1_->Draw();
-	player2_->Draw(); // プレイヤー2も描画
+	//skyDome_->Draw();
+	//stageManager_->Draw();
+	////wall_->Draw();
+	//lightPillar_->Draw();
+	//player1_->Draw();
+	//player2_->Draw(); // プレイヤー2も描画
 
 
-	// 答えの描画
-	for (int i = 0; i < objects_.size(); i++)
-	{
-		auto& obj = objects_[i];
+	//// 答えの描画
+	//for (int i = 0; i < objects_.size(); i++)
+	//{
+	//	auto& obj = objects_[i];
 
-		if (!obj->IsGrabbed()) continue;
-		// 持っている
-		// 答えの場所に描画
-		//DrawSphere3D(ANSWER_VECTOR_LENGTH[i], 80.0f, 16, GetColor(255, 0, 0), GetColor(0, 0, 0), FALSE);
+	//	if (!obj->IsGrabbed()) continue;
+	//	// 持っている
+	//	// 答えの場所に描画
+	//	//DrawSphere3D(ANSWER_VECTOR_LENGTH[i], 80.0f, 16, GetColor(255, 0, 0), GetColor(0, 0, 0), FALSE);
 
-		pinID_ = MV1DuplicateModel(obj->GetTransform().modelId);
+	//	pinID_ = MV1DuplicateModel(obj->GetTransform().modelId);
 
-		MV1SetDifColorScale(pinID_, COLOR_F(0.0f, 0.5f, 1.0f, 0.5f));
-		MV1SetPosition(pinID_, ANSWER_VECTOR_LENGTH[i]);
-		MV1SetScale(pinID_, obj->GetTransform().scl);
-		MV1DrawModel(pinID_);
-	}
+	//	MV1SetDifColorScale(pinID_, COLOR_F(0.0f, 0.5f, 1.0f, 0.5f));
+	//	MV1SetPosition(pinID_, ANSWER_VECTOR_LENGTH[i]);
+	//	MV1SetScale(pinID_, obj->GetTransform().scl);
+	//	MV1DrawModel(pinID_);
+	//}
 
-	for (auto* obj : objects_)
-	{
-		if (obj == nullptr) continue;
-		obj->Draw();
-		// ボタンオブジェクトがどれかわかるようにオブジェクトの上に↓を描画してわかるようにする
-		if (obj->GetType() == ObjectBase::OBJECT_TYPE::BUTTON)
-		{
+	//for (auto* obj : objects_)
+	//{
+	//	if (obj == nullptr) continue;
+	//	obj->Draw();
+	//	// ボタンオブジェクトがどれかわかるようにオブジェクトの上に↓を描画してわかるようにする
+	//	if (obj->GetType() == ObjectBase::OBJECT_TYPE::BUTTON)
+	//	{
 
-		}
-	}
+	//	}
+	//}
 }
 
 void TutorialScene::DrawPlayer2Screen(void)
 {
-	// プレイヤー2用のカメラ設定
-	camera2_->SetBeforeDraw();
+	//// プレイヤー2用のカメラ設定
+	//camera2_->SetBeforeDraw();
 
-	// 3D描画
-	stageManager_->Draw();
+	//// 3D描画
+	//stageManager_->Draw();
 
-	// 同じステージ
-	for (const auto& s : stageManager_->GetStage())
-	{
-		if (s) s->DrawAtOffset({ 0.0f, -1500.0f, 0.0f });
-	}
+	//// 同じステージ
+	//for (const auto& s : stageManager_->GetStage())
+	//{
+	//	if (s) s->DrawAtOffset({ 0.0f, -1500.0f, 0.0f });
+	//}
 
-	skyDome_->Draw();
-	stageManager_->Draw();
-	lightPillar_->Draw();
+	//skyDome_->Draw();
+	//stageManager_->Draw();
+	//lightPillar_->Draw();
 
-	player1_->Draw();
-	player2_->Draw();
+	//player1_->Draw();
+	//player2_->Draw();
 
-	// 答えの描画
-	for (int i = 0; i < objects_.size(); i++)
-	{
-		auto& obj = objects_[i];
+	//// 答えの描画
+	//for (int i = 0; i < objects_.size(); i++)
+	//{
+	//	auto& obj = objects_[i];
 
-		if (!obj->IsGrabbed()) continue;
+	//	if (!obj->IsGrabbed()) continue;
 
-		// 持っている
-		// 答えの場所に描画
-		//DrawSphere3D(ANSWER_VECTOR_LENGTH[i], 80.0f, 16, GetColor(255, 0, 0), GetColor(0, 0, 0), FALSE);
+	//	// 持っている
+	//	// 答えの場所に描画
+	//	//DrawSphere3D(ANSWER_VECTOR_LENGTH[i], 80.0f, 16, GetColor(255, 0, 0), GetColor(0, 0, 0), FALSE);
 
-		MV1SetPosition(pinID_, ANSWER_VECTOR_LENGTH[i]);
-		//MV1DrawModel(pinID_);
+	//	MV1SetPosition(pinID_, ANSWER_VECTOR_LENGTH[i]);
+	//	//MV1DrawModel(pinID_);
 
-		pinID_ = MV1DuplicateModel(obj->GetTransform().modelId);
+	//	pinID_ = MV1DuplicateModel(obj->GetTransform().modelId);
 
-		
+	//	
 
-		MV1SetDifColorScale(pinID_, COLOR_F(0.0, 0.5, 1.0, 0.5));
-		MV1SetPosition(pinID_, ANSWER_VECTOR_LENGTH[i]);
-		MV1SetScale(pinID_, obj->GetTransform().scl);
-		MV1DrawModel(pinID_);
-	}
-	//wall_->Draw();
+	//	MV1SetDifColorScale(pinID_, COLOR_F(0.0, 0.5, 1.0, 0.5));
+	//	MV1SetPosition(pinID_, ANSWER_VECTOR_LENGTH[i]);
+	//	MV1SetScale(pinID_, obj->GetTransform().scl);
+	//	MV1DrawModel(pinID_);
+	//}
+	////wall_->Draw();
 
-	for (auto* obj : objects_)
-	{
-		if (obj == nullptr) continue;
+	//for (auto* obj : objects_)
+	//{
+	//	if (obj == nullptr) continue;
 
 
-		//obj->SetViewWorld(WORLD::RIGHT);
-		obj->Draw();
-	}
+	//	//obj->SetViewWorld(WORLD::RIGHT);
+	//	obj->Draw();
+	//}
 
-	for (auto* obj : objects_)
-	{
-		if (obj == nullptr) continue;
+	//for (auto* obj : objects_)
+	//{
+	//	if (obj == nullptr) continue;
 
-		if (obj->GetObjectType() == ObjectBase::OBJECT_TYPE::BUTTON)
-		{
-			auto buttonPos = ConvWorldPosToScreenPos(obj->GetPos());
-			DrawFormatString(buttonPos.x, buttonPos.y - 120, 0xffff00, "ボタン");
-			DrawFormatString(buttonPos.x, buttonPos.y - 100, 0xffff00, "　↓");
-			//DrawCircle(buttonPos.x, buttonPos.y - 100, 10, 0xffffff, true);
-		}
+	//	if (obj->GetObjectType() == ObjectBase::OBJECT_TYPE::BUTTON)
+	//	{
+	//		auto buttonPos = ConvWorldPosToScreenPos(obj->GetPos());
+	//		DrawFormatString(buttonPos.x, buttonPos.y - 120, 0xffff00, "ボタン");
+	//		DrawFormatString(buttonPos.x, buttonPos.y - 100, 0xffff00, "　↓");
+	//		//DrawCircle(buttonPos.x, buttonPos.y - 100, 10, 0xffffff, true);
+	//	}
 
-		obj->Draw();
-		// 右側スクリーンでも同様にマーカー表示
-		if (obj->GetType() == ObjectBase::OBJECT_TYPE::BUTTON)
-		{
+	//	obj->Draw();
+	//	// 右側スクリーンでも同様にマーカー表示
+	//	if (obj->GetType() == ObjectBase::OBJECT_TYPE::BUTTON)
+	//	{
 
-		}
-	}
+	//	}
+	//}
 }
 
 void TutorialScene::Draw(void)
 {
 	int halfWidth = screenWidth_ / 2;
 
-	// プレイヤー1の画面を描画(左側)
-	SetDrawScreen(screenHandle1_);
-	ClearDrawScreen();
-	DrawPlayer1Screen();
+	for (int i = 0; i < players_.size(); i++)
+	{
+		auto& screenHandle_ = Player::PLAYER_NO::PLAYER1 == static_cast<Player::PLAYER_NO>(i) ?
+			screenHandle1_ : screenHandle2_;
+		SetDrawScreen(screenHandle_);
+		ClearDrawScreen();
 
-	// プレイヤー2の画面を描画(右側)
-	SetDrawScreen(screenHandle2_);
-	ClearDrawScreen();
-	DrawPlayer2Screen();
+		// プレイヤー1用のカメラ設定
+		players_[i].camera_->SetBeforeDraw();
+
+		// 3D描画
+		skyDome_->Draw();
+		stageManager_->Draw();
+		lightPillar_->Draw();
+
+		for (int j = 0; j < players_.size(); j++)
+		{
+			players_[j].player_->Draw();
+		}
+
+		// 答えの描画
+		for (int i = 0; i < objects_.size(); i++)
+		{
+			auto& obj = objects_[i];
+
+			if (!obj->IsGrabbed()) continue;
+
+			// 持っている
+			// 答えの場所に描画
+			//DrawSphere3D(ANSWER_VECTOR_LENGTH[i], 80.0f, 16, GetColor(255, 0, 0), GetColor(0, 0, 0), FALSE);
+
+			MV1SetPosition(pinID_, ANSWER_VECTOR_LENGTH[i]);
+			//MV1DrawModel(pinID_);
+
+			pinID_ = MV1DuplicateModel(obj->GetTransform().modelId);
+
+			MV1SetDifColorScale(pinID_, COLOR_F(0.0, 0.5, 1.0, 0.5));
+			MV1SetPosition(pinID_, ANSWER_VECTOR_LENGTH[i]);
+			MV1SetScale(pinID_, obj->GetTransform().scl);
+			MV1DrawModel(pinID_);
+		}
+
+		//wall_->Draw();
+
+		// 全オブジェクトを順に描画（それぞれの viewWorld を設定）
+		for (auto* obj : objects_)
+		{
+			if (obj == nullptr) continue;
+
+			if (obj->GetObjectType() == ObjectBase::OBJECT_TYPE::BUTTON)
+			{
+				std::string str = "ボタン";
+				auto buttonPos = ConvWorldPosToScreenPos(obj->GetPos());
+
+				// 文字列の幅を取得して中央寄せのX座標を計算
+				int strWidth = GetDrawStringWidth(str.c_str(), (int)str.length());
+				int drawX = buttonPos.x - strWidth / 2;
+
+				DrawFormatString(drawX, buttonPos.y - 120, 0xffff00, str.c_str());
+				DrawFormatString(buttonPos.x, buttonPos.y - 100, 0xffff00, "　↓");
+				//DrawCircle(buttonPos.x, buttonPos.y - 100, 10, 0xffffff, true);
+			}
+			if (obj->GetObjectType() != ObjectBase::OBJECT_TYPE::BUTTON)
+			{
+				std::string str = "オブジェクト";
+				auto buttonPos = ConvWorldPosToScreenPos(obj->GetPos());
+
+				int strWidth = GetDrawStringWidth(str.c_str(), (int)str.length());
+				int drawX = buttonPos.x - strWidth / 2;
+
+				DrawFormatString(drawX, buttonPos.y - 120, 0xffff00, str.c_str());
+				DrawFormatString(buttonPos.x, buttonPos.y - 100, 0xffff00, "　　 ↓");
+				//DrawCircle(buttonPos.x, buttonPos.y - 100, 10, 0xffffff, true);
+
+				obj->Draw();
+				// 右側スクリーンでも同様にマーカー表示
+				if (obj->GetType() == ObjectBase::OBJECT_TYPE::BUTTON)
+				{
+
+				}
+			}
+		}
+	}
+
+	//// プレイヤー1の画面を描画(左側)
+	//SetDrawScreen(screenHandle1_);
+	//ClearDrawScreen();
+	//DrawPlayer1Screen();
+
+	//// プレイヤー2の画面を描画(右側)
+	//SetDrawScreen(screenHandle2_);
+	//ClearDrawScreen();
+	//DrawPlayer2Screen();
 
 	// メイン画面に転送
 	SetDrawScreen(DX_SCREEN_BACK);
@@ -886,35 +956,25 @@ void TutorialScene::Draw(void)
 
 
 #pragma region デバッグ表示
+#ifdef _DEBUG
 	// デバッグ表示
-	DrawFormatString(0, 0, GetColor(255, 255, 255), "P1角度:(%.1f, %.1f, %.1f)",
-		player1_->GetTransform().quaRot.ToEuler().x,
-		player1_->GetTransform().quaRot.ToEuler().y,
-		player1_->GetTransform().quaRot.ToEuler().z);
+	for (int i = 0; i < players_.size(); i++)
+	{
+		int w = halfWidth * i;
+		DrawFormatString(w, 0, GetColor(255, 255, 255), "P%d角度:(%.1f, %.1f, %.1f)",
+			i + 1,
+			players_[i].player_->GetTransform().quaRot.ToEuler().x,
+			players_[i].player_->GetTransform().quaRot.ToEuler().y,
+			players_[i].player_->GetTransform().quaRot.ToEuler().z);
 
-	DrawFormatString(halfWidth, 0, GetColor(255, 255, 255), "P2角度:(%.1f, %.1f, %.1f)",
-		player2_->GetTransform().quaRot.ToEuler().x,
-		player2_->GetTransform().quaRot.ToEuler().y,
-		player2_->GetTransform().quaRot.ToEuler().z);
-
-	// 衝突判定結果の表示(プレイヤー1側)
-	if (isPlayer1HitObject_)
-	{
-		DrawFormatString(0, 40, GetColor(255, 0, 0), "P1: オブジェクトと衝突中!");
-	}
-	else
-	{
-		DrawFormatString(0, 40, GetColor(0, 255, 0), "P1: 衝突なし");
-	}
-
-	// 衝突判定結果の表示(プレイヤー2側)
-	if (isPlayer2HitObject_)
-	{
-		DrawFormatString(halfWidth, 40, GetColor(255, 0, 0), "P2: オブジェクトと衝突中!");
-	}
-	else
-	{
-		DrawFormatString(halfWidth, 40, GetColor(0, 255, 0), "P2: 衝突なし");
+		if (players_[i].isPlayerHitObject_)
+		{
+			DrawFormatString(w, 40, GetColor(255, 0, 0), "P%d: オブジェクトと衝突中!", i + 1);
+		}
+		else
+		{
+			DrawFormatString(w, 40, GetColor(0, 255, 0), "P%d: 衝突なし", i + 1);
+		}
 	}
 
 	// オブジェクト位置表示（先頭のオブジェクト）
@@ -941,9 +1001,12 @@ void TutorialScene::Draw(void)
 
 		y += 40;
 	}
-#pragma endregion
 
 	stageManager_->DrawDebug();
+#endif // _DEBUG
+
+	
+#pragma endregion
 
 	// チュートリアル描画（最前面）
 	tutorial_.Draw();
@@ -951,18 +1014,6 @@ void TutorialScene::Draw(void)
 
 void TutorialScene::Release(void)
 {
-	stageManager_->Release();
-	delete stageManager_;
-
-	skyDome_->Release();
-	delete skyDome_;
-
-	player1_->Release();
-	delete player1_;
-
-	player2_->Release();
-	delete player2_;
-
 	// 全オブジェクト解放
 	for (auto* obj : objects_)
 	{
@@ -977,11 +1028,12 @@ void TutorialScene::Release(void)
 	//enemyManager_->Release();
 	//delete enemyManager_;
 
-	camera1_->Release();
-	delete camera1_;
-
-	camera2_->Release();
-	delete camera2_;
+	for (auto& player : players_)
+	{
+		player.player_->Release();
+		player.camera_->Release();
+	}
+	players_.clear();
 
 	// スクリーンハンドルの削除
 	if (screenHandle1_ != -1)

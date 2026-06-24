@@ -85,10 +85,11 @@ void ResourceManager::Init(void)
 	res = new RES(RES_T::MODEL, PATH_MDL + "Object/barrel.mv1");
 	resourcesMap_.emplace(SRC::BARREL, res);
 
+	// 四角
 	res = new RES(RES_T::MODEL, PATH_MDL + "Object/mokuba.mv1");
 	resourcesMap_.emplace(SRC::CUBE, res);
 
-	// 箱
+	// 壁
 	res = new RES(RES_T::MODEL, PATH_MDL + "Cube.mv1");
 	resourcesMap_.emplace(SRC::WALL, res);
 
@@ -98,10 +99,6 @@ void ResourceManager::Init(void)
 
 	// ボタン
 	res = new RES(RES_T::MODEL, PATH_MDL + "Cube.mv1");
-	resourcesMap_.emplace(SRC::BUTTON, res);
-
-	// ゴールピン
-	res = new RES(RES_T::MODEL, PATH_MDL + "Object/torii.mv1");
 	resourcesMap_.emplace(SRC::BUTTON, res);
 
 	// タイトルムービー

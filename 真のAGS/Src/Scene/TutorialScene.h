@@ -61,26 +61,18 @@ private:
 
 	constexpr static VECTOR ANSWER_VECTOR_LENGTH[] = { {760.0f, -520.0f, 600.0f} ,
 														{0.0f, -600.0f, -50.0f},
-	//													{-900.0f, -500.0f, 900.5f},
 	};
 
 	// ゲームクリアまでの時間（秒）
 	constexpr static float END_TIME = 3.0f;
 
-	StageManager* stageManager_;
 
-	SkyDome* skyDome_;
+	std::unique_ptr<StageManager> stageManager_;
+
+	std::unique_ptr<SkyDome> skyDome_;
 
 	std::unique_ptr<LightPillar> lightPillar_;
 	bool isPillar_ = false;
-
-	// プレイヤー1
-	Player* player1_;
-	Camera* camera1_;
-
-	// プレイヤー2
-	Player* player2_;
-	Camera* camera2_;
 
 	//EnemyManager* enemyManager_;
 	std::vector<PlayerS> players_;
@@ -98,16 +90,15 @@ private:
 	int screenWidth_;
 	int screenHeight_;
 
-	// 衝突判定フラグ
-	bool isPlayer1HitObject_;
-	bool isPlayer2HitObject_;
-
 	int pinID_;
 
 	float endTimer_ = 0.0f;
 
 	// 現在選択中のプレイヤー
 	Player::PLAYER_NO activePlayer_{ Player::PLAYER_NO::PLAYER1 };
+
+	// チュートリアル関連の初期化
+	void TutorialInit(void);
 
 	// 各プレイヤーの描画
 	void DrawPlayer1Screen(void);

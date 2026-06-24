@@ -28,7 +28,6 @@ public:
 		WOODBOX,
 		BUTTON,
 		CUBE,
-		PIN,
 		TITLE_MOV,
 		HONDANA_IMG,
 		UI_GAMESTART,

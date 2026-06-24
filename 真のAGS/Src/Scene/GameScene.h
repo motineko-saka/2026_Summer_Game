@@ -57,19 +57,11 @@ private:
 														{-1260.0f, -720.0f, -50.5f},
 														};
 
-	StageManager* stageManager_;
+	std::unique_ptr<StageManager> stageManager_;
 
-	SkyDome* skyDome_;
+	std::unique_ptr<SkyDome> skyDome_;
 
 	std::unique_ptr<LightPillar> lightPillar_;
-
-	// プレイヤー1
-	//Player* player1_;
-	//Camera* camera1_;
-
-	// プレイヤー2
-	//Player* player2_;
-	//Camera* camera2_;
 
 	std::vector<PlayerS> players_;
 
@@ -89,6 +81,8 @@ private:
 	int screenHeight_;
 
 	int pinID_;
+
+	bool isPause_ = false;
 
 	// 衝突判定フラグ
 	//bool isPlayer1HitObject_;

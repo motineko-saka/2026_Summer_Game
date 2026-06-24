@@ -14,11 +14,11 @@ SkyDome::SkyDome(const Transform& transform)
 
 SkyDome::~SkyDome(void)
 {
+	Release();
 }
 
 void SkyDome::Update(void)
 {
-
 	switch (state_)
 	{
 	case SkyDome::STATE::NONE:

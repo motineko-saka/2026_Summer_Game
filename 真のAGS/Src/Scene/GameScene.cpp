@@ -49,6 +49,8 @@ void GameScene::Init(void)
 
 	pinID_ = MV1LoadModel((Application::PATH_MODEL + "Object/torii.mv1").c_str());
 
+	isPause_ = false;
+
 	lightPillar_ = std::make_unique<LightPillar>();
 
 	//// カメラ1の作成(プレイヤー1用)
@@ -85,11 +87,11 @@ void GameScene::Init(void)
 	}
 
 	// ステージ
-	stageManager_ = new StageManager();
+	stageManager_ = std::make_unique<StageManager>();
 	stageManager_->InitStage();
 
 	// スカイドーム(プレイヤー1用)
-	skyDome_ = new SkyDome(players_[0].player_->GetTransform());
+	skyDome_ = std::make_unique<SkyDome>(players_[0].player_->GetTransform());
 	skyDome_->Init();
 
 	wall_ = std::make_unique<Wall>();
@@ -367,11 +369,12 @@ const void GameScene::MakeNewObject(std::vector<ObjectBase*>& newObjects)
 
 void GameScene::Update(void)
 {
-
+	isPause_ = false;
 	// ポーズ画面を積む
 	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_ESCAPE))
 	{
 		SceneManager::GetInstance()->PushScene(std::make_shared<PauseScene>());
+		isPause_ = true;
 	}
 
 	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_P))
@@ -626,12 +629,6 @@ void GameScene::Draw(void)
 
 void GameScene::Release(void)
 {
-	stageManager_->Release();
-	delete stageManager_;
-
-	skyDome_->Release();
-	delete skyDome_;
-
 	// 全オブジェクト解放
 	for (auto* obj : objects_)
 	{

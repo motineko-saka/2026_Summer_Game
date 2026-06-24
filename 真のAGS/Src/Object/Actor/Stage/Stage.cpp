@@ -5,10 +5,11 @@
 #include "../../Collider/ColliderModel.h"
 #include "Stage.h"
 
-Stage::Stage(void)
+Stage::Stage(int modelID)
 	:
 	StageBase()
 {
+	transform_.SetModel(modelID);
 }
 
 Stage::~Stage(void)
@@ -17,7 +18,7 @@ Stage::~Stage(void)
 
 void Stage::InitLoad(void)
 {
-	transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::TUTORIAL_STAGE));
+	//transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::TUTORIAL_STAGE));
 }
 
 void Stage::InitTransform(void)

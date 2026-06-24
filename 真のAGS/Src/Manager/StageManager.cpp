@@ -1,13 +1,16 @@
 #include "StageManager.h"
 #include "../Object/Actor/Stage/Stage.h"
 #include "../Object/Actor/Stage/AnswerStage.h"
+#include "ResourceManager.h"
 
-StageManager::StageManager()
+StageManager::StageManager(SceneManager::SCENE scene)
 {
+	scene_ = scene;
 }
 
 StageManager::~StageManager(void)
 {
+	Release();
 }
 
 void StageManager::InitStage(void)
@@ -15,6 +18,17 @@ void StageManager::InitStage(void)
 	if (!stages_.empty())
 	{
 		Release();
+	}
+
+	int modelID;
+
+	if (scene_ == SceneManager::SCENE::TUTORIAL)
+	{
+		modelID = ResourceManager::GetInstance().LoadModelDuplicate(ResourceManager::SRC::TUTORIAL_STAGE);
+	}
+	else
+	{
+		modelID = ResourceManager::GetInstance().LoadModelDuplicate(ResourceManager::SRC::MAIN_STAGE);
 	}
 
 	for(int i = 0; i < STAGE_NUM; i++)
