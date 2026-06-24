@@ -468,8 +468,8 @@ void TutorialScene::CheckCollisions(void)
 		if (hit2)
 		{
 			isPlayer2HitObject_ = true;
-			// プレイヤーからオブジェクトへの方向ベクトル
-			//VECTOR pushDir = VSub(objectPos, player2Pos);
+			 // プレイヤーからオブジェクトへの方向ベクトル
+			VECTOR pushDir = VSub(objectPos, player2Pos);
 			//pushDir.y = 0.0f; // Y軸(垂直方向)は無視
 			//pushDir = VNorm(pushDir); // 正規化
 
@@ -560,7 +560,6 @@ const void TutorialScene::ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*
 	//	newObjects.push_back(newObj);
 	//}
 }
-
 
 void TutorialScene::Update(void)
 {

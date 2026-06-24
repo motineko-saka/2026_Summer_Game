@@ -64,6 +64,7 @@ void InputManager::Init(void)
 	info.keyTrgDown = false;
 	info.keyTrgUp = false;
 	mouseInfos_.emplace(info.key, info);
+
 }
 
 void InputManager::Update(void)
