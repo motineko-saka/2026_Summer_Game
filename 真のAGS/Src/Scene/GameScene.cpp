@@ -27,6 +27,7 @@ GameScene::GameScene(void)
 	screenHandle2_(-1),
 	screenWidth_(0),
 	screenHeight_(0),
+	pinID_(-1),
 	SceneBase()
 {
 }
@@ -87,7 +88,7 @@ void GameScene::Init(void)
 	}
 
 	// ステージ
-	stageManager_ = std::make_unique<StageManager>();
+	stageManager_ = std::make_unique<StageManager>(SceneManager::SCENE::MAIN);
 	stageManager_->InitStage();
 
 	// スカイドーム(プレイヤー1用)
@@ -261,7 +262,7 @@ void GameScene::CheckCollisions(void)
 			//	isNearButton = true;
 			//	// ボタンが押されたときの処理（例：ゲームクリア、ドアが開くなど）
 			//}
-
+			//
 			//// プレイヤー2も同様にチェック
 			//VECTOR player2Pos = player2_->GetTransform().pos;
 			//float distance2 = VSize(VSub(player2Pos, objectPos));
@@ -269,7 +270,7 @@ void GameScene::CheckCollisions(void)
 			//{
 			//	isNearButton = true;
 			//}
-
+			//
 			//// ボタンの近くにいて、スペースキーが押されたら
 			//if (isNearButton && InputManager::GetInstance().IsTrgDown(KEY_INPUT_SPACE))
 			//{
@@ -312,7 +313,7 @@ const void GameScene::ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*>& n
 
 	bool isNearButton = false;
 
-	for (auto player : players_)
+	for (auto& player : players_)
 	{
 		// プレイヤーとの距離チェック
 		VECTOR playerPos = player.player_->GetTransform().pos;

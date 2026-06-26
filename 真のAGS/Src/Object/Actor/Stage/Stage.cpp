@@ -7,6 +7,7 @@
 
 Stage::Stage(int modelID)
 	:
+	stageID_(-1),
 	StageBase()
 {
 	transform_.SetModel(modelID);

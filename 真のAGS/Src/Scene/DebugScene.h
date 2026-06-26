@@ -30,7 +30,7 @@ public:
 private:
 
 	// ステージ
-	Stage* stage_;
+	//Stage* stage_;
 
 	// デバッグポイント群
 	std::vector<VECTOR> points_;

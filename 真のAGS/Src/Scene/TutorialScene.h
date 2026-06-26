@@ -19,8 +19,8 @@ class TutorialScene : public SceneBase
 {
 	struct PlayerS
 	{
-		Player* player_;
-		Camera* camera_;
+		std::unique_ptr<Player> player_;
+		std::unique_ptr<Camera> camera_;
 		bool isPlayerHitObject_;
 	};
 
@@ -90,8 +90,10 @@ private:
 	int screenWidth_;
 	int screenHeight_;
 
+	// ゴール地点のmodelID（持っているオブジェクトと一緒）
 	int pinID_;
 
+	// クリアしてからClearシーンまで行くまでのタイマー
 	float endTimer_ = 0.0f;
 
 	// 現在選択中のプレイヤー
@@ -99,10 +101,6 @@ private:
 
 	// チュートリアル関連の初期化
 	void TutorialInit(void);
-
-	// 各プレイヤーの描画
-	void DrawPlayer1Screen(void);
-	void DrawPlayer2Screen(void);
 
 	// オブジェクトを生成（今は樽だけ）
 	const void MakeNewObject(std::vector<ObjectBase*>& newObjects);
@@ -114,6 +112,9 @@ private:
 
 	// 答えの場所にあるのか判定
 	void AnswerChack(void);
+
+	// modelの上に出る矢印
+	void DrawNamePlate(std::string str, VECTOR pos);
 
 	// チュートリアル
 	//--------------------------------------------

@@ -76,6 +76,7 @@ TutorialScene::TutorialScene(void)
 	screenHandle2_(-1),
 	screenWidth_(0),
 	screenHeight_(0),
+	pinID_(-1),
 	SceneBase()
 {
 }
@@ -101,12 +102,13 @@ void TutorialScene::Init(void)
 
 	for (int i = 0; i < players_.size(); i++)
 	{
-		players_[i].camera_ = new Camera();
+		players_[i].camera_ = std::make_unique<Camera>();
 		players_[i].camera_->Init();
 
 		// プレイヤー番号を設定
-		Player::PLAYER_NO pno = (i == 0) ? Player::PLAYER_NO::PLAYER1 : Player::PLAYER_NO::PLAYER2;
-		players_[i].player_ = new Player(pno, *players_[i].camera_);
+		Player::PLAYER_NO pno = (i == 0) ? 
+			Player::PLAYER_NO::PLAYER1 : Player::PLAYER_NO::PLAYER2;
+		players_[i].player_ = std::make_unique<Player>(pno, *players_[i].camera_);
 		players_[i].player_->Init();
 
 		players_[i].camera_->SetFollow(&players_[i].player_->GetTransform());
@@ -122,7 +124,7 @@ void TutorialScene::Init(void)
 	isPillar_ = false;
 
 	// ステージ
-	stageManager_ = std::make_unique<StageManager>();
+	stageManager_ = std::make_unique<StageManager>(SceneManager::SCENE::TUTORIAL);
 	stageManager_->InitStage();
 
 	// スカイドーム(プレイヤー1用)
@@ -133,7 +135,7 @@ void TutorialScene::Init(void)
 	wall_->Init();
 
 	// オブジェクト作成（複数）
-	objects_.reserve(3);
+	objects_.reserve(2);
 
 	objects_.push_back(new ObjectBase(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::AKEG));
 	objects_.back()->Init();
@@ -157,7 +159,7 @@ void TutorialScene::Init(void)
 		const ColliderBase* stageCollider =
 			stage->GetOwnCollider(static_cast<int>(Stage::COLLIDER_TYPE::MODEL));
 
-		for (auto player : players_)
+		for (auto& player : players_)
 		{
 			// ステージモデルのコライダーをプレイヤーに登録
 			player.player_->AddHitCollider(stageCollider);
@@ -383,7 +385,7 @@ void TutorialScene::LoadEnd(void)
 
 void TutorialScene::CheckCollisions(void)
 {
-	for (auto player : players_)
+	for (auto& player : players_)
 	{
 		player.isPlayerHitObject_ = false;
 	}
@@ -443,7 +445,7 @@ void TutorialScene::CheckCollisions(void)
 			//	//VECTOR pushDir = VSub(objectPos, player2Pos);
 			//	//pushDir.y = 0.0f; // Y軸(垂直方向)は無視
 			//	//pushDir = VNorm(pushDir); // 正規化
-
+			//
 			//	//// オブジェクトを押す(速度は適度に調整)
 			//	//obj->Push(pushDir, 5.0f);
 			//}
@@ -492,14 +494,6 @@ const void TutorialScene::ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*
 		}
 	}
 
-	//// プレイヤー2も同様にチェック
-	//VECTOR player2Pos = player2_->GetTransform().pos;
-	//float distance2 = VSize(VSub(player2Pos, objectPos));
-	//if (distance2 < 180.0f)
-	//{
-	//	isNearButton = true;
-	//}
-
 	// ボタンの近くにいて、スペースキーが押されたら
 	if (isNearButton && InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE))
 	{
@@ -520,7 +514,7 @@ const void TutorialScene::ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*
 	//		// ボタンが押されたときの処理（例：ゲームクリア、ドアが開くなど）
 	//	}
 	//}
-
+	//
 	//// ボタンの近くにいて、スペースキーか左ボタンが押されたら
 	//if (isNearButton &&
 	//	(InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE) || InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::LEFT)))
@@ -557,62 +551,6 @@ void TutorialScene::Update(void)
 		activePlayer_ = (activePlayer_ == Player::PLAYER_NO::PLAYER1) ?
 			Player::PLAYER_NO::PLAYER2 : Player::PLAYER_NO::PLAYER1;
 	}
-
-	//// プレイヤー選択切替（TAB か 右クリック)
-	//if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_TAB) ||
-	//	InputManager::GetInstance()->IsTrgMouseRight())
-	//{
-	//	for (int i = 0; i < players_.size(); i++)
-	//	{
-	//		bool isNo = activePlayer_ == static_cast<Player::PLAYER_NO>(i) ? false : true;
-	//		players_[i].player_->SetActive(isNo);
-	//		players_[i].camera_->SetControlEnabled(isNo);
-	//	}
-	//	activePlayer_ = (activePlayer_ == Player::PLAYER_NO::PLAYER1) ?
-	//		Player::PLAYER_NO::PLAYER2 : Player::PLAYER_NO::PLAYER1;
-	//}
-
-	//// プレイヤー選択切替
-	//if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_TAB))
-	//{
-	//	if (activePlayer_ == Player::PLAYER_NO::PLAYER1)
-	//	{
-	//		activePlayer_ = Player::PLAYER_NO::PLAYER2;
-	//		player1_->SetActive(false);
-	//		player2_->SetActive(true);
-	//		camera1_->SetControlEnabled(false);
-	//		camera2_->SetControlEnabled(true);
-	//	}
-	//	else
-	//	{
-	//		activePlayer_ = Player::PLAYER_NO::PLAYER1;
-	//		player1_->SetActive(true);
-	//		player2_->SetActive(false);
-	//		camera1_->SetControlEnabled(true);
-	//		camera2_->SetControlEnabled(false);
-	//	}
-	//}
-	//
-	//// 右クリックでもプレイヤー切替
-	//if (InputManager::GetInstance()->IsTrgMouseRight())
-	//{
-	//	if (activePlayer_ == Player::PLAYER_NO::PLAYER1)
-	//	{
-	//		activePlayer_ = Player::PLAYER_NO::PLAYER2;
-	//		player1_->SetActive(false);
-	//		player2_->SetActive(true);
-	//		camera1_->SetControlEnabled(false);
-	//		camera2_->SetControlEnabled(true);
-	//	}
-	//	else
-	//	{
-	//		activePlayer_ = Player::PLAYER_NO::PLAYER1;
-	//		player1_->SetActive(true);
-	//		player2_->SetActive(false);
-	//		camera1_->SetControlEnabled(true);
-	//		camera2_->SetControlEnabled(false);
-	//	}
-	//}
 
 	stageManager_->Update();
 	skyDome_->Update();
@@ -688,7 +626,7 @@ const void TutorialScene::MakeNewObject(std::vector<ObjectBase*>& newObjects)
 		const ColliderBase* objCaps = newObj->GetOwnCollider(static_cast<int>(ObjectBase::COLLIDER_TYPE::CAPSULE));
 		if (!objCaps) return;
 
-		for (auto player : players_)
+		for (auto& player : players_)
 		{
 			player.player_->AddHitCollider(objCaps);
 		}
@@ -698,134 +636,6 @@ const void TutorialScene::MakeNewObject(std::vector<ObjectBase*>& newObjects)
 
 		objects_.push_back(newObj);
 	}
-}
-
-void TutorialScene::DrawPlayer1Screen(void)
-{
-	//// プレイヤー1用のカメラ設定
-	//camera1_->SetBeforeDraw();
-
-	//// 3D描画
-	//stageManager_->Draw();
-
-	//// 同じステージ
-	//for (const auto& s : stageManager_->GetStage())
-	//{
-	//	if (s) s->DrawAtOffset({ 0.0f, -1500.0f, 0.0f });
-	//}
-
-	//skyDome_->Draw();
-	//stageManager_->Draw();
-	////wall_->Draw();
-	//lightPillar_->Draw();
-	//player1_->Draw();
-	//player2_->Draw(); // プレイヤー2も描画
-
-
-	//// 答えの描画
-	//for (int i = 0; i < objects_.size(); i++)
-	//{
-	//	auto& obj = objects_[i];
-
-	//	if (!obj->IsGrabbed()) continue;
-	//	// 持っている
-	//	// 答えの場所に描画
-	//	//DrawSphere3D(ANSWER_VECTOR_LENGTH[i], 80.0f, 16, GetColor(255, 0, 0), GetColor(0, 0, 0), FALSE);
-
-	//	pinID_ = MV1DuplicateModel(obj->GetTransform().modelId);
-
-	//	MV1SetDifColorScale(pinID_, COLOR_F(0.0f, 0.5f, 1.0f, 0.5f));
-	//	MV1SetPosition(pinID_, ANSWER_VECTOR_LENGTH[i]);
-	//	MV1SetScale(pinID_, obj->GetTransform().scl);
-	//	MV1DrawModel(pinID_);
-	//}
-
-	//for (auto* obj : objects_)
-	//{
-	//	if (obj == nullptr) continue;
-	//	obj->Draw();
-	//	// ボタンオブジェクトがどれかわかるようにオブジェクトの上に↓を描画してわかるようにする
-	//	if (obj->GetType() == ObjectBase::OBJECT_TYPE::BUTTON)
-	//	{
-
-	//	}
-	//}
-}
-
-void TutorialScene::DrawPlayer2Screen(void)
-{
-	//// プレイヤー2用のカメラ設定
-	//camera2_->SetBeforeDraw();
-
-	//// 3D描画
-	//stageManager_->Draw();
-
-	//// 同じステージ
-	//for (const auto& s : stageManager_->GetStage())
-	//{
-	//	if (s) s->DrawAtOffset({ 0.0f, -1500.0f, 0.0f });
-	//}
-
-	//skyDome_->Draw();
-	//stageManager_->Draw();
-	//lightPillar_->Draw();
-
-	//player1_->Draw();
-	//player2_->Draw();
-
-	//// 答えの描画
-	//for (int i = 0; i < objects_.size(); i++)
-	//{
-	//	auto& obj = objects_[i];
-
-	//	if (!obj->IsGrabbed()) continue;
-
-	//	// 持っている
-	//	// 答えの場所に描画
-	//	//DrawSphere3D(ANSWER_VECTOR_LENGTH[i], 80.0f, 16, GetColor(255, 0, 0), GetColor(0, 0, 0), FALSE);
-
-	//	MV1SetPosition(pinID_, ANSWER_VECTOR_LENGTH[i]);
-	//	//MV1DrawModel(pinID_);
-
-	//	pinID_ = MV1DuplicateModel(obj->GetTransform().modelId);
-
-	//	
-
-	//	MV1SetDifColorScale(pinID_, COLOR_F(0.0, 0.5, 1.0, 0.5));
-	//	MV1SetPosition(pinID_, ANSWER_VECTOR_LENGTH[i]);
-	//	MV1SetScale(pinID_, obj->GetTransform().scl);
-	//	MV1DrawModel(pinID_);
-	//}
-	////wall_->Draw();
-
-	//for (auto* obj : objects_)
-	//{
-	//	if (obj == nullptr) continue;
-
-
-	//	//obj->SetViewWorld(WORLD::RIGHT);
-	//	obj->Draw();
-	//}
-
-	//for (auto* obj : objects_)
-	//{
-	//	if (obj == nullptr) continue;
-
-	//	if (obj->GetObjectType() == ObjectBase::OBJECT_TYPE::BUTTON)
-	//	{
-	//		auto buttonPos = ConvWorldPosToScreenPos(obj->GetPos());
-	//		DrawFormatString(buttonPos.x, buttonPos.y - 120, 0xffff00, "ボタン");
-	//		DrawFormatString(buttonPos.x, buttonPos.y - 100, 0xffff00, "　↓");
-	//		//DrawCircle(buttonPos.x, buttonPos.y - 100, 10, 0xffffff, true);
-	//	}
-
-	//	obj->Draw();
-	//	// 右側スクリーンでも同様にマーカー表示
-	//	if (obj->GetType() == ObjectBase::OBJECT_TYPE::BUTTON)
-	//	{
-
-	//	}
-	//}
 }
 
 void TutorialScene::Draw(void)
@@ -852,6 +662,8 @@ void TutorialScene::Draw(void)
 			players_[j].player_->Draw();
 		}
 
+		bool isHold = false;
+
 		// 答えの描画
 		for (int i = 0; i < objects_.size(); i++)
 		{
@@ -863,15 +675,26 @@ void TutorialScene::Draw(void)
 			// 答えの場所に描画
 			//DrawSphere3D(ANSWER_VECTOR_LENGTH[i], 80.0f, 16, GetColor(255, 0, 0), GetColor(0, 0, 0), FALSE);
 
-			MV1SetPosition(pinID_, ANSWER_VECTOR_LENGTH[i]);
-			//MV1DrawModel(pinID_);
+			isHold = true;
 
-			pinID_ = MV1DuplicateModel(obj->GetTransform().modelId);
+			MV1SetPosition(pinID_, ANSWER_VECTOR_LENGTH[i]);
+
+			// pinIDに何も入っていなかったら
+			if(pinID_ == -1)
+			{
+				pinID_ = MV1DuplicateModel(obj->GetTransform().modelId);
+			}
 
 			MV1SetDifColorScale(pinID_, COLOR_F(0.0, 0.5, 1.0, 0.5));
 			MV1SetPosition(pinID_, ANSWER_VECTOR_LENGTH[i]);
 			MV1SetScale(pinID_, obj->GetTransform().scl);
 			MV1DrawModel(pinID_);
+		}
+
+		// 何も持っていなかったら & pinIDが-1じゃなかったら
+		if (!isHold && pinID_ != -1)
+		{
+			pinID_ = -1;
 		}
 
 		//wall_->Draw();
@@ -881,50 +704,29 @@ void TutorialScene::Draw(void)
 		{
 			if (obj == nullptr) continue;
 
+			if ((bool)CheckCameraViewClip(obj->GetPos()) == true) continue;
+			// 視界に入っている
+
+			// オブジェクトの上の矢印を表示
 			if (obj->GetObjectType() == ObjectBase::OBJECT_TYPE::BUTTON)
 			{
-				std::string str = "ボタン";
-				auto buttonPos = ConvWorldPosToScreenPos(obj->GetPos());
-
-				// 文字列の幅を取得して中央寄せのX座標を計算
-				int strWidth = GetDrawStringWidth(str.c_str(), (int)str.length());
-				int drawX = buttonPos.x - strWidth / 2;
-
-				DrawFormatString(drawX, buttonPos.y - 120, 0xffff00, str.c_str());
-				DrawFormatString(buttonPos.x, buttonPos.y - 100, 0xffff00, "　↓");
-				//DrawCircle(buttonPos.x, buttonPos.y - 100, 10, 0xffffff, true);
+				// ボタン
+				DrawNamePlate("ボタン", obj->GetPos());
 			}
 			if (obj->GetObjectType() != ObjectBase::OBJECT_TYPE::BUTTON)
 			{
-				std::string str = "オブジェクト";
-				auto buttonPos = ConvWorldPosToScreenPos(obj->GetPos());
+				// オブジェクト
+				DrawNamePlate("オブジェクト", obj->GetPos());
+			}
 
-				int strWidth = GetDrawStringWidth(str.c_str(), (int)str.length());
-				int drawX = buttonPos.x - strWidth / 2;
+			obj->Draw();
+			// 右側スクリーンでも同様にマーカー表示
+			if (obj->GetType() == ObjectBase::OBJECT_TYPE::BUTTON)
+			{
 
-				DrawFormatString(drawX, buttonPos.y - 120, 0xffff00, str.c_str());
-				DrawFormatString(buttonPos.x, buttonPos.y - 100, 0xffff00, "　　 ↓");
-				//DrawCircle(buttonPos.x, buttonPos.y - 100, 10, 0xffffff, true);
-
-				obj->Draw();
-				// 右側スクリーンでも同様にマーカー表示
-				if (obj->GetType() == ObjectBase::OBJECT_TYPE::BUTTON)
-				{
-
-				}
 			}
 		}
 	}
-
-	//// プレイヤー1の画面を描画(左側)
-	//SetDrawScreen(screenHandle1_);
-	//ClearDrawScreen();
-	//DrawPlayer1Screen();
-
-	//// プレイヤー2の画面を描画(右側)
-	//SetDrawScreen(screenHandle2_);
-	//ClearDrawScreen();
-	//DrawPlayer2Screen();
 
 	// メイン画面に転送
 	SetDrawScreen(DX_SCREEN_BACK);
@@ -1010,6 +812,19 @@ void TutorialScene::Draw(void)
 
 	// チュートリアル描画（最前面）
 	tutorial_.Draw();
+}
+
+void TutorialScene::DrawNamePlate(std::string str, VECTOR pos)
+{
+	auto objectPos = ConvWorldPosToScreenPos(pos);
+
+	// 文字列の幅を取得して中央寄せのX座標を計算
+	int strWidth = GetDrawStringWidth(str.c_str(), (int)str.length());
+	auto drawX = objectPos.x - strWidth / 2;
+
+	DrawFormatString((int)drawX, (int)objectPos.y - 120, 0xffff00, str.c_str());
+	DrawFormatString((int)objectPos.x, (int)objectPos.y - 100, 0xffff00, "　↓");
+	//DrawCircle(buttonPos.x, buttonPos.y - 100, 10, 0xffffff, true);
 }
 
 void TutorialScene::Release(void)

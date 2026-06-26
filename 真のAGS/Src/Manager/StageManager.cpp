@@ -36,7 +36,7 @@ void StageManager::InitStage(void)
 		StageBase* s;
 		if (static_cast<StageBase::STAGE_TYPE>(i) == StageBase::STAGE_TYPE::MAIN_STAGE)
 		{
-			s = new Stage();
+			s = new Stage(modelID);
 		}
 		else
 		{
