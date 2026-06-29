@@ -36,8 +36,6 @@ void Camera::Update(void)
 	// Ctrlキーで TOP モードと前のモードを切り替える
 	if (!controlEnabled_) return;
 
-	// Ctrlキーで TOP モードと前のモードを切り替える
-
 	// 押下トリガーで切替（左または右 Ctrl）
 	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_LCONTROL) || InputManager::GetInstance()->IsTrgDown(KEY_INPUT_RCONTROL))
 	{
@@ -144,6 +142,9 @@ void Camera::InitPost(void)
 	ChangeMode(MODE::FIXED_POINT);
 
 	isCollision_ = false;
+
+	// マウスの初期座標を保存してジャンプを防止
+	GetMousePoint(&prevMouseX_, &prevMouseY_);
 }
 
 const VECTOR& Camera::GetPos(void) const
@@ -199,7 +200,7 @@ void Camera::ChangeMode(MODE mode)
 		angles_.x = -DX_PI_F * 0.5f; // 真上から見下ろす
 		angles_.y = 0.0f;
 
-		// 初期位置はここで一度だけ設定する（毎フレーム上書きしない）
+		// 初期位置はここで一度だけ設定する
 		if (followTransform_ != nullptr)
 		{
 			transform_.pos = VAdd(followTransform_->pos, TOP_CAMERA_LOCAL_POS);
@@ -261,10 +262,42 @@ void Camera::ProcessRot(bool isLimit)
 {
 	if (!controlEnabled_) return;
 
+	VECTOR moveDir = AsoUtility::VECTOR_ZERO;
+
 	if (GetJoypadNum() == 0)
 	{
-		// 方向回転によるXYZの移動(キーボード)
+		// キーボード回転
 		RotKeyboard(isLimit);
+
+		// --- マウスの相対移動で回転させる（絶対座標ではなく差分を使う） ---
+		int mx, my;
+		GetMousePoint(&mx, &my);
+
+
+		int dx = mx - prevMouseX_;
+		int dy = my - prevMouseY_;
+
+		if (dx > PIXEL_THRESHOLD || dx < -PIXEL_THRESHOLD || dy > PIXEL_THRESHOLD || dy < -PIXEL_THRESHOLD)
+		{
+			// マウス右移動 -> カメラ右回転（Y軸）
+			angles_.y += static_cast<float>(dx) * MOUSE_ROT_SENS;
+			// マウス上移動 -> カメラ上方向（X軸）
+			angles_.x += -static_cast<float>(dy) * MOUSE_ROT_SENS;
+
+			// 角度制限（必要なら）
+			if (isLimit && angles_.x < -LIMIT_X_DW_RAD)
+			{
+				angles_.x = -LIMIT_X_DW_RAD;
+			}
+			if (isLimit && angles_.x > LIMIT_X_UP_RAD)
+			{
+				angles_.x = LIMIT_X_UP_RAD;
+			}
+		}
+
+		// 次フレーム用に保存（必ず更新）
+		prevMouseX_ = mx;
+		prevMouseY_ = my;
 	}
 	else
 	{
@@ -277,15 +310,35 @@ void Camera::ProcessMove(void)
 {
 	if (!controlEnabled_) return;
 
-
 	VECTOR moveDir = AsoUtility::VECTOR_ZERO;
 
 	if (GetJoypadNum() == 0)
 	{
-		if (InputManager::GetInstance()->IsNew(KEY_INPUT_W)) { moveDir = AsoUtility::DIR_F; }
-		if (InputManager::GetInstance()->IsNew(KEY_INPUT_S)) { moveDir = AsoUtility::DIR_B; }
-		if (InputManager::GetInstance()->IsNew(KEY_INPUT_A)) { moveDir = AsoUtility::DIR_L; }
-		if (InputManager::GetInstance()->IsNew(KEY_INPUT_D)) { moveDir = AsoUtility::DIR_R; }
+		// マウスのフレーム間移動量を取得
+		int dx, dy;
+		GetMousePoint(&dx, &dy);
+
+		// 感度
+		const float MOUSE_MOVE_SENS = 0.5f;
+		// ノイズ除去の閾値
+		const int PIXEL_THRESHOLD = 1;
+
+		// マウスが動いたらその方向でカメラを平行移動させたい
+		if (dx > PIXEL_THRESHOLD || dx < -PIXEL_THRESHOLD || dy > PIXEL_THRESHOLD || dy < -PIXEL_THRESHOLD)
+		{
+			// ローカル軸での移動ベクトルを設定
+			// マウス右移動 -> カメラ右移動、マウス上移動 -> カメラ前方移動になるよう符号調整
+			moveDir.x = static_cast<float>(dx) * MOUSE_MOVE_SENS;
+			moveDir.z = -static_cast<float>(dy) * MOUSE_MOVE_SENS;
+		}
+		else
+		{
+			// キーボードフォールバック（必要なければ削除可）
+			if (InputManager::GetInstance()->IsNew(KEY_INPUT_W)) { moveDir = AsoUtility::DIR_F; }
+			if (InputManager::GetInstance()->IsNew(KEY_INPUT_S)) { moveDir = AsoUtility::DIR_B; }
+			if (InputManager::GetInstance()->IsNew(KEY_INPUT_A)) { moveDir = AsoUtility::DIR_L; }
+			if (InputManager::GetInstance()->IsNew(KEY_INPUT_D)) { moveDir = AsoUtility::DIR_R; }
+		}
 	}
 	else
 	{
@@ -299,23 +352,19 @@ void Camera::ProcessMove(void)
 	// 移動処理
 	if (!AsoUtility::EqualsVZero(moveDir))
 	{
-		// 移動させたい方向(ベクトル)に変換
 		// 現在の向きからの進行方向を取得
 		VECTOR direction = VNorm(transform_.quaRot.PosAxis(moveDir));
 
-		// 移動させたい方向に移動量をかける(=移動量)
+		// 移動量を計算して適用
 		VECTOR movePow = VScale(direction, SPEED);
-
-		// カメラ位置も注視点も移動させる
 		transform_.pos = VAdd(transform_.pos, movePow);
 		targetPos_ = VAdd(targetPos_, movePow);
 	}
-
 }
 
 void Camera::SetBeforeDrawFixedPoint(void)
 {
-	// 何もしない
+
 }
 
 void Camera::SetBeforeDrawFree(void)
@@ -410,6 +459,7 @@ void Camera::SetBeforeDrawTop(void)
 
 	transform_.quaRot.GetUp();
 }
+
 void Camera::Collision(void)
 {
 	// プレイヤーのルートフレーム

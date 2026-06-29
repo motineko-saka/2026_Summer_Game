@@ -526,7 +526,6 @@ const void TutorialScene::ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*
 	//}
 }
 
-
 void TutorialScene::Update(void)
 {
 	// チュートリアル更新

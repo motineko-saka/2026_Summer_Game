@@ -1,3 +1,4 @@
+#include <DxLib.h>
 #include <algorithm>
 #include "LightPillar.h"
 
@@ -46,28 +47,28 @@ void LightPillar::Draw()
 	// ”¼“§–¾
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha_);
 
-	// ’Œ‚Ì•`‰æ
-	DrawCylinder3D(
-		pos_,
-		VAdd(pos_, VGet(0, 700 * scale_, 0)),
-		40 * scale_,
-		32,
-		GetColor(255, 240, 150),
-		GetColor(255, 240, 150),
-		FALSE
-	);
+	//// ’Œ‚Ì•`‰æ
+	//DrawCylinder3D(
+	//	pos_,
+	//	VAdd(pos_, VGet(0, 700 * scale_, 0)),
+	//	40 * scale_,
+	//	32,
+	//	GetColor(255, 240, 150),
+	//	GetColor(255, 240, 150),
+	//	FALSE
+	//);
 
 	float radius = timer_ * 1.0f;
 
-	DrawCylinder3D(
-		VAdd(pos_, VGet(0, 1.0f, 0)),
-		VAdd(pos_, VGet(0, 3.0f, 0)),
-		radius,
-		64,
-		GetColor(255, 220, 100),
-		GetColor(255, 220, 100),
-		TRUE
-	);
+	//DrawCylinder3D(
+	//	VAdd(pos_, VGet(0, 1.0f, 0)),
+	//	VAdd(pos_, VGet(0, 3.0f, 0)),
+	//	radius,
+	//	64,
+	//	GetColor(255, 220, 100),
+	//	GetColor(255, 220, 100),
+	//	TRUE
+	//);
 
 	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 }
