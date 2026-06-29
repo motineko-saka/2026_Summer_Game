@@ -14,7 +14,7 @@ public:
 		VIEW_RANGE,
 	};
 
-    Wall(void);
+    Wall(VECTOR pos, bool isRot = false);
     ~Wall(void) override;
 
 	void Update(void)override;
@@ -41,4 +41,8 @@ private:
 	static constexpr VECTOR STAGE_DEFAULT_POS = { 0.0f, 0.0f, 0.0f };
 
 	static constexpr VECTOR STAGE_DEFAULT_SCALE = { 1.0f,1000.0f,1000.0f };
+
+	// ç¿ïWàÍéûï€ë∂ïœêî
+	VECTOR tempPos_;
+	bool isRot_ = false;
 };

@@ -5,6 +5,18 @@
 class StageBase : public ActorBase
 {
 public:
+	struct Vector3 {
+		float x, y, z;
+		Vector3() :x(0.0f), y(0.0f), z(0.0f) {}
+		Vector3(float inx, float iny, float inz) : x(inx), y(iny), z(inz) {};
+		VECTOR GetVECTOR()const { return VGet(x, y, z); }
+	};
+
+	struct BoundingBox {
+		Vector3 minPos;//12
+		Vector3 maxPos;//12
+	};
+
 	// è’ìÀîªíËéÌï 
 	enum class COLLIDER_TYPE
 	{
@@ -30,6 +42,8 @@ public:
 
 	void DrawAtOffset(const VECTOR& offset);
 
+	const BoundingBox GetBoundingBox(void) const { return bb_; }
+
 	// èúäOÉtÉåÅ[ÉÄñºèÃ
 	const std::vector<std::string> EXCLUDE_FRAME_NAMES = { "Grass","Plant","Leaves" };
 
@@ -51,6 +65,9 @@ protected:
 	void InitPost(void)override;
 
 	STAGE_TYPE stageType_;
+
+	BoundingBox bb_;
+
 private:
 	static constexpr VECTOR STAGE_DEFAULT_POS = { 0.0f, 0.0f, 0.0f };
 
@@ -61,5 +78,6 @@ private:
 	{
 	"Ground","Grass","Plant","Leaves"
 	};
+
 };
 

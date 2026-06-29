@@ -131,7 +131,7 @@ void TutorialScene::Init(void)
 	skyDome_ = std::make_unique<SkyDome>(players_[0].player_->GetTransform());
 	skyDome_->Init();
 
-	wall_ = std::make_unique<Wall>();
+	wall_ = std::make_unique<Wall>(VECTOR(0, 0, 0));
 	wall_->Init();
 
 	// オブジェクト作成（複数）
@@ -243,6 +243,24 @@ void TutorialScene::Init(void)
 		bool isActive = i == 0 ? true : false;
 		players_[i].player_->SetActive(isActive);
 		players_[i].camera_->SetControlEnabled(isActive);
+	}
+
+	bool isWallCreate = false;
+	for (auto& stage : stageManager_->GetStage())
+	{
+		if (isWallCreate) continue;
+		auto& bb = stage->GetBoundingBox();
+		walls_.push_back(new Wall(VECTOR(0, 0, bb.minPos.z), true));
+		walls_.push_back(new Wall(VECTOR(0, 0, bb.maxPos.z), true));
+		walls_.push_back(new Wall(VECTOR(bb.minPos.x, 0, 0)));
+		walls_.push_back(new Wall(VECTOR(bb.maxPos.x, 0, 0)));
+
+		isWallCreate = true;
+	}
+
+	for (auto& wall : walls_)
+	{
+		wall->Init();
 	}
 
 	TutorialInit();
@@ -562,6 +580,11 @@ void TutorialScene::Update(void)
 	lightPillar_->Update();
 	wall_->Update();
 
+	for (auto& wall : walls_)
+	{
+		wall->Update();
+	}
+
 	// 衝突判定チェック(Objectの更新前に実行)
 	CheckCollisions();
 
@@ -578,18 +601,23 @@ void TutorialScene::AnswerChack(void)
 {
 	// 答えの場所に全てのオブジェクトがあるか判定
 	bool isAnswer = true;
+	std::vector<ObjectBase*> object;
 
 	for (auto* obj : objects_)
 	{
 		if (!obj->IsAnswerPosition())
 		{
 			isAnswer = false;
+			object.push_back(obj);
 		}
 	}
 
 	if (isAnswer && !isPillar_)
 	{
-		lightPillar_->Init(objects_[0]->GetPos());
+		for (auto& obj : object)
+		{
+			lightPillar_->Init(obj->GetPos());
+		}
 		isPillar_ = true;
 	}
 
@@ -655,6 +683,11 @@ void TutorialScene::Draw(void)
 		skyDome_->Draw();
 		stageManager_->Draw();
 		lightPillar_->Draw();
+
+		for (auto& wall : walls_)
+		{
+			wall->Draw();
+		}
 
 		for (int j = 0; j < players_.size(); j++)
 		{

@@ -5,12 +5,16 @@
 #include "../Collider/ColliderModel.h"
 #include "Wall.h"
 
-Wall::Wall(void)
+Wall::Wall(VECTOR pos, bool isRot)
+	:
+	tempPos_(pos),
+	isRot_(isRot)
 {
 }
 
 Wall::~Wall(void)
 {
+	Release();
 }
 
 void Wall::Update(void)
@@ -38,9 +42,14 @@ void Wall::InitTransform(void)
 	transform_.scl = STAGE_DEFAULT_SCALE;
 	transform_.quaRot = Quaternion::Identity();
 
+	if(isRot_)
+	{
+		transform_.quaRot = Quaternion::AngleAxis(DX_PI_F / 2.0f, AsoUtility::AXIS_Y);
+	}
+
 	transform_.quaRotLocal = Quaternion::Identity();
 
-	transform_.pos = STAGE_DEFAULT_POS;
+	transform_.pos = tempPos_;
 	transform_.Update();
 }
 

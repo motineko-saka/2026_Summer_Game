@@ -4,7 +4,7 @@
 
 class Stage : public StageBase
 {
-public:
+public:	
 
 	Stage(int modelID);
 	~Stage(void) override;

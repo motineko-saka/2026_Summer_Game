@@ -95,7 +95,7 @@ void GameScene::Init(void)
 	skyDome_ = std::make_unique<SkyDome>(players_[0].player_->GetTransform());
 	skyDome_->Init();
 
-	wall_ = std::make_unique<Wall>();
+	wall_ = std::make_unique<Wall>(VECTOR(0, 0, 0));
 	wall_->Init();
 
 	// エネミー管理
