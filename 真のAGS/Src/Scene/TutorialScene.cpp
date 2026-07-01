@@ -3,13 +3,11 @@
 #include "../Manager/InputManager.h"
 #include "../Manager/Camera.h"
 #include "../Manager/ResourceManager.h"
-#include "../Manager/EnemyManager.h"
 #include "../Manager/StageManager.h"
 #include "../Manager/Resource.h"
 #include "../Object/Actor/Stage/Stage.h"
 #include "../Object/Actor/SkyDome.h"
 #include "../Object/Actor/Charactor/Player.h"
-#include "../Object/Actor/Charactor/Enemy/EnemyRat.h"
 #include "../Object/Actor/Charactor/GameObject/ObjectBase.h"
 #include "../Object/Actor/Wall.h"
 #include "../Object/LightPillar.h"
@@ -18,10 +16,11 @@
 #include "../UI/Tutorial.h" 
 #include "GameClearScene.h"
 #include "PauseScene.h"
+#include "../Manager/EffekseerEffect.h"
+#include "../Renderer/PixelMaterial.h"
+#include "../Renderer/PixelRenderer.h"
 
-// ワールド座標をカメラ（ビュー）に基づきスクリーン座標へ射影するヘルパー
-// vpW/vpH は描画対象のビューポート幅・高さ（ここでは各スクリーンハンドルのサイズ）
-// 返り値: true=カメラ前方にあり射影可能 / false=背面（描画しない）
+
 static bool WorldToScreen(const VECTOR& worldPos, const Camera* cam, int vpW, int vpH, float& outX, float& outY)
 {
 	// カメラ情報取得
@@ -101,8 +100,6 @@ void TutorialScene::Init(void)
 	screenHandle1_ = MakeScreen(halfWidth, screenHeight_, true);
 	screenHandle2_ = MakeScreen(halfWidth, screenHeight_, true);
 
-	pinID_ = MV1LoadModel((Application::PATH_MODEL + "Object/torii.mv1").c_str());
-
 	lightPillar_ = std::make_unique<LightPillar>();
 
 	players_.resize(2);
@@ -135,29 +132,6 @@ void TutorialScene::Init(void)
 	isEndTutorial_ = false;
 	isPillar_ = false;
 
-	//// カメラ1の作成(プレイヤー1用)
-	//camera1_ = new Camera();
-	//camera1_->Init();
-
-	//// カメラ2の作成(プレイヤー2用)
-	//camera2_ = new Camera();
-	//camera2_->Init();
-
-	//// プレイヤー1
-	//player1_ = new Player(Player::PLAYER_NO::PLAYER1, *camera1_);
-	//player1_->Init();
-
-	//camera1_->SetFollow(&player1_->GetTransform());
-	//camera1_->ChangeMode(Camera::MODE::FOLLOW);
-
-
-	//// プレイヤー2(プレイヤー1を複製)
-	//player2_ = new Player(Player::PLAYER_NO::PLAYER2, *camera2_);
-	//player2_->Init();
-
-	//camera2_->SetFollow(&player2_->GetTransform());
-	//camera2_->ChangeMode(Camera::MODE::FOLLOW);
-	// 
 	// ステージ
 	stageManager_ = new StageManager();
 	stageManager_->InitStage();
@@ -165,6 +139,20 @@ void TutorialScene::Init(void)
 	// スカイドーム(プレイヤー1用)
 	skyDome_ = new SkyDome(player1_->GetTransform());
 	skyDome_->Init();
+
+	// ポストエフェクト用スクリーン
+	postEffectScreen_ = MakeScreen(
+		Application::SCREEN_SIZE_X, Application::SCREEN_SIZE_Y, true);
+
+	// ポストエフェクト用
+	pixelMaterial_ = std::make_unique<PixelMaterial>("Tutorial.cso", 1);
+	pixelMaterial_->AddConstBuf({ 1.0f, 1.0f, 1.0f, 1.0f });
+	pixelMaterial_->AddTextureBuf(SceneManager::GetInstance()->GetMainScreen());
+	pixelRenderer_ = std::make_unique<PixelRenderer>(*pixelMaterial_);
+	pixelRenderer_->MakeSquereVertex(
+		Vector2(0, 0),
+		Vector2(Application::SCREEN_SIZE_X, Application::SCREEN_SIZE_Y)
+	);
 
 	wall_ = std::make_unique<Wall>();
 	wall_->Init();
@@ -182,11 +170,6 @@ void TutorialScene::Init(void)
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ 0.0f, -600.0f, -50.0f });
 	objects_.back()->SetScale({ 0.5, 0.5, 0.5 });
-
-	//objects_.push_back(new ObjectBase(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[2], ObjectBase::OBJECT_TYPE::PRESS_BUTTON));
-	//objects_.back()->Init();
-	//objects_.back()->SetPosition({ -900.0f, -500.0f, 900.5f });
-	//objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 
 	// ステージの各コライダをプレイヤー／カメラ／オブジェクトに登録
 	for (const auto& stage : stageManager_->GetStage())
@@ -276,7 +259,7 @@ void TutorialScene::Init(void)
 	// プレイヤー1 の初期位置をキャプチャ
 	const VECTOR p1StartPos = player1_->GetTransform().pos;
 
-	// ステップ1: 移動（位置変化で判定）
+	// ステップ1: 移動
 	tutorial_.AddStep(
 		"移動の練習：W/A/S/D または 方向キーでプレイヤーを移動させてください。\n実際に移動すると次へ進みます。",
 		[this, p1StartPos]() -> bool {
@@ -303,12 +286,7 @@ void TutorialScene::Init(void)
 		}
 	);
 
-	// ステップ4: ボタン操作（ボタン近くで Space）
-	ObjectBase* buttonObj = nullptr;
-	for (auto* o : objects_)
-	{
-		if (o && o->GetType() == ObjectBase::OBJECT_TYPE::BUTTON) { buttonObj = o; break; }
-	}
+	// ステップ4: ボタン操作
 	tutorial_.AddStep(
 		"ボタン操作の練習：ボタンの近くで Space を押してください。\nボタンを押すと次へ進みます。",
 		[this]() -> bool {
@@ -345,7 +323,7 @@ void TutorialScene::Init(void)
 		}
 	);
 
-	// ステップ5: オブジェクト操作（オブジェクトに近づいて E）
+	// ステップ5: オブジェクト操作
 	tutorial_.AddStep(
 		"オブジェクト操作の練習1：オブジェクトに近づいて E を押してください。\nオブジェクトを押すと次へ進みます。",
 		[this]() -> bool {
@@ -880,9 +858,16 @@ void TutorialScene::Draw(void)
 	}
 	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 
-	// BUTTONの上の位置にマーカーを描画
+	int mainScreen = SceneManager::GetInstance()->GetMainScreen();
 
+	// ポストエフェクト
+	//-----------------------------------------
+	SetDrawScreen(postEffectScreen_);
+	ClearDrawScreen();
+	pixelRenderer_->Draw();
 
+	SetDrawScreen(mainScreen);
+	DrawGraph(0, 0, postEffectScreen_, false);
 
 #pragma region デバッグ表示
 	// デバッグ表示

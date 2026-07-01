@@ -8,12 +8,14 @@
 class StageManager;
 class SkyDome;
 class Player;
-class EnemyManager;
 class Camera;
 class ObjectBase;
 class Wall;
 class LightPillar;
-
+class ModelRenderer;
+class ModelMaterial;
+class PixelRenderer;
+class PixelMaterial;
 
 class TutorialScene : public SceneBase
 {
@@ -22,6 +24,17 @@ class TutorialScene : public SceneBase
 		Player* player_;
 		Camera* camera_;
 		bool isPlayerHitObject_;
+	};
+
+	// ポストエフェクトモード
+	enum class MODE
+	{
+		MAIN,
+		MONO,
+		SCAN,
+		LENS,
+		VINE,
+		MAX
 	};
 
 public:
@@ -82,6 +95,9 @@ private:
 	Player* player2_;
 	Camera* camera2_;
 
+	// ポストエフェクトモード
+	MODE mode_;
+
 	//EnemyManager* enemyManager_;
 	std::vector<PlayerS> players_;
 
@@ -90,6 +106,13 @@ private:
 	// 複数のオブジェクトを管理
 	std::vector<ObjectBase*> objects_;
 
+	// ポストエフェクト用スクリーン
+	int postEffectScreen_;
+
+	// シェーダー
+	std::unique_ptr<PixelMaterial> pixelMaterial_;
+	std::unique_ptr<PixelRenderer> pixelRenderer_;
+	
 	// 画面分割用のスクリーンハンドル
 	int screenHandle1_;
 	int screenHandle2_;

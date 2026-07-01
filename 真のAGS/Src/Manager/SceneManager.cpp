@@ -40,6 +40,10 @@ void SceneManager::Init(void)
 	ChangeScene(std::make_shared<TitleScene>());
 	//ChangeScene(std::make_shared<GameScene>());
 
+		// メインスクリーン
+	mainScreen_ = MakeScreen(
+		Application::SCREEN_SIZE_X, Application::SCREEN_SIZE_Y, true);
+
 	// デルタタイム
 	preTime_ = std::chrono::system_clock::now();
 }
@@ -81,6 +85,10 @@ void SceneManager::Update(void)
 // 描画
 void SceneManager::Draw(void)
 {
+	SetDrawScreen(mainScreen_);
+	// 画面を初期化
+	ClearDrawScreen();
+
 	// ロード中ならロード画面を描画
 	if (Loading::GetInstance()->IsLoading())
 	{
@@ -97,6 +105,9 @@ void SceneManager::Draw(void)
 			scene->Draw();
 		}
 	}
+	// 背面スクリーンにメインスクリーンを描画
+	SetDrawScreen(DX_SCREEN_BACK);
+	DrawGraph(0, 0, mainScreen_, true);
 }
 
 // 解放
@@ -169,6 +180,11 @@ float SceneManager::GetDeltaTime(void) const
 Camera* SceneManager::GetCamera(void) const
 {
 	return camera_;
+}
+
+int SceneManager::GetMainScreen(void) const
+{
+	return mainScreen_;
 }
 
 void SceneManager::ResetDeltaTime(void)

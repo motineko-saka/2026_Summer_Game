@@ -5,6 +5,7 @@
 #include "Manager/SceneManager.h"
 #include "Common/FpsController.h"
 #include "Application.h"
+#include "Manager/EffekseerEffect.h"
 
 Application* Application::instance_ = nullptr;
 
@@ -13,6 +14,7 @@ const std::string Application::PATH_MODEL = "Data/Model/";
 const std::string Application::PATH_EFFECT = "Data/Effect/";
 const std::string Application::PATH_CSV = "Data/Csv/";
 const std::string Application::PATH_MOV = "Data/Movie/";
+const std::string Application::PATH_SHADER = "Data/Shader/";
 
 void Application::CreateInstance(void)
 {
@@ -30,7 +32,6 @@ Application& Application::GetInstance(void)
 
 void Application::Init(void)
 {
-
 	// アプリケーションの初期設定
 	SetWindowText("野本の亡霊");
 
@@ -50,8 +51,14 @@ void Application::Init(void)
 		return;
 	}
 
-	// Effekseerの初期化
+	// Effekseerの初期化（低レベル）
 	InitEffekseer();
+
+	// EffekseerEffect（ラッパー）の生成・初期化
+	EffekseerEffect::CreateInstance();
+	if (EffekseerEffect::GetInstance()) {
+		EffekseerEffect::GetInstance()->Init();
+	}
 
 	// 3Dオブジェクトの初期化
 	Init3D();
@@ -78,7 +85,6 @@ void Application::Init(void)
 	// シーン管理初期化
 	SceneManager::CreateInstance();
 	SceneManager::GetInstance()->Init();
-
 }
 
 void Application::Init3D(void)
@@ -112,18 +118,26 @@ void Application::Init3D(void)
 
 void Application::Run(void)
 {
-
-
 	// ゲームループ
 	while (ProcessMessage() == 0 && !SceneManager::GetInstance()->GetGameEnd())
 	{
 		InputManager::GetInstance()->Update();
 		SceneManager::GetInstance()->Update();
 
+		// Effekseer の毎フレーム更新（必須）
+		if (EffekseerEffect::GetInstance()) {
+			EffekseerEffect::GetInstance()->Update();
+		}
+
 		SetDrawScreen(DX_SCREEN_BACK);
 		ClearDrawScreen();
 
 		SceneManager::GetInstance()->Draw();
+
+		// Effekseer の描画（Scene の描画後に呼ぶ）
+		if (EffekseerEffect::GetInstance()) {
+			EffekseerEffect::GetInstance()->Draw();
+		}
 
 #ifdef _DEBUG
 		// 平均FPS描画
@@ -152,9 +166,11 @@ void Application::Destroy(void)
 
 	ResourceManager::GetInstance().Destroy();
 
-
-	// Effekseerを終了する。
-	Effkseer_End();
+	// EffekseerEffect の解放（内部で Effkseer_End を呼ぶ）
+	if (EffekseerEffect::GetInstance()) {
+		EffekseerEffect::GetInstance()->Release();
+		EffekseerEffect::DeleteInstance();
+	}
 
 	// DxLib終了
 	if (DxLib_End() == -1)

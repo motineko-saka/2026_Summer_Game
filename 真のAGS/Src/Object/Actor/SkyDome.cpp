@@ -76,6 +76,8 @@ void SkyDome::InitPost(void)
 	// Zバッファ無効(突き抜け対策)
 	MV1SetUseZBuffer(transform_.modelId, false);
 	MV1SetWriteZBuffer(transform_.modelId, false);
+
+	ChangeState(STATE::FOLLOW);
 }
 
 void SkyDome::ChangeState(STATE state)
