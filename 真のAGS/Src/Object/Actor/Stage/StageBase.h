@@ -45,7 +45,7 @@ public:
 	const BoundingBox GetBoundingBox(void) const { return bb_; }
 
 	// œŠOƒtƒŒ[ƒ€–¼Ì
-	const std::vector<std::string> EXCLUDE_FRAME_NAMES = { "Grass","Plant","Leaves" };
+	const std::vector<std::string> EXCLUDE_FRAME_NAMES = { /*"Grass",*/"Plant","Leaves" };
 
 protected:
 

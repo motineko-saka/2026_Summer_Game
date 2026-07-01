@@ -405,11 +405,6 @@ void GameScene::Update(void)
 			Player::PLAYER_NO::PLAYER2 : Player::PLAYER_NO::PLAYER1;
 	}
 
-	for (auto& wall : walls_)
-	{
-		wall->Draw();
-	}
-
 	//// 右クリックでもプレイヤー切替
 	//if (InputManager::GetInstance()->IsTrgMouseRight())
 	//{
@@ -437,6 +432,11 @@ void GameScene::Update(void)
 	{
 		players_[i].player_->Update();
 		players_[i].camera_->Update();
+	}
+
+	for (auto& wall : walls_)
+	{
+		wall->Draw();
 	}
 	//enemyManager_->Update();
 	// プレイヤー1用のカメラ設定
@@ -545,16 +545,6 @@ void GameScene::Draw(void)
 			obj->Draw();
 		}
 	}
-
-	//// プレイヤー1の画面を描画(左側)
-	//SetDrawScreen(screenHandle1_);
-	//ClearDrawScreen();
-	//DrawPlayer1Screen();
-
-	//// プレイヤー2の画面を描画(右側)
-	//SetDrawScreen(screenHandle2_);
-	//ClearDrawScreen();
-	//DrawPlayer2Screen();
 
 	// メイン画面に転送
 	SetDrawScreen(DX_SCREEN_BACK);
