@@ -118,7 +118,7 @@ void Player::InitAnimation(void)
 		Application::PATH_MODEL + "Player/Idle.mv1");
 
 	animController_->Add(static_cast<int>(ANIM_TYPE::RUN), 30.0f,
-		Application::PATH_MODEL + "Player/Run.mv1");
+		Application::PATH_MODEL + "Player/Walking.mv1");
 
 	animController_->Add(static_cast<int>(ANIM_TYPE::FAST_RUN), 30.0f,
 		Application::PATH_MODEL + "Player/FastRun.mv1");
