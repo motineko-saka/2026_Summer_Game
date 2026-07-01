@@ -48,8 +48,6 @@ void GameScene::Init(void)
 	screenHandle1_ = MakeScreen(halfWidth, screenHeight_, true);
 	screenHandle2_ = MakeScreen(halfWidth, screenHeight_, true);
 
-	pinID_ = MV1LoadModel((Application::PATH_MODEL + "Object/torii.mv1").c_str());
-
 	isPause_ = false;
 
 	lightPillar_ = std::make_unique<LightPillar>();
@@ -95,8 +93,7 @@ void GameScene::Init(void)
 	skyDome_ = std::make_unique<SkyDome>(players_[0].player_->GetTransform());
 	skyDome_->Init();
 
-	wall_ = std::make_unique<Wall>(VECTOR(0, 0, 0));
-	wall_->Init();
+	CreateWall(*stageManager_);
 
 	// エネミー管理
 	//enemyManager_ = new EnemyManager(player1_);
@@ -138,7 +135,7 @@ void GameScene::Init(void)
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 
 
-#pragma region MyRegion
+#pragma region コライダ登録
 
 	// ステージの各コライダをプレイヤー／カメラ／オブジェクトに登録
 	for (const auto& stage : stageManager_->GetStage())
@@ -198,14 +195,18 @@ void GameScene::Init(void)
 		}
 	}
 
-	const ColliderBase* wallCollider =
-		wall_->GetOwnCollider(static_cast<int>(Stage::COLLIDER_TYPE::MODEL));
-
-	for (int i = 0; i < players_.size(); i++)
+	for (auto& wall : walls_)
 	{
-		// ステージモデルのコライダーをプレイヤーに登録
-		players_[i].player_->AddHitCollider(wallCollider);
+		const ColliderBase* wallCollider =
+			wall->GetOwnCollider(static_cast<int>(Stage::COLLIDER_TYPE::MODEL));
+
+		for (int i = 0; i < players_.size(); i++)
+		{
+			// ステージモデルのコライダーをプレイヤーに登録
+			players_[i].player_->AddHitCollider(wallCollider);
+		}
 	}
+
 #pragma endregion
 
 	// 衝突フラグの初期化
@@ -404,6 +405,11 @@ void GameScene::Update(void)
 			Player::PLAYER_NO::PLAYER2 : Player::PLAYER_NO::PLAYER1;
 	}
 
+	for (auto& wall : walls_)
+	{
+		wall->Draw();
+	}
+
 	//// 右クリックでもプレイヤー切替
 	//if (InputManager::GetInstance()->IsTrgMouseRight())
 	//{
@@ -434,7 +440,9 @@ void GameScene::Update(void)
 	}
 	//enemyManager_->Update();
 	// プレイヤー1用のカメラ設定
-	wall_->Update();
+	
+
+	//wall_->Update();
 	lightPillar_->Update();
 
 	// 衝突判定チェック(Objectの更新前に実行)

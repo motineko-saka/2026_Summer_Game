@@ -131,9 +131,6 @@ void TutorialScene::Init(void)
 	skyDome_ = std::make_unique<SkyDome>(players_[0].player_->GetTransform());
 	skyDome_->Init();
 
-	wall_ = std::make_unique<Wall>(VECTOR(0, 0, 0));
-	wall_->Init();
-
 	// オブジェクト作成（複数）
 	objects_.reserve(2);
 
@@ -153,6 +150,9 @@ void TutorialScene::Init(void)
 	//objects_.back()->SetPosition({ -900.0f, -500.0f, 900.5f });
 	//objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 
+	CreateWall(*stageManager_);
+
+#pragma region コライダ登録
 	// ステージの各コライダをプレイヤー／カメラ／オブジェクトに登録
 	for (const auto& stage : stageManager_->GetStage())
 	{
@@ -210,13 +210,16 @@ void TutorialScene::Init(void)
 		}
 	}
 
-	const ColliderBase* wallCollider =
-		wall_->GetOwnCollider(static_cast<int>(Stage::COLLIDER_TYPE::MODEL));
-
-	for (int i = 0; i < players_.size(); i++)
+	for (auto& wall : walls_)
 	{
-		// ステージモデルのコライダーをプレイヤーに登録
-		players_[i].player_->AddHitCollider(wallCollider);
+		const ColliderBase* wallCollider =
+			wall->GetOwnCollider(static_cast<int>(Stage::COLLIDER_TYPE::MODEL));
+
+		for (int i = 0; i < players_.size(); i++)
+		{
+			// ステージモデルのコライダーをプレイヤーに登録
+			players_[i].player_->AddHitCollider(wallCollider);
+		}
 	}
 
 	// プレイヤーコライダ登録
@@ -231,9 +234,7 @@ void TutorialScene::Init(void)
 			objects_[index]->AddHitCollider(playerCollider);
 		}
 	}
-
-
-	//objects_[4]->AddHitCollider(playerCollider);
+#pragma endregion
 
 	// 初期アクティブ状態（プレイヤー1 を操作）
 	activePlayer_ = Player::PLAYER_NO::PLAYER1;
@@ -243,24 +244,6 @@ void TutorialScene::Init(void)
 		bool isActive = i == 0 ? true : false;
 		players_[i].player_->SetActive(isActive);
 		players_[i].camera_->SetControlEnabled(isActive);
-	}
-
-	bool isWallCreate = false;
-	for (auto& stage : stageManager_->GetStage())
-	{
-		if (isWallCreate) continue;
-		auto& bb = stage->GetBoundingBox();
-		walls_.push_back(new Wall(VECTOR(0, 0, bb.minPos.z), true));
-		walls_.push_back(new Wall(VECTOR(0, 0, bb.maxPos.z), true));
-		walls_.push_back(new Wall(VECTOR(bb.minPos.x, 0, 0)));
-		walls_.push_back(new Wall(VECTOR(bb.maxPos.x, 0, 0)));
-
-		isWallCreate = true;
-	}
-
-	for (auto& wall : walls_)
-	{
-		wall->Init();
 	}
 
 	TutorialInit();
@@ -578,7 +561,6 @@ void TutorialScene::Update(void)
 	}
 	//enemyManager_->Update();
 	lightPillar_->Update();
-	wall_->Update();
 
 	for (auto& wall : walls_)
 	{
@@ -694,9 +676,9 @@ void TutorialScene::Draw(void)
 			players_[j].player_->Draw();
 		}
 
+		// 答えの描画
 		bool isHold = false;
 
-		// 答えの描画
 		for (int i = 0; i < objects_.size(); i++)
 		{
 			auto& obj = objects_[i];

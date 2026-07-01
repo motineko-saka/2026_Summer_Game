@@ -1,6 +1,10 @@
 #pragma once
+#include <memory>
+#include <vector>
 class ResourceManager;
 class SceneManager;
+class StageManager;
+class Wall;
 
 class SceneBase
 {
@@ -43,4 +47,8 @@ protected:
 
 	// ƒŠƒ\[ƒXŠÇ—
 	ResourceManager& resMng_;
+
+	std::vector<std::unique_ptr<Wall>> walls_;
+
+	virtual void CreateWall(StageManager& stageM);
 };

@@ -11,7 +11,6 @@ class Player;
 class EnemyManager;
 class Camera;
 class ObjectBase;
-class Wall;
 class LightPillar;
 
 
@@ -76,9 +75,6 @@ private:
 
 	//EnemyManager* enemyManager_;
 	std::vector<PlayerS> players_;
-
-	std::unique_ptr<Wall> wall_;
-	std::vector<Wall*> walls_;
 
 	// 複数のオブジェクトを管理
 	std::vector<ObjectBase*> objects_;

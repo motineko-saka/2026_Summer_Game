@@ -10,7 +10,6 @@ class Player;
 class EnemyManager;
 class Camera;
 class ObjectBase;
-class Wall;
 class LightPillar;
 
 class GameScene : public SceneBase
@@ -67,8 +66,6 @@ private:
 
 	//EnemyManager* enemyManager_;
 
-	std::unique_ptr<Wall> wall_;
-
 	// 複数のオブジェクトを管理
 	std::vector<ObjectBase*> objects_;
 
@@ -83,10 +80,6 @@ private:
 	int pinID_;
 
 	bool isPause_ = false;
-
-	// 衝突判定フラグ
-	//bool isPlayer1HitObject_;
-	//bool isPlayer2HitObject_;
 
 	VECTOR ansVec_ = {};
 
