@@ -35,6 +35,7 @@ public:
 	static const std::string PATH_MODEL;
 	static const std::string PATH_EFFECT;
 	static const std::string PATH_MOV;
+	static const std::string PATH_SHADER;
 
 	static const std::string PATH_KEY_CONFIG;
 	static const std::string PATH_KEY_CONFIG_GAMEPAD;

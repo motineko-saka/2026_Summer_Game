@@ -3,13 +3,11 @@
 #include "../Manager/InputManager.h"
 #include "../Manager/Camera.h"
 #include "../Manager/ResourceManager.h"
-#include "../Manager/EnemyManager.h"
 #include "../Manager/StageManager.h"
 #include "../Manager/Resource.h"
 #include "../Object/Actor/Stage/Stage.h"
 #include "../Object/Actor/SkyDome.h"
 #include "../Object/Actor/Charactor/Player.h"
-#include "../Object/Actor/Charactor/Enemy/EnemyRat.h"
 #include "../Object/Actor/Charactor/GameObject/ObjectBase.h"
 #include "../Object/Actor/Wall.h"
 #include "../Object/LightPillar.h"
@@ -52,21 +50,6 @@ void GameScene::Init(void)
 
 	lightPillar_ = std::make_unique<LightPillar>();
 
-	//// カメラ1の作成(プレイヤー1用)
-	//for (int i = 0; i < 2; i++)
-	//{
-	//	players_.resize(2);
-	//	players_[i].camera_ = new Camera();
-	//	players_[i].camera_->Init();
-	//	players_[i].player_ = new Player(Player::PLAYER_NO::PLAYER1, *players_[i].camera_);
-	//	players_[i].player_->Init();
-
-	//	players_[i].camera_->SetFollow(&players_[i].player_->GetTransform());
-	//	players_[i].camera_->ChangeMode(Camera::MODE::FOLLOW);
-	//}
-
-	//camera1_ = new Camera();
-	//camera1_->Init();
 	players_.resize(2);
 
 	for (int i = 0; i < 2; i++)

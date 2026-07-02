@@ -19,6 +19,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Src\Renderer\PixelRenderer.cpp" />
+    <ClCompile Include="Src\Renderer\PixelMaterial.cpp" />
+    <ClCompile Include="Src\Renderer\ModelRenderer.cpp" />
+    <ClCompile Include="Src\Renderer\ModelMaterial.cpp" />
+    <ClCompile Include="Src\Manager\EffekseerEffect.cpp" />
     <ClCompile Include="Src\Object\LightPillar.cpp" />
     <ClCompile Include="Src\Audio\AudioManager.cpp" />
     <ClCompile Include="Src\Loading\Loading.cpp" />
@@ -27,10 +32,6 @@
     <ClCompile Include="Src\Scene\GameClearScene.cpp" />
     <ClCompile Include="Src\Object\Actor\Stage\AnswerStage.cpp" />
     <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Object.cpp" />
-    <ClCompile Include="Src\Manager\EnemyManager.cpp" />
-    <ClCompile Include="Src\Object\Actor\Charactor\Enemy\EnemyBase.cpp" />
-    <ClCompile Include="Src\Object\Actor\Charactor\Enemy\EnemyRat.cpp" />
-    <ClCompile Include="Src\Object\Actor\Charactor\Enemy\EnemyRobot.cpp" />
     <ClCompile Include="Src\Object\Collider\ColliderSphere.cpp" />
     <ClCompile Include="Src\Object\Collider\ColliderCapsule.cpp" />
     <ClCompile Include="Src\Object\Collider\ColliderModel.cpp" />
@@ -69,6 +70,11 @@
     <ClCompile Include="Src\UI\Tutorial.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Src\Renderer\PixelRenderer.h" />
+    <ClInclude Include="Src\Renderer\PixelMaterial.h" />
+    <ClInclude Include="Src\Renderer\ModelRenderer.h" />
+    <ClInclude Include="Src\Renderer\ModelMaterial.h" />
+    <ClInclude Include="Src\Manager\EffekseerEffect.h" />
     <ClInclude Include="Src\Object\LightPillar.h" />
     <ClInclude Include="Src\Audio\AudioManager.h" />
     <ClInclude Include="Src\Loading\Loading.h" />
@@ -77,10 +83,6 @@
     <ClInclude Include="Src\Scene\GameClearScene.h" />
     <ClInclude Include="Src\Object\Actor\Stage\AnswerStage.h" />
     <ClInclude Include="Src\Object\Actor\Charactor\GameObject\Object.h" />
-    <ClInclude Include="Src\Manager\EnemyManager.h" />
-    <ClInclude Include="Src\Object\Actor\Charactor\Enemy\EnemyBase.h" />
-    <ClInclude Include="Src\Object\Actor\Charactor\Enemy\EnemyRat.h" />
-    <ClInclude Include="Src\Object\Actor\Charactor\Enemy\EnemyRobot.h" />
     <ClInclude Include="Src\Object\Collider\ColliderSphere.h" />
     <ClInclude Include="Src\Object\Collider\ColliderCapsule.h" />
     <ClInclude Include="Src\Object\Collider\ColliderModel.h" />
@@ -117,6 +119,25 @@
     <ClInclude Include="Src\Object\Actor\Wall.h" />
     <ClInclude Include="Src\Scene\TutorialScene.h" />
     <ClInclude Include="Src\UI\Tutorial.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Src\Shader\Common\Pixel\PixelShader2DHeader.hlsli" />
+    <None Include="Src\Shader\Common\Pixel\PixelShader3DHeader.hlsli" />
+    <None Include="Src\Shader\Common\VertexToPixelHeader.hlsli" />
+    <None Include="Src\Shader\Common\Vertex\CommonShader3DHeader.hlsli" />
+    <None Include="Src\Shader\Common\Vertex\VertexInput.hlsli" />
+    <None Include="Src\Shader\Common\Vertex\VertexInputType.hlsli" />
+    <None Include="Src\Shader\Common\Vertex\VertexShader3DHeader.hlsli" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Src\Shader\PostEffect\Tutorial.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Data/Shader/%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Data/Shader/%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -246,6 +267,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(DXLIB_DIR)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

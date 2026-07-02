@@ -73,6 +73,7 @@ public:
 	// カメラの取得
 	Camera* GetCamera(void) const;
 
+	int GetMainScreen(void) const;
 
 private:
 
@@ -91,6 +92,9 @@ private:
 
 	std::chrono::system_clock::time_point preTime_;
 	float deltaTime_;
+
+	// メインスクリーン
+	int mainScreen_;
 
 	// デルタタイムをリセットする
 	void ResetDeltaTime(void);
