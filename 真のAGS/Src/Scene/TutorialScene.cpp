@@ -140,20 +140,6 @@ void TutorialScene::Init(void)
 	skyDome_ = new SkyDome(player1_->GetTransform());
 	skyDome_->Init();
 
-	// ポストエフェクト用スクリーン
-	postEffectScreen_ = MakeScreen(
-		Application::SCREEN_SIZE_X, Application::SCREEN_SIZE_Y, true);
-
-	// ポストエフェクト用
-	pixelMaterial_ = std::make_unique<PixelMaterial>("Tutorial.cso", 1);
-	pixelMaterial_->AddConstBuf({ 1.0f, 1.0f, 1.0f, 1.0f });
-	pixelMaterial_->AddTextureBuf(SceneManager::GetInstance()->GetMainScreen());
-	pixelRenderer_ = std::make_unique<PixelRenderer>(*pixelMaterial_);
-	pixelRenderer_->MakeSquereVertex(
-		Vector2(0, 0),
-		Vector2(Application::SCREEN_SIZE_X, Application::SCREEN_SIZE_Y)
-	);
-
 	wall_ = std::make_unique<Wall>();
 	wall_->Init();
 
@@ -233,6 +219,20 @@ void TutorialScene::Init(void)
 
 	const ColliderBase* playerCollider =
 		player1_->GetOwnCollider(static_cast<int>(Player::COLLIDER_TYPE::LINE));
+
+	// ポストエフェクト用スクリーン
+	postEffectScreen_ = MakeScreen(
+		Application::SCREEN_SIZE_X, Application::SCREEN_SIZE_Y, true);
+
+	// ポストエフェクト用
+	pixelMaterial_ = std::make_unique<PixelMaterial>("Tutorial.cso", 1);
+	pixelMaterial_->AddConstBuf({ 1.0f, 1.0f, 1.0f, 1.0f });
+	pixelMaterial_->AddTextureBuf(SceneManager::GetInstance()->GetMainScreen());
+	pixelRenderer_ = std::make_unique<PixelRenderer>(*pixelMaterial_);
+	pixelRenderer_->MakeSquereVertex(
+		Vector2(0, 0),
+		Vector2(Application::SCREEN_SIZE_X, Application::SCREEN_SIZE_Y)
+	);
 
 	// Buttonだけ
 	for (auto index : pushButtonIndex)
@@ -822,6 +822,7 @@ void TutorialScene::DrawPlayer2Screen(void)
 void TutorialScene::Draw(void)
 {
 	int halfWidth = screenWidth_ / 2;
+	int mainScreen = SceneManager::GetInstance()->GetMainScreen();
 
 	// プレイヤー1の画面を描画(左側)
 	SetDrawScreen(screenHandle1_);
@@ -834,7 +835,7 @@ void TutorialScene::Draw(void)
 	DrawPlayer2Screen();
 
 	// メイン画面に転送
-	SetDrawScreen(DX_SCREEN_BACK);
+	SetDrawScreen(mainScreen);
 	ClearDrawScreen();
 
 	// 左半分にプレイヤー1の画面
@@ -858,16 +859,23 @@ void TutorialScene::Draw(void)
 	}
 	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 
-	int mainScreen = SceneManager::GetInstance()->GetMainScreen();
+	// mainScreenをシェーダへ渡す
+	pixelMaterial_->SetTextureBuf(0, mainScreen);
 
-	// ポストエフェクト
-	//-----------------------------------------
 	SetDrawScreen(postEffectScreen_);
 	ClearDrawScreen();
+
 	pixelRenderer_->Draw();
 
-	SetDrawScreen(mainScreen);
-	DrawGraph(0, 0, postEffectScreen_, false);
+	// 最後に画面へ表示
+	SetDrawScreen(DX_SCREEN_BACK);
+	ClearDrawScreen();
+
+	DrawGraph(
+		0,
+		0,
+		postEffectScreen_,
+		false);
 
 #pragma region デバッグ表示
 	// デバッグ表示

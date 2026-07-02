@@ -1,4 +1,5 @@
 #include "PixelRenderer.h"
+#include "../Application.h"
 
 PixelRenderer::PixelRenderer(PixelMaterial& pixelMaterial) : pixelMaterial_(pixelMaterial)
 {
@@ -72,7 +73,6 @@ void PixelRenderer::MakeSquereVertex(Vector2 pos, Vector2 size)
 	　～～～～～～
 	*/
 
-
 	// 頂点インデックス
 	cnt = 0;
 	indexes_[cnt++] = 0;
@@ -82,7 +82,6 @@ void PixelRenderer::MakeSquereVertex(Vector2 pos, Vector2 size)
 	indexes_[cnt++] = 1;
 	indexes_[cnt++] = 2;
 	indexes_[cnt++] = 3;
-
 }
 
 void PixelRenderer::MakeSquereVertex(void)
@@ -102,6 +101,15 @@ void PixelRenderer::SetSize(Vector2 size)
 
 void PixelRenderer::Draw(void)
 {
+	//SetDrawArea(
+	//	0,
+	//	0,
+	//	Application::SCREEN_SIZE_X,
+	//	Application::SCREEN_SIZE_Y);
+
+	const auto& textures = pixelMaterial_.GetTextures();
+
+	//printfDx("Texture0 = %d\n", textures[0]);
 
 	// ピクセルシェーダ設定
 	SetUsePixelShader(pixelMaterial_.GetShader());
@@ -109,7 +117,7 @@ void PixelRenderer::Draw(void)
 	size_t size;
 
 	// ピクセルシェーダにテクスチャを転送
-	const auto& textures = pixelMaterial_.GetTextures();
+	//const auto& textures = pixelMaterial_.GetTextures();
 	size = textures.size();
 	for (int i = 0; i < size; i++)
 	{
@@ -149,14 +157,25 @@ void PixelRenderer::Draw(void)
 	// テクスチャアドレスタイプを変更
 	SetTextureAddressModeUV(texAType, texAType);
 
+	//for (int i = 0; i < 4; i++)
+	//{
+	//	printfDx("%d : %.0f %.0f\n",
+	//		i,
+	//		vertexs_[i].pos.x,
+	//		vertexs_[i].pos.y);
+	//}
+
 	// 描画
-	DrawPolygonIndexed2DToShader(vertexs_, NUM_VERTEX, indexes_, NUM_POLYGON);
+	int result = DrawPolygonIndexed2DToShader(
+		vertexs_,
+		NUM_VERTEX,
+		indexes_,
+		NUM_POLYGON);
+
+	//printfDx("DrawPolygonIndexed2DToShader = %d\n", result);
 
 	// テクスチャアドレスタイプを元に戻す
-	SetTextureAddressModeUV(DX_TEXADDRESS_CLAMP, DX_TEXADDRESS_CLAMP);
-
-	// 後始末
-	//-----------------------------------------
+	SetTextureAddressModeUV(DX_TEXADDRESS_CLAMP, DX_TEXADDRESS_CLAMP);	//-----------------------------------------
 
 	// テクスチャ解除
 	size = textures.size();
@@ -170,8 +189,7 @@ void PixelRenderer::Draw(void)
 
 	// オリジナルシェーダ設定(OFF)
 	MV1SetUseOrigShader(false);
-	//-----------------------------------------
-
+	//-----------------------------------------			
 }
 
 void PixelRenderer::Draw(int x, int y)

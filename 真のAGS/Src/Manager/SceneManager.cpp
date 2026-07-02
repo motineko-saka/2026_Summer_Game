@@ -105,6 +105,7 @@ void SceneManager::Draw(void)
 			scene->Draw();
 		}
 	}
+	
 	// 背面スクリーンにメインスクリーンを描画
 	SetDrawScreen(DX_SCREEN_BACK);
 	DrawGraph(0, 0, mainScreen_, true);
