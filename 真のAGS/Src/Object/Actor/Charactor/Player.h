@@ -69,9 +69,9 @@ protected:
 private:
 
 	static constexpr VECTOR PLAYER_ONE__DEFAULT_POS = { -1000.0f, 0.0f, 0.0f };
-	static constexpr VECTOR PLAYER_TWO__DEFAULT_POS = { 0.0f, 0.0f, 0.0f };
+	static constexpr VECTOR PLAYER_TWO__DEFAULT_POS = { 1000.0f, 0.0f, 0.0f };
 
-	static constexpr VECTOR PLAYER_DEFAULT_SCALE = { 1.0f,1.0f,1.0f };
+	static constexpr VECTOR PLAYER_DEFAULT_SCALE = { 0.5f, 0.5f, 0.5f };
 
 	static constexpr VECTOR PLAYER_DEFAULT_ROT_LOCAL = { 0.0f,180.0f * DX_PI_F / 180.0f,0.0f };
 

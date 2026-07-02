@@ -53,9 +53,9 @@ void Stage::InitTransform(void)
 			mPos.z * scale.z + offset.z
 		};
 
-		minPos.x = (std::min)(minPos.x, pos.x);
-		minPos.y = (std::min)(minPos.y, pos.y);
-		minPos.z = (std::min)(minPos.z, pos.z);
+		minPos.x = (std::min)(pos.x, minPos.x);
+		minPos.y = (std::min)(pos.y, minPos.y);
+		minPos.z = (std::min)(pos.z, minPos.z);
 
 		// ç≈ëÂç¿ïW
 		mPos = MV1GetMeshMaxPosition(handle, i);
@@ -66,9 +66,9 @@ void Stage::InitTransform(void)
 			mPos.z * scale.z + offset.z
 		};
 
-		maxPos.x = (std::max)(maxPos.x, pos.x);
-		maxPos.y = (std::max)(maxPos.y, pos.y);
-		maxPos.z = (std::max)(maxPos.z, pos.z);
+		maxPos.x = (std::max)(pos.x, maxPos.x);
+		maxPos.y = (std::max)(pos.y, maxPos.y);
+		maxPos.z = (std::max)(pos.z, maxPos.z);
 	}
 
 	bb_.minPos = minPos;
