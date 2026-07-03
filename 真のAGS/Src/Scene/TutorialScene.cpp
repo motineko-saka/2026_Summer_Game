@@ -787,7 +787,7 @@ void TutorialScene::Draw(void)
 	pixelRenderer_->Draw();
 
 	// ç≈å„Ç…âÊñ Ç÷ï\é¶
-	//SetDrawScreen(DX_SCREEN_BACK);
+	SetDrawScreen(DX_SCREEN_BACK);
 	ClearDrawScreen();
 
 	//SetDrawBlendMode(DX_BLENDMODE_ALPHA, 160);
