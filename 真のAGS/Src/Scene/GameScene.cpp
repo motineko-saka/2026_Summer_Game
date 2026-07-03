@@ -417,10 +417,6 @@ void GameScene::Update(void)
 		players_[i].camera_->Update();
 	}
 
-	for (auto& wall : walls_)
-	{
-		wall->Draw();
-	}
 	//enemyManager_->Update();
 	// プレイヤー1用のカメラ設定
 	
@@ -518,7 +514,10 @@ void GameScene::Draw(void)
 			MV1DrawModel(pinID_);
 		}
 	
-		//wall_->Draw();
+		for (auto& wall : walls_)
+		{
+			wall->Draw();
+		}
 	
 		// 全オブジェクトを順に描画（それぞれの viewWorld を設定）
 		for (auto* obj : objects_)

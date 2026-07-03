@@ -362,8 +362,10 @@
     <None Include="Src\Shader\Common\Vertex\VertexInputType.hlsli" />
     <None Include="Src\Shader\Common\Vertex\VertexShader3DHeader.hlsli" />
     <None Include="Src\Shader\Common\VertexToPixelHeader.hlsli" />
+    <None Include="Data\Shader\Monotone.cso" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Src\Shader\PostEffect\Tutorial.hlsl" />
+    <FxCompile Include="Src\Shader\PostEffect\Monotone.hlsl" />
   </ItemGroup>
 </Project>

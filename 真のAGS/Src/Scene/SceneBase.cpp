@@ -36,25 +36,31 @@ void SceneBase::Release(void)
 
 void SceneBase::CreateWall(StageManager& stageM)
 {
-	// ４面壁作成
-	bool isWallCreate = false;
-	for (auto& stage : stageM.GetStage())
-	{
-		if (isWallCreate) continue;
-		auto& bb = stage->GetBoundingBox();
-		// 真ん中
-		walls_.push_back(std::make_unique<Wall>(VECTOR(0, 0, 0)));
+    bool isWallCreate = false;
+    for (auto& stage : stageM.GetStage())
+    {
+        if (isWallCreate) continue;
 
-		// 奥手前
-		walls_.push_back(std::make_unique<Wall>(VECTOR(0, 0, bb.minPos.z), true));
-		walls_.push_back(std::make_unique<Wall>(VECTOR(0, 0, bb.maxPos.z), true));
+        auto& bb = stage->GetBoundingBox();
 
-		// 左右
-		walls_.push_back(std::make_unique<Wall>(VECTOR(bb.minPos.x, 0, 0)));
-		walls_.push_back(std::make_unique<Wall>(VECTOR(bb.maxPos.x, 0, 0)));
+        float centerX = (bb.minPos.x + bb.maxPos.x) * 0.5f;
+        float centerZ = (bb.minPos.z + bb.maxPos.z) * 0.5f;
 
-		isWallCreate = true;
-	}
+        // 真ん中
+        walls_.push_back(std::make_unique<Wall>(VECTOR(centerX, 0, centerZ)));
+
+        // 奥手前（Z固定、Xはステージ中央）
+        walls_.push_back(std::make_unique<Wall>(VECTOR(centerX, 0, bb.minPos.z), true));
+        walls_.push_back(std::make_unique<Wall>(VECTOR(centerX, 0, bb.maxPos.z), true));
+        DrawSphere3D(VGet(centerX, 0, bb.minPos.z), 10.0f, 16, GetColor(255, 0, 0), GetColor(255, 0, 0), TRUE);
+        DrawSphere3D(VGet(centerX, 0, bb.maxPos.z), 10.0f, 16, GetColor(0, 255, 0), GetColor(0, 255, 0), TRUE);
+
+        // 左右（X固定、Zはステージ中央）
+        walls_.push_back(std::make_unique<Wall>(VECTOR(bb.minPos.x, 0, centerZ)));
+        walls_.push_back(std::make_unique<Wall>(VECTOR(bb.maxPos.x, 0, centerZ)));
+
+        isWallCreate = true;
+    }
 
 	for (auto& wall : walls_)
 	{
