@@ -750,6 +750,14 @@ void TutorialScene::Draw(void)
 
 			}
 		}
+
+		if (activePlayer_ == players_[i].player_->GetPlayerNo())
+		{
+			SetDrawBlendMode(DX_BLENDMODE_ALPHA, 0);
+			// âEë§Çà√Ç≠Ç∑ÇÈ
+			pixelRenderer_->Draw();
+			SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+		}
 	}
 
 	// ÉÅÉCÉìâÊñ Ç…ì]ëó
@@ -782,12 +790,17 @@ void TutorialScene::Draw(void)
 	//pixelMaterial_->SetTextureBuf(0, mainScreen);
 
 	SetDrawScreen(postEffectScreen_);
-	//ClearDrawScreen();
+	ClearDrawScreen();
+	DrawGraph(
+		0,
+		0,
+		mainScreen,
+		false);
 
-	pixelRenderer_->Draw();
+	
 
 	// ç≈å„Ç…âÊñ Ç÷ï\é¶
-	//SetDrawScreen(DX_SCREEN_BACK);
+	SetDrawScreen(DX_SCREEN_BACK);
 	ClearDrawScreen();
 
 	//SetDrawBlendMode(DX_BLENDMODE_ALPHA, 160);

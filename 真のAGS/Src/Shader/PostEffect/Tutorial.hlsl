@@ -8,5 +8,5 @@ cbuffer cbParam : register(b4)
 
 float4 main(PS_INPUT PSInput) : SV_TARGET
 {   
-    return float4(1,0.5,1,0);
+    return float4(1,0.5,1,0.5);
 }

@@ -101,12 +101,6 @@ void PixelRenderer::SetSize(Vector2 size)
 
 void PixelRenderer::Draw(void)
 {
-	//SetDrawArea(
-	//	0,
-	//	0,
-	//	Application::SCREEN_SIZE_X,
-	//	Application::SCREEN_SIZE_Y);
-
 	const auto& textures = pixelMaterial_.GetTextures();
 
 	//printfDx("Texture0 = %d\n", textures[0]);
