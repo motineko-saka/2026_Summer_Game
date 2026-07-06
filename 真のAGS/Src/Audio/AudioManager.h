@@ -37,6 +37,8 @@ public:
 	void PlayBGM(SoundID id);		// BGMを再生
 	void StopBGM(void);				// BGMを止める
 	void PlaySE(SoundID id);		// SEを再生
+	void LoopSE(SoundID id);		// SEをループ再生
+	void StopSE(void);				// SEを止める
 	void DeleteAll(void);			// 全てのサウンド削除
 
 	// 音量設定

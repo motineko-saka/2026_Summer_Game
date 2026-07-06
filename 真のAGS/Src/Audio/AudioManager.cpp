@@ -160,6 +160,55 @@ void AudioManager::PlaySE(SoundID id)
 	PlaySoundMem(it->second, DX_PLAYTYPE_BACK, true);
 }
 
+void AudioManager::LoopSE(SoundID id)
+{
+	// IDからサウンドハンドルを抽出
+	auto it = handles_.find(id);
+
+	// サウンドが読み込まれているか？
+	if (it == handles_.end())
+		// 読み込まれていないので終了
+		return;
+
+	// 現在のBGMが同じならスキップ
+	if (currentBgm_ == id && CheckSoundMem(it->second))
+		return;
+
+	// 別のBGMが再生中なら停止
+	if (currentBgm_ != static_cast<SoundID>(-1))
+		StopBGM();
+
+	// BGMを更新
+	currentBgm_ = id;
+
+	// 実音量を計算
+	int volume = static_cast<int>(bgmVolume_ * (masterVolume_ / 255.0f));
+
+	// 音量を変更
+	ChangeVolumeSoundMem(volume, it->second);
+
+	// BGMなのでループ再生
+	PlaySoundMem(it->second, DX_PLAYTYPE_LOOP, true);
+}
+
+void AudioManager::StopSE(void)
+{
+	// 何も再生されていないなら何もしない
+	if (currentBgm_ == static_cast<SoundID>(-1))
+		return;
+
+	// IDからサウンドハンドルを抽出
+	auto it = handles_.find(currentBgm_);
+
+	// サウンドが読み込まれているか？
+	if (it != handles_.end())
+		// 読み込まれているのでサウンドを止める
+		StopSoundMem(it->second);
+
+	// 現在のBGMを再生していない状態に更新
+	currentBgm_ = static_cast<SoundID>(-1);
+}
+
 void AudioManager::DeleteAll(void)
 {
 	// サウンドが1つも読み込まれてないなら処理しない
