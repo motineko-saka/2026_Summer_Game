@@ -88,31 +88,31 @@ void GameScene::Init(void)
 
 	objects_.push_back(new ObjectBase(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::DEFAULT));
 	objects_.back()->Init();
-	objects_.back()->SetPosition({ 1260.0f, -720.0f, -50.5f });
-	objects_.back()->SetPosition({ 1260.0f, -500.0f, -50.5f });
+	objects_.back()->SetPosition({ 1260.0f, 0.0f, -50.5f });
+	objects_.back()->SetPosition({ 1260.0f, 0.0f, -50.5f });
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 
 
 	objects_.push_back(new ObjectBase(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::WBOX));
 	objects_.back()->Init();
-	objects_.back()->SetPosition({ 1260.0f, -720.0f, -50.5f });
+	objects_.back()->SetPosition({ 1260.0f, 0.0f, -50.5f });
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 
 	objects_.push_back(new ObjectBase(GameScene::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[2], ObjectBase::OBJECT_TYPE::AKEG));
 	objects_.back()->Init();
-	objects_.back()->SetPosition({ -1260.0f, -720.0f, -50.5f });
+	objects_.back()->SetPosition({ -1260.0f, 0.0f, -50.5f });
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 
 	objects_.push_back(new ObjectBase(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[3], ObjectBase::OBJECT_TYPE::BUTTON));
 	objects_.back()->Init();
-	objects_.back()->SetPosition({ 1000.0f, -720.0f, -50.5f });
+	objects_.back()->SetPosition({ 1000.0f, 0.0f, -50.5f });
 	//objects_.back()->SetPosition({ 1260.0f, -720.0f, -50.5f });
 	objects_.back()->SetPosition({ 0.0f, 80.0f, -50.0f });
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 
-	objects_.push_back(new ObjectBase(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::PRESS_BUTTON));
+	objects_.push_back(new ObjectBase(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::GEAR));
 	objects_.back()->Init();
-	objects_.back()->SetPosition({ -900.0f, -500.0f, 900.5f });
+	objects_.back()->SetPosition({ -900.0f, 0.0f, 0.5f });
 	//objects_.back()->SetPosition({500.0f, -720.0f, -50.5f });
 	//objects_.back()->SetPosition({ 1260.0f, -720.0f, -50.5f });
 	//objects_.back()->SetPosition({ 0.0f, 80.0f, -50.0f });
@@ -240,69 +240,18 @@ void GameScene::CheckCollisions(void)
 		player.isPlayerHitObject_ = false;
 	}
 
-	//isPlayer1HitObject_ = false;
-	//isPlayer2HitObject_ = false;
-
 	std::vector<ObjectBase*> newObjects;  // 新規オブジェクト用
 
 	for (auto& obj : objects_)
 	{
 		if (obj == nullptr) continue;
 
-		VECTOR objectPos = obj->GetTransform().pos;
-
 		// ボタンタイプの場合は専用処理
 		if (obj->GetType() == ObjectBase::OBJECT_TYPE::BUTTON)
 		{
 			ButtonProcess(*obj, newObjects);
-			//bool isNearButton = false;
-
-			//// プレイヤー1との距離チェック
-			//VECTOR player1Pos = player1_->GetTransform().pos;
-			//float distance1 = VSize(VSub(player1Pos, objectPos));
-			//if (distance1 < 180.0f)
-			//{
-			//	isNearButton = true;
-			//	// ボタンが押されたときの処理（例：ゲームクリア、ドアが開くなど）
-			//}
-			//
-			//// プレイヤー2も同様にチェック
-			//VECTOR player2Pos = player2_->GetTransform().pos;
-			//float distance2 = VSize(VSub(player2Pos, objectPos));
-			//if (distance2 < 180.0f)
-			//{
-			//	isNearButton = true;
-			//}
-			//
-			//// ボタンの近くにいて、スペースキーが押されたら
-			//if (isNearButton && InputManager::GetInstance().IsTrgDown(KEY_INPUT_SPACE))
-			//{
-			//	obj->SetButtomPushed(true);
-			//	// 直接追加せず、一時リストに格納
-			//	ObjectBase* newObj = new ObjectBase(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::AKEG);
-			//	newObjects.push_back(newObj);
-			//}
+			
 			continue;
-		}
-
-		for (auto& player : players_)
-		{
-			// ステージモデルのコライダーをプレイヤーに登録
-			VECTOR playerPos = player.player_->GetTransform().pos;
-
-			float distance1 = VSize(VSub(playerPos, objectPos));
-			bool hit = (distance1 < 180.0f);
-			if (hit)
-			{
-				player.isPlayerHitObject_ = true;
-				// プレイヤーからオブジェクトへの方向ベクトル
-				//VECTOR pushDir = VSub(objectPos, player2Pos);
-				//pushDir.y = 0.0f; // Y軸(垂直方向)は無視
-				//pushDir = VNorm(pushDir); // 正規化
-
-				// オブジェクトを押す(速度は適度に調整)
-				//obj->Push(pushDir, 5.0f);
-			}
 		}
 	}
 
@@ -558,10 +507,10 @@ void GameScene::Draw(void)
 			MV1DrawModel(pinID_);
 		}
 	
-		for (auto& wall : walls_)
-		{
-			wall->Draw();
-		}
+		//for (auto& wall : walls_)
+		//{
+		//	wall->Draw();
+		//}
 	
 		// 全オブジェクトを順に描画（それぞれの viewWorld を設定）
 		for (auto* obj : objects_)
@@ -648,6 +597,28 @@ void GameScene::Draw(void)
 
 		y += 40;
 	}
+
+	VECTOR min, max;
+
+	for(auto& stage : stageManager_->GetStage())
+	{
+		auto bb = stage->GetBoundingBox();
+		
+		float centerX = (bb.minPos.x + bb.maxPos.x) * 0.5f;
+		float centerZ = (bb.minPos.z + bb.maxPos.z) * 0.5f;
+
+		// 真ん中
+		DrawSphere3D(VGet(centerX, 0, centerZ), 10.0f, 16, GetColor(255, 0, 0), GetColor(255, 0, 0), TRUE);
+
+		// 奥手前（Z固定、Xはステージ中央）
+		DrawSphere3D(VGet(centerX, 0, bb.minPos.z), 10.0f, 16, GetColor(255, 0, 0), GetColor(255, 0, 0), TRUE);
+		DrawSphere3D(VGet(centerX, 0, bb.maxPos.z), 10.0f, 16, GetColor(0, 255, 0), GetColor(0, 255, 0), TRUE);
+
+		// 左右（X固定、Zはステージ中央）
+		DrawSphere3D(VGet(bb.minPos.x, 0, centerZ), 10.0f, 16, GetColor(255, 0, 0), GetColor(255, 0, 0), TRUE);
+		DrawSphere3D(VGet(bb.maxPos.x, 0, centerZ), 10.0f, 16, GetColor(255, 0, 0), GetColor(255, 0, 0), TRUE);
+	}
+	
 #endif // _DEBUG
 #pragma endregion
 }

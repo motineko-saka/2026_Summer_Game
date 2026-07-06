@@ -9,17 +9,6 @@
 #include "../../../Collider/ColliderModel.h"
 #include "../../../../Manager/InputManager.h"
 
-//Object::Object(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type)
-//	:
-//	CharactorBase(),
-//	isAnswerPosition_(false),
-//	isGrabbed_(false),
-//	isPushButtom_(false),
-//	world_(world),
-//	viewWorld_(world),
-//	ansVec_(ansVec),
-//	type_(type),
-//	pushPow_(AsoUtility::VECTOR_ZERO)
 ObjectBase::ObjectBase(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type)
 	:
 	CharactorBase(),
@@ -32,12 +21,6 @@ ObjectBase::ObjectBase(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type)
 	type_(type),
 	pushPow_(AsoUtility::VECTOR_ZERO)
 {
-	//isAnswerPosition_ = false;
-	//ansVec_ = ansVec;
-	//viewWorld_ = world;
-	//world_ = world;
-	//type_ = type;
-	//pushPow_ = { 0.0f, 0.0f, 0.0f };
 }
 
 ObjectBase::~ObjectBase()
@@ -81,6 +64,9 @@ void ObjectBase::InitLoad(void)
 		break;
 	case OBJECT_TYPE::PRESS_BUTTON:
 		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::CUBE));
+		break;
+	case OBJECT_TYPE::GEAR:
+		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::GEAR));
 		break;
 	default:
 		break;
@@ -128,10 +114,17 @@ void ObjectBase::InitAnimation(void)
 
 void ObjectBase::InitPost(void)
 {
+	if(type_ == OBJECT_TYPE::GEAR) isGrav = false;
 }
 
 void ObjectBase::UpdateProcess(void)
 {
+	gearRot_ += 5.0f;
+	if (transform_.pos.y < -2000.0f)
+	{
+		transform_.pos = { -1000.0f, 80.0f, -10.0f };
+	}
+
 	//if (!(type_ == OBJECT_TYPE::BUTTON ||
 	//	type_ == OBJECT_TYPE::PRESS_BUTTON))
 	//{
@@ -171,6 +164,13 @@ void ObjectBase::UpdateProcess(void)
 		//		break;
 		//	}
 		//}
+	}
+
+	// PUSH_BUTTON タイプの場合、プレイヤーが乗っているか判定
+	if (type_ == OBJECT_TYPE::GEAR)
+	{
+		transform_.quaRotLocal = Quaternion::AngleAxis(AsoUtility::Deg2RadD(gearRot_),
+			AsoUtility::AXIS_Z);
 	}
 
 	// 掴まれているコライダがあれば transform をそれに同期する

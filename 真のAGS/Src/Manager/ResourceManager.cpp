@@ -102,6 +102,10 @@ void ResourceManager::Init(void)
 	res = new RES(RES_T::MODEL, PATH_MDL + "Cube.mv1");
 	resourcesMap_.emplace(SRC::BUTTON, res);
 
+	// 歯車
+	res = new RES(RES_T::MODEL, PATH_MDL + "Object/Gear.mv1");
+	resourcesMap_.emplace(SRC::GEAR, res);
+
 	// タイトルムービー
 	res = new RES(RES_T::MOVIE, PATH_MOV + "Title.mp4");
 	resourcesMap_.emplace(SRC::TITLE_MOV, res);

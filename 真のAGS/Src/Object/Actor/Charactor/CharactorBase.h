@@ -72,6 +72,8 @@ protected:
 	// ジャンプの入力受付時間
 	float stepJump_;
 
+	bool isGrav = true;
+
 	// リソースロード
 	virtual void InitLoad(void) override;
 
