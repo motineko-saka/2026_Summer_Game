@@ -215,7 +215,7 @@ void TutorialScene::Init(void)
 		Application::SCREEN_SIZE_X, Application::SCREEN_SIZE_Y, true);
 
 	// ポストエフェクト用
-	pixelMaterial_ = std::make_unique<PixelMaterial>("Tutorial.cso", 1);
+	pixelMaterial_ = std::make_unique<PixelMaterial>("Monotone.cso", 1);
 	pixelMaterial_->AddConstBuf({ 1.0f, 1.0f, 1.0f, 1.0f });
 	pixelMaterial_->AddTextureBuf(SceneManager::GetInstance()->GetMainScreen());
 	pixelRenderer_ = std::make_unique<PixelRenderer>(*pixelMaterial_);
@@ -750,6 +750,14 @@ void TutorialScene::Draw(void)
 
 			}
 		}
+
+		if (activePlayer_ == players_[i].player_->GetPlayerNo())
+		{
+			//SetDrawBlendMode(DX_BLENDMODE_ALPHA, 0);
+			//// 右側を暗くする
+			//pixelRenderer_->Draw();
+			//SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+		}
 	}
 
 	// メイン画面に転送
@@ -782,9 +790,14 @@ void TutorialScene::Draw(void)
 	//pixelMaterial_->SetTextureBuf(0, mainScreen);
 
 	SetDrawScreen(postEffectScreen_);
-	//ClearDrawScreen();
+	ClearDrawScreen();
+	DrawGraph(
+		0,
+		0,
+		mainScreen,
+		false);
 
-	pixelRenderer_->Draw();
+	
 
 	// 最後に画面へ表示
 	SetDrawScreen(DX_SCREEN_BACK);

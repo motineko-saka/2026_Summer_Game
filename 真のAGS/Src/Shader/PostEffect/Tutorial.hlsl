@@ -7,6 +7,7 @@ cbuffer cbParam : register(b4)
 }
 
 float4 main(PS_INPUT PSInput) : SV_TARGET
+<<<<<<< HEAD
 {
 
 	// UV座標とテクスチャを参照して、最適な色を取得する
@@ -35,4 +36,8 @@ float4 main(PS_INPUT PSInput) : SV_TARGET
 
     return dstCol;
 
+=======
+{   
+    return float4(1,0.5,1,0.5);
+>>>>>>> e3fcb7d00a4365bcb565f27b3159b8005a408932
 }
