@@ -84,7 +84,7 @@ void GameScene::Init(void)
 	//enemyManager_->Init();
 
 	// オブジェクト作成（複数）
-	objects_.reserve(5);
+	objects_.reserve(10);
 
 	objects_.push_back(new ObjectBase(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::DEFAULT));
 	objects_.back()->Init();
@@ -113,9 +113,11 @@ void GameScene::Init(void)
 	objects_.push_back(new ObjectBase(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::GEAR));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ -900.0f, 0.0f, 0.5f });
-	//objects_.back()->SetPosition({500.0f, -720.0f, -50.5f });
-	//objects_.back()->SetPosition({ 1260.0f, -720.0f, -50.5f });
-	//objects_.back()->SetPosition({ 0.0f, 80.0f, -50.0f });
+	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
+
+	objects_.push_back(new ObjectBase(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::GEAR));
+	objects_.back()->Init();
+	objects_.back()->SetPosition({ -1000.0f, 0.0f, 0.5f });
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 
 
@@ -388,27 +390,6 @@ void GameScene::Update(void)
 			Player::PLAYER_NO::PLAYER2 : Player::PLAYER_NO::PLAYER1;
 	}
 
-	//// 右クリックでもプレイヤー切替
-	//if (InputManager::GetInstance()->IsTrgMouseRight())
-	//{
-	//	if (activePlayer_ == Player::PLAYER_NO::PLAYER1)
-	//	{
-	//		activePlayer_ = Player::PLAYER_NO::PLAYER2;
-	//		player1_->SetActive(false);
-	//		player2_->SetActive(true);
-	//		camera1_->SetControlEnabled(false);
-	//		camera2_->SetControlEnabled(true);
-	//	}
-	//	else
-	//	{
-	//		activePlayer_ = Player::PLAYER_NO::PLAYER1;
-	//		player1_->SetActive(true);
-	//		player2_->SetActive(false);
-	//		camera1_->SetControlEnabled(true);
-	//		camera2_->SetControlEnabled(false);
-	//	}
-	//}
-
 	stageManager_->Update();
 	skyDome_->Update();
 	for (int i = 0; i < players_.size(); i++)
@@ -484,6 +465,10 @@ void GameScene::Draw(void)
 	players_[0].player_->Draw();
 	players_[1].player_->Draw();
 	stageManager_->Draw();
+	for (auto* obj : objects_)
+	{
+		obj->Draw();
+	}
 
 	ShadowMap_DrawEnd();
 

@@ -1,11 +1,13 @@
 #pragma once
+
 #include "ObjectBase.h"
 
-class Button : public ObjectBase
+class Gaer
+	: public ObjectBase
 {
 public:
-	Button(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type);
-	virtual ~Button() override = default;
+	Gaer(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type);
+	virtual ~Gaer() override = default;
 
 	// リソースロード
 	void InitLoad(void)override;
@@ -22,6 +24,8 @@ public:
 	// 初期化後の個別処理
 	void InitPost(void)override;
 
-	void ObjectUpdateProcess(void) override;
+	void ObjectUpdateProcess(void)override;
+private:
+	float gearRot_;
 };
 

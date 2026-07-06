@@ -166,6 +166,8 @@ void ObjectBase::UpdateProcess(void)
 		//}
 	}
 
+	ObjectUpdateProcess();
+
 	// PUSH_BUTTON タイプの場合、プレイヤーが乗っているか判定
 	if (type_ == OBJECT_TYPE::GEAR)
 	{

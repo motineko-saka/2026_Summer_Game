@@ -51,12 +51,6 @@ void Camera::Update(void)
 			ChangeMode(prevMode_);
 		}
 	}
-}
-
-void Camera::SetBeforeDraw(void)
-{
-	// クリップ距離を設定する(SetDrawScreenでリセットされる)
-	SetCameraNearFar(VIEW_NEAR, VIEW_FAR);
 
 	// 更新前情報
 	prePos_ = transform_.pos;
@@ -76,6 +70,12 @@ void Camera::SetBeforeDraw(void)
 		SetBeforeDrawTop();
 		break;
 	}
+}
+
+void Camera::SetBeforeDraw(void)
+{
+	// クリップ距離を設定する(SetDrawScreenでリセットされる)
+	SetCameraNearFar(VIEW_NEAR, VIEW_FAR);
 
 	// カメラの設定(位置と注視点による制御)
 	SetCameraPositionAndTargetAndUpVec(

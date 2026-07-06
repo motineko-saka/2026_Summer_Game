@@ -101,7 +101,7 @@ protected:
 	void UpdateProcessPost(void) override;
 
 	// ボタンの処理
-	virtual void ButtonProcess(void) {};
+	virtual void ObjectUpdateProcess(void) {};
 private:
 	// 衝突判定用ライン開始
 	static constexpr VECTOR COL_LINE_START_LOCAL_POS = { 0.0f, 80.0f, 0.0f };
@@ -135,7 +135,7 @@ private:
 
 	VECTOR defaultScale_{ 1.0f, 1.0f, 1.0f };
 
-	// 答えのオブジェクトかどうか
+	// 答えに置かれているかどうか
 	bool isAnswerPosition_ = false;
 
 	// つかまれているかどうか 
