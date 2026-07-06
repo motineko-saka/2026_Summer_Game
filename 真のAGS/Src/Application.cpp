@@ -6,6 +6,7 @@
 #include "Common/FpsController.h"
 #include "Application.h"
 #include "Manager/EffekseerEffect.h"
+#include "Audio/AudioManager.h"
 
 Application* Application::instance_ = nullptr;
 
@@ -81,6 +82,13 @@ void Application::Init(void)
 
 	// リソース管理初期化
 	ResourceManager::CreateInstance();
+
+	// サウンド管理初期化
+	AudioManager::CreateInstance();
+	if (AudioManager::GetInstance())
+	{
+		AudioManager::GetInstance()->Init();
+	}
 
 	// シーン管理初期化
 	SceneManager::CreateInstance();

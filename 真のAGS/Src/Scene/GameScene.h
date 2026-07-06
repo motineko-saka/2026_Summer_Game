@@ -93,4 +93,7 @@ private:
 	const void MakeNewObject(std::vector<ObjectBase*>& newObjects);
 
 	const void ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*>& newObjects);
+
+	// シャドウマップ用のハンドル
+	int shadowMapHandle_;
 };
