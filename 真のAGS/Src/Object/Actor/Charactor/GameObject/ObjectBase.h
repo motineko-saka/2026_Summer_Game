@@ -15,6 +15,7 @@ public:
 		SCENE_PROP,
 		BUTTON,
 		PRESS_BUTTON,
+		GEAR,
 	};
 
 	struct BoundingBox
@@ -148,6 +149,8 @@ private:
 
 	// 設置済みフラグ（true のとき掴めない、動かせない）
 	bool placed_{ false };
+
+	float gearRot_ = 0.0f;
 
 	// 答えの場所とオブジェクトの衝突判定
 	void CheckAnswer(void);

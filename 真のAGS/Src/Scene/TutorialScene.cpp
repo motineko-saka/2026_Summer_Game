@@ -411,79 +411,12 @@ void TutorialScene::CheckCollisions(void)
 		// ボタンタイプの場合は専用処理
 		if (obj->GetType() == ObjectBase::OBJECT_TYPE::BUTTON)
 		{
-			//ButtonProcess(*obj, newObjects);
-
-			bool isNearButton = false;
-
-			for (auto& player : players_)
-			{
-				VECTOR playerPos = player.player_->GetTransform().pos;
-				float distance = VSize(VSub(playerPos, objectPos));
-				if (distance < 180.0f)
-				{
-					isNearButton = true;
-				}
-			}
-
-			if (isNearButton && InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE))
-			{
-				obj->SetButtomPushed(true);
-			}
-			continue;
-		}
-
-		for (auto& player : players_)
-		{
-			// プレイヤー1との距離
-			VECTOR playerPos = player.player_->GetTransform().pos;
-			float distance = VSize(VSub(playerPos, objectPos));
-			bool hit = (distance < 180.0f);
-			if (hit)
-			{
-				player.isPlayerHitObject_ = true;
-				//isPlayer1HitObject_ = true;
-			}
-
-			//// プレイヤー2との距離
-			//VECTOR player2Pos = player2_->GetTransform().pos;
-			//float distance2 = VSize(VSub(player2Pos, objectPos));
-			//bool hit2 = (distance2 < 180.0f);
-			//if (hit2)
-			//{
-			//	isPlayer2HitObject_ = true;
-			//	// プレイヤーからオブジェクトへの方向ベクトル
-			//	//VECTOR pushDir = VSub(objectPos, player2Pos);
-			//	//pushDir.y = 0.0f; // Y軸(垂直方向)は無視
-			//	//pushDir = VNorm(pushDir); // 正規化
-			//
-			//	//// オブジェクトを押す(速度は適度に調整)
-			//	//obj->Push(pushDir, 5.0f);
-			//}
+			ButtonProcess(*obj, newObjects);
 		}
 	}
 
-	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE))
-	{
-		for (auto* obj : objects_)
-		{
-			if (obj == nullptr) continue;
-
-			if (obj->GetType() == ObjectBase::OBJECT_TYPE::BUTTON)
-			{
-				VECTOR objectPos = obj->GetTransform().pos;
-
-				for (auto& player : players_)
-				{
-					VECTOR playerPos = player.player_->GetTransform().pos;
-					float distance = VSize(VSub(playerPos, objectPos));
-					if (distance < 180.0f)
-					{
-						obj->SetButtomPushed(true);
-					}
-				}
-			}
-		}
-	}
+	// ループ終了後に追加
+	MakeNewObject(newObjects);
 }
 
 const void TutorialScene::ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*>& newObjects)
@@ -676,10 +609,10 @@ void TutorialScene::Draw(void)
 		stageManager_->Draw();
 		lightPillar_->Draw();
 
-		for (auto& wall : walls_)
-		{
-			wall->Draw();
-		}
+		//for (auto& wall : walls_)
+		//{
+		//	wall->Draw();
+		//}
 
 		for (int j = 0; j < players_.size(); j++)
 		{

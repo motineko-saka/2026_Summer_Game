@@ -28,6 +28,7 @@ public:
 		WOODBOX,
 		BUTTON,
 		CUBE,
+		GEAR,
 		TITLE_MOV,
 		HONDANA_IMG,
 		UI_GAMESTART,

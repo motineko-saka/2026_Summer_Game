@@ -40,8 +40,11 @@ void CharactorBase::Update(void)
 	// ˆÚ“®•ûŒü‚É‰‚¶‚½’x‰„‰ñ
 	DelayRotate();
 
-	// d—Í‚É‚æ‚éˆÚ“®—Ê
-	CalcGravityPow();
+	if (isGrav)
+	{
+		// d—Í‚É‚æ‚éˆÚ“®—Ê
+		CalcGravityPow();
+	}
 
 	// Õ“Ë”»’è‘O€”õ
 	CollisionReserve();
