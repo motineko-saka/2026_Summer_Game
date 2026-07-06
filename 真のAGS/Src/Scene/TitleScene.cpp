@@ -27,6 +27,9 @@ void TitleScene::Init(void)
 	// ムービーを再生状態にします
 	PlayMovieToGraph(movTitle_);
 
+	// マウスの表示
+	SetMouseDispFlag(true);
+
 	// UI 選択初期化
 	uiSelect_ = 0;
 }
@@ -81,14 +84,30 @@ void TitleScene::Update(void)
 		uiSelect_ = (std::max)(uiSelect_ - 1, 0);
 	}
 
+	// マウスで選択
+	auto mousePos = InputManager::GetInstance()->GetMousePos();
+	if (mousePos.x > Application::SCREEN_SIZE_X * 0.5f)
+	{
+		uiSelect_ = 0;
+	}
+	else if (mousePos.x > Application::SCREEN_SIZE_X * 0.4f)
+	{
+		uiSelect_ = 1;  
+	}
+	else
+	{
+		uiSelect_ = 2; 
+	}
+	
+
 	// 決定
-	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE) || InputManager::GetInstance()->IsTrgDown(KEY_INPUT_RETURN)
+	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE) || InputManager::GetInstance()->IsTrgMouseLeft()
 		|| InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::DOWN))
 	{
 		switch (uiSelect_)
 		{
 		case 0: // Start
-			//SceneManager::GetInstance()->ChangeScene(std::make_shared<GameScene>());
+			SceneManager::GetInstance()->ChangeScene(std::make_shared<GameScene>());
 			break;
 		case 1: // Tutorial
 			SceneManager::GetInstance()->ChangeScene(std::make_shared<TutorialScene>());

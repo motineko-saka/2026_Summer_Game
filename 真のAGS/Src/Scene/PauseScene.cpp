@@ -1,10 +1,7 @@
 #include "PauseScene.h"
-
 #include <DxLib.h>
-
 #include "../Application.h"
 #include "../Manager/InputManager.h"
-
 #include "../Manager/SceneManager.h"
 
 PauseScene::PauseScene(void)
@@ -18,6 +15,8 @@ PauseScene::~PauseScene(void)
 void PauseScene::Init(void)
 {
 	selectGameEnd_ = false;
+	// マウスの表示
+	SetMouseDispFlag(true);
 }
 
 void PauseScene::Load(void)
@@ -32,8 +31,10 @@ void PauseScene::Update(void)
 {
 	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_ESCAPE))
 	{
+
 		// 自分自身を消す
 		SceneManager::GetInstance()->PopScene();
+
 	}
 
 	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_LEFT))
@@ -49,6 +50,22 @@ void PauseScene::Update(void)
 	{
 		if (selectGameEnd_) SceneManager::GetInstance()->GameEnd();
 		else SceneManager::GetInstance()->PopScene();
+	}
+
+	// マウスの左クリックで選択決定
+	if (InputManager::GetInstance()->IsTrgMouseLeft())
+	{
+		auto mousePos = InputManager::GetInstance()->GetMousePos();
+		if (mousePos.x < Application::SCREEN_SIZE_X * 0.5f)
+		{
+			selectGameEnd_ = true;
+			SceneManager::GetInstance()->GameEnd();
+		}
+		else
+		{
+			selectGameEnd_ = false;
+			SceneManager::GetInstance()->PopScene();
+		}
 	}
 }
 

@@ -137,13 +137,13 @@ private:
 	static constexpr float COL_CAPSULE_SPHERE = 50.0f;
 
 	// カメラの補間移動率
-	static constexpr float LERP_RATE_MOVE = 0.1f;
+	static constexpr float LERP_RATE_MOVE = 0.5f;
 
 	// マウスの移動量
-	static constexpr float MOUSE_ROT_SENS = 0.0005f;
+	static constexpr float MOUSE_ROT_SENS = 0.005f;
 
 	// マウスの移動量
-	static constexpr int PIXEL_THRESHOLD = 0.5f;
+	static constexpr int PIXEL_THRESHOLD = 1.0f;
 
 	// カメラの更新前位置
 	VECTOR prePos_;
@@ -182,7 +182,7 @@ private:
 	// カメラ制御の有効フラグ（true=入力で回転/移動を受け付ける）
 	bool controlEnabled_{ true };
 
-	// --- 前フレームのマウス座標（差分計算用） ---
+	//前フレームのマウス座標
 	int prevMouseX_{ 0 };
 	int prevMouseY_{ 0 };
 

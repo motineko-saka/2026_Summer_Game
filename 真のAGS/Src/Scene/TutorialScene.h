@@ -64,9 +64,8 @@ private:
 														{0.0f, -600.0f, -50.0f},
 	};
 
-	// ゲームクリアまでの時間（秒）
+	// ゲームクリアまでの時間
 	constexpr static float END_TIME = 3.0f;
-
 
 	std::unique_ptr<StageManager> stageManager_;
 

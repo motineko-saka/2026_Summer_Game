@@ -118,11 +118,6 @@ void Tutorial::Draw() const
 	int x1 = screenW - margin;
 	int y1 = screenH - margin;
 
-	// 背景の半透明マスク（全画面暗転）
-	//SetDrawBlendMode(DX_BLENDMODE_ALPHA, 120);
-	//DrawBox(0, 0, screenW, screenH, GetColor(0, 0, 0), TRUE);
-	//SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
-
 	// メインボックス
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, 200);
 	DrawBox(x0, y0, x1, y1, GetColor(18, 24, 40), true); // ダークブルー
@@ -192,41 +187,6 @@ void Tutorial::Draw() const
 	int hintX = x1 - 420;
 	int hintY = y0 + 56;
 	DrawString(hintX, hintY, hint, GetColor(220, 200, 100));
-
-	//// 矢印
-	//int arrowBaseX = x1 - 80;
-	//int arrowBaseY = y0 + 28;
-	//float phase = std::fmodf(animCounter_ * 0.08f, 3.14159f * 2.0f);
-	//int offset = static_cast<int>(std::sin(phase) * 6.0f);
-	//for (int i = 0; i < 3; ++i)
-	//{
-	//	int ox = arrowBaseX - i * 12;
-	//	int oy = arrowBaseY + offset - i * 3;
-
-	//	// 色決定
-	//	int ar, ag, ab;
-	//	int alpha = 200;
-	//	if (stepReady)
-	//	{
-	//		// 点滅する緑で強調
-	//		float blink = (std::sin(animCounter_ * 0.3f + i) + 1.0f) * 0.5f; // 0..1
-	//		ar = static_cast<int>(120 + 120.0f * blink);
-	//		ag = static_cast<int>(200 + 55.0f * blink);
-	//		ab = static_cast<int>(80 + 20.0f * blink);
-	//		alpha = static_cast<int>(160 + 95.0f * blink);
-	//	}
-	//	else
-	//	{
-	//		// 通常のオレンジ系
-	//		ar = 255; ag = 200 - i * 20; ab = 80;
-	//	}
-
-	//	SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
-	//	// 上向き chevron をラインで表現（太め）
-	//	DrawLine(ox - 8, oy - 6, ox + 6, oy, GetColor(ar, ag, ab), 6);
-	//	DrawLine(ox - 8, oy + 6, ox + 6, oy, GetColor(ar / 2, ag / 2, ab / 2), 6);
-	//	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
-	//}
 
 	// ドット
 	int dotX = barX + fillW + 12;

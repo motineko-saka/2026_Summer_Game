@@ -39,6 +39,8 @@ void Application::Init(void)
 	SetGraphMode(SCREEN_SIZE_X, SCREEN_SIZE_Y, 32);
 	ChangeWindowMode(true);
 
+
+
 	// FPS制御初期化
 	fpsController_ = new FpsController(FRAME_RATE);
 
@@ -118,6 +120,8 @@ void Application::Init3D(void)
 
 void Application::Run(void)
 {
+	// マウスの非表示
+	SetMouseDispFlag(false);
 	// ゲームループ
 	while (ProcessMessage() == 0 && !SceneManager::GetInstance()->GetGameEnd())
 	{

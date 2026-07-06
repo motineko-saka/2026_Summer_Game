@@ -276,13 +276,9 @@ void GameScene::CheckCollisions(void)
 			if (hit)
 			{
 				player.isPlayerHitObject_ = true;
-				// プレイヤーからオブジェクトへの方向ベクトル
-				//VECTOR pushDir = VSub(objectPos, player2Pos);
-				//pushDir.y = 0.0f; // Y軸(垂直方向)は無視
-				//pushDir = VNorm(pushDir); // 正規化
-
-				// オブジェクトを押す(速度は適度に調整)
-				//obj->Push(pushDir, 5.0f);
+				VECTOR pushDir = VSub(objectPos, playerPos);
+				pushDir.y = 0.0f; // Y軸(垂直方向)は無視
+				pushDir = VNorm(pushDir); // 正規化
 			}
 		}
 	}
