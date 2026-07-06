@@ -1,4 +1,3 @@
-#include <DxLib.h>
 #include "../Common/Quaternion.h"
 #include "../Object/Actor/ActorBase.h"
 class Transform;
@@ -51,7 +50,6 @@ public:
 		FIXED_POINT,
 		FREE,
 		FOLLOW,
-		TOP,
 	};
 
 	// 衝突判定種別
@@ -104,10 +102,14 @@ public:
 	// 追従対象の設定
 	void SetFollow(const Transform* follow);
 
+	// 注視点を外部から明示的に指定して固定する
+	void SetTargetPos(const VECTOR& pos);
+
 	// カメラ制御の有効無効 (非アクティブ時に入力での回転/移動を止める)
 	void SetControlEnabled(bool enabled) { controlEnabled_ = enabled; }
 	bool IsControlEnabled() const { return controlEnabled_; }
 
+	void SetMouseCenter(int x, int y);
 protected:
 
 	// リソースロード
@@ -179,6 +181,9 @@ private:
 	// カメラの上方向
 	//VECTOR cameraUp_;
 
+	int mouseCenterX_ = 0;
+	int mouseCenterY_ = 0;
+
 	// カメラ制御の有効フラグ（true=入力で回転/移動を受け付ける）
 	bool controlEnabled_{ true };
 
@@ -206,7 +211,6 @@ private:
 	void SetBeforeDrawFixedPoint(void);
 	void SetBeforeDrawFree(void);
 	void SetBeforeDrawFollow(void);
-	void SetBeforeDrawTop(void);
 
 	// 衝突判定
 	void Collision(void);

@@ -26,8 +26,8 @@ void DebugScene::Init(void)
 	////stage_->Init();
 
 	// ƒJƒƒ‰‚Ì’Ç]Ý’è
-	Camera* camera = SceneManager::GetInstance()->GetCamera();
-	camera->ChangeMode(Camera::MODE::FREE);
+	//Camera* camera = SceneManager::GetInstance()->GetCamera();
+	//camera->ChangeMode(Camera::MODE::FREE);
 }
 
 void DebugScene::Update(void)

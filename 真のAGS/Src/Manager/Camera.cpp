@@ -33,31 +33,6 @@ Camera::~Camera(void)
 
 void Camera::Update(void)
 {
-	// Ctrlキーで TOP モードと前のモードを切り替える
-	if (!controlEnabled_) return;
-
-	// 押下トリガーで切替（左または右 Ctrl）
-	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_LCONTROL) || InputManager::GetInstance()->IsTrgDown(KEY_INPUT_RCONTROL))
-	{
-		if (mode_ != MODE::TOP)
-		{
-			// 現在のモードを保存してTOP
-			prevMode_ = mode_;
-			ChangeMode(MODE::TOP);
-		}
-		else
-		{
-			// TOP から戻す（保存していたモードへ）
-			ChangeMode(prevMode_);
-		}
-	}
-}
-
-void Camera::SetBeforeDraw(void)
-{
-	// クリップ距離を設定する(SetDrawScreenでリセットされる)
-	SetCameraNearFar(VIEW_NEAR, VIEW_FAR);
-
 	// 更新前情報
 	prePos_ = transform_.pos;
 
@@ -72,10 +47,13 @@ void Camera::SetBeforeDraw(void)
 	case Camera::MODE::FOLLOW:
 		SetBeforeDrawFollow();
 		break;
-	case Camera::MODE::TOP:
-		SetBeforeDrawTop();
-		break;
 	}
+}
+
+void Camera::SetBeforeDraw(void)
+{
+	// クリップ距離を設定する(SetDrawScreenでリセットされる)
+	SetCameraNearFar(VIEW_NEAR, VIEW_FAR);
 
 	// カメラの設定(位置と注視点による制御)
 	SetCameraPositionAndTargetAndUpVec(
@@ -86,7 +64,6 @@ void Camera::SetBeforeDraw(void)
 
 	// DXライブラリのカメラとEffekseerのカメラを同期する。
 	Effekseer_Sync3DSetting();
-
 }
 
 void Camera::DrawDebug(void)
@@ -100,6 +77,12 @@ void Camera::Release(void)
 void Camera::SetFollow(const Transform* follow)
 {
 	followTransform_ = follow;
+}
+
+void Camera::SetTargetPos(const VECTOR& pos)
+{
+	// 明示的に注視点を設定
+	targetPos_ = pos;
 }
 
 void Camera::InitLoad(void)
@@ -142,9 +125,6 @@ void Camera::InitPost(void)
 	ChangeMode(MODE::FIXED_POINT);
 
 	isCollision_ = false;
-
-	// マウスの初期座標を保存してジャンプを防止
-	GetMousePoint(&prevMouseX_, &prevMouseY_);
 }
 
 const VECTOR& Camera::GetPos(void) const
@@ -195,23 +175,6 @@ void Camera::ChangeMode(MODE mode)
 		break;
 	case Camera::MODE::FOLLOW:
 		break;
-	case Camera::MODE::TOP:
-		// TOPモードに入ったときに一度だけ角度を決める
-		angles_.x = -DX_PI_F * 0.5f; // 真上から見下ろす
-		angles_.y = 0.0f;
-
-		// 初期位置はここで一度だけ設定する
-		if (followTransform_ != nullptr)
-		{
-			transform_.pos = VAdd(followTransform_->pos, TOP_CAMERA_LOCAL_POS);
-			targetPos_ = VAdd(followTransform_->pos, TOP_TARGET_LOCAL_POS);
-		}
-		else
-		{
-			transform_.pos = TOP_CAMERA_LOCAL_POS;
-			targetPos_ = TOP_TARGET_LOCAL_POS;
-		}
-		break;
 	}
 }
 
@@ -233,29 +196,40 @@ void Camera::SetDefault(void)
 
 void Camera::SyncFollow(void)
 {
+	// フォロー対象
+	if (followTransform_ == nullptr)
+		return;
 
-	// 同期先の位置
-	VECTOR pos = followTransform_->pos;
+	// 注視点プレイヤー位置
+	VECTOR lookAt = followTransform_->pos;
+	lookAt.y += 100.0f;
 
-	// Y軸
+	// ヨー角のラップ
+	const float TWO_PI = AsoUtility::Deg2RadF(360.0f);
+	if (angles_.y >= TWO_PI) angles_.y -= TWO_PI;
+	if (angles_.y < 0.0f) angles_.y += TWO_PI;
+
+	const float PITCH_MIN = AsoUtility::Deg2RadF(-30.0f);
+	const float PITCH_MAX = AsoUtility::Deg2RadF(60.0f);
+	if (angles_.x < PITCH_MIN) angles_.x = PITCH_MIN;
+	if (angles_.x > PITCH_MAX) angles_.x = PITCH_MAX;
+
+	// 回転行列
+	MATRIX mat = MGetIdent();
+	mat = MMult(mat, MGetRotX(angles_.x));
+	mat = MMult(mat, MGetRotY(angles_.y));
+
+	// ローカルオフセットを回転行列で変換してワールド座標にする
+	VECTOR localCam = VTransform(FOLLOW_CAMERA_LOCAL_POS, mat);
+	transform_.pos = VAdd(lookAt, localCam);
+
+	// 注視点はプレイヤー
+	targetPos_ = lookAt;
+
+	// カメラの回転
 	rotY_ = Quaternion::AngleAxis(angles_.y, AsoUtility::AXIS_Y);
-
-	// Y軸 + X軸
 	transform_.quaRot = rotY_.Mult(Quaternion::AngleAxis(angles_.x, AsoUtility::AXIS_X));
-
-	VECTOR localPos;
-
-	// 注視点
-	localPos = transform_.quaRot.PosAxis(FOLLOW_TARGET_LOCAL_POS);
-	targetPos_ = VAdd(pos, localPos);
-
-	// カメラ位置
-	localPos = transform_.quaRot.PosAxis(FOLLOW_CAMERA_LOCAL_POS);
-	transform_.pos = VAdd(pos, localPos);
-
-	// カメラの上方向
 	transform_.quaRot.GetUp();
-
 }
 
 void Camera::ProcessRot(bool isLimit)
@@ -269,35 +243,21 @@ void Camera::ProcessRot(bool isLimit)
 		// キーボード回転
 		RotKeyboard(isLimit);
 
-		// --- マウスの相対移動で回転させる（絶対座標ではなく差分を使う） ---
+		// --- マウスの相対移動で回転させる
 		int mx, my;
 		GetMousePoint(&mx, &my);
 
+		int dx = mx - mouseCenterX_;
+		int dy = my - mouseCenterY_;
 
-		int dx = mx - prevMouseX_;
-		int dy = my - prevMouseY_;
+		dx = mx - mouseCenterX_;
+		dy = my - mouseCenterY_;
 
-		if (dx > PIXEL_THRESHOLD || dx < -PIXEL_THRESHOLD || dy > PIXEL_THRESHOLD || dy < -PIXEL_THRESHOLD)
-		{
-			// マウス右移動 -> カメラ右回転（Y軸）
-			angles_.y += static_cast<float>(dx) * MOUSE_ROT_SENS;
-			// マウス上移動 -> カメラ上方向（X軸）
-			angles_.x += -static_cast<float>(dy) * MOUSE_ROT_SENS;
+		angles_.y += dx * MOUSE_ROT_SENS;
+		angles_.x -= dy * MOUSE_ROT_SENS;
 
-			// 角度制限（必要なら）
-			if (isLimit && angles_.x < -LIMIT_X_DW_RAD)
-			{
-				angles_.x = -LIMIT_X_DW_RAD;
-			}
-			if (isLimit && angles_.x > LIMIT_X_UP_RAD)
-			{
-				angles_.x = LIMIT_X_UP_RAD;
-			}
-		}
-
-		// 次フレーム用に保存（必ず更新）
-		prevMouseX_ = mx;
-		prevMouseY_ = my;
+		// 中央へ戻す
+		SetMousePoint(mouseCenterX_, mouseCenterY_);
 	}
 	else
 	{
@@ -414,52 +374,6 @@ void Camera::SetBeforeDrawFollow(void)
 	}
 }
 
-void Camera::SetBeforeDrawTop(void)
-{
-	if (!controlEnabled_) return;
-
-	// NOTE:
-	// ここでは毎フレーム transform_.pos を固定値で上書きしない。
-	// ChangeMode で初期位置を設定し、以降は入力で移動できるようにする。
-
-	// 回転を計算
-	rotY_ = Quaternion::AngleAxis(angles_.y, AsoUtility::AXIS_Y);
-	transform_.quaRot = rotY_.Mult(Quaternion::AngleAxis(angles_.x, AsoUtility::AXIS_X));
-
-	// 押し続けで移動させる（連続移動）
-	VECTOR movePow = AsoUtility::VECTOR_ZERO;
-
-	if (InputManager::GetInstance()->IsNew(KEY_INPUT_UP))
-	{
-		VECTOR f = VNorm(transform_.quaRot.PosAxis(AsoUtility::DIR_F));
-		movePow = VAdd(movePow, VScale(f, SPEED));
-	}
-	if (InputManager::GetInstance()->IsNew(KEY_INPUT_DOWN))
-	{
-		VECTOR b = VNorm(transform_.quaRot.PosAxis(AsoUtility::DIR_B));
-		movePow = VAdd(movePow, VScale(b, SPEED));
-	}
-	if (InputManager::GetInstance()->IsNew(KEY_INPUT_LEFT))
-	{
-		VECTOR l = VNorm(transform_.quaRot.PosAxis(AsoUtility::DIR_L));
-		movePow = VAdd(movePow, VScale(l, SPEED));
-	}
-	if (InputManager::GetInstance()->IsNew(KEY_INPUT_RIGHT))
-	{
-		VECTOR r = VNorm(transform_.quaRot.PosAxis(AsoUtility::DIR_R));
-		movePow = VAdd(movePow, VScale(r, SPEED));
-	}
-
-	// 移動を適用（注視点も同量移動）
-	if (!AsoUtility::EqualsVZero(movePow))
-	{
-		transform_.pos = VAdd(transform_.pos, movePow);
-		targetPos_ = VAdd(targetPos_, movePow);
-	}
-
-	transform_.quaRot.GetUp();
-}
-
 void Camera::Collision(void)
 {
 	// プレイヤーのルートフレーム
@@ -569,4 +483,17 @@ void Camera::RotGamePad(bool isLimit)
 		angles_.x = LIMIT_X_UP_RAD;
 	}
 
+}
+
+void Camera::SetMouseCenter(int x, int y)
+{
+	mouseCenterX_ = x;
+	mouseCenterY_ = y;
+
+	// マウスをその位置へ移動
+	SetMousePoint(mouseCenterX_, mouseCenterY_);
+
+	// 差分が出ないよう同期
+	prevMouseX_ = mouseCenterX_;
+	prevMouseY_ = mouseCenterY_;
 }

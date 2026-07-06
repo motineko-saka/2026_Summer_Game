@@ -64,6 +64,9 @@ private:
 														{0.0f, -600.0f, -50.0f},
 	};
 
+	// カメラ
+	Camera* camera_;
+
 	// ゲームクリアまでの時間
 	constexpr static float END_TIME = 3.0f;
 

@@ -52,6 +52,10 @@ void TutorialScene::Init(void)
 
 	players_.resize(2);
 
+	// ƒJƒƒ‰¶¬
+	camera_ = new Camera();
+	camera_->Init();
+
 	for (int i = 0; i < players_.size(); i++)
 	{
 		players_[i].camera_ = std::make_unique<Camera>();
@@ -69,6 +73,13 @@ void TutorialScene::Init(void)
 		players_[i].isPlayerHitObject_ = false;
 	}
 
+	players_[0].camera_->SetMouseCenter(
+		screenWidth_ / 4,
+		screenHeight_ / 2);
+
+	players_[1].camera_->SetMouseCenter(
+		screenWidth_ * 3 / 4,
+		screenHeight_ / 2);
 	pinID_ = -1;
 
 	endTimer_ = 0.0f;
@@ -439,6 +450,19 @@ void TutorialScene::Update(void)
 		}
 		activePlayer_ = (activePlayer_ == Player::PLAYER_NO::PLAYER1) ?
 			Player::PLAYER_NO::PLAYER2 : Player::PLAYER_NO::PLAYER1;
+
+		if (activePlayer_ == Player::PLAYER_NO::PLAYER1)
+		{
+			players_[0].camera_->SetMouseCenter(
+				screenWidth_ / 4,
+				screenHeight_ / 2);
+		}
+		else
+		{
+			players_[1].camera_->SetMouseCenter(
+				screenWidth_ * 3 / 4,
+				screenHeight_ / 2);
+		}
 	}
 
 	stageManager_->Update();

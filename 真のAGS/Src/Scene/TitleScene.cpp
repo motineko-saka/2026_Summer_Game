@@ -69,6 +69,24 @@ void TitleScene::Update(void)
 		SceneManager::GetInstance()->ChangeScene(std::make_shared<GameClearScene>());
 	}
 
+	// マウスで選択
+	if (InputManager::GetInstance()->IsTrgMouseLeft())
+	{
+		auto mousePos = InputManager::GetInstance()->GetMousePos();
+		if (mousePos.x > Application::SCREEN_SIZE_X * 0.5f)
+		{
+			uiSelect_ = 0;
+		}
+		else if (mousePos.x > Application::SCREEN_SIZE_X * 0.4f)
+		{
+			uiSelect_ = 1;
+		}
+		else
+		{
+			uiSelect_ = 2;
+		}
+	}
+
 	// 十字キー / パッドで選択移動
 	// 左に移動
 	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_LEFT)
@@ -83,22 +101,6 @@ void TitleScene::Update(void)
 	{
 		uiSelect_ = (std::max)(uiSelect_ - 1, 0);
 	}
-
-	// マウスで選択
-	auto mousePos = InputManager::GetInstance()->GetMousePos();
-	if (mousePos.x > Application::SCREEN_SIZE_X * 0.5f)
-	{
-		uiSelect_ = 0;
-	}
-	else if (mousePos.x > Application::SCREEN_SIZE_X * 0.4f)
-	{
-		uiSelect_ = 1;  
-	}
-	else
-	{
-		uiSelect_ = 2; 
-	}
-	
 
 	// 決定
 	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE) || InputManager::GetInstance()->IsTrgMouseLeft()
