@@ -64,9 +64,8 @@ private:
 														{0.0f, -600.0f, -50.0f},
 	};
 
-	// ゲームクリアまでの時間（秒）
+	// ゲームクリアまでの時間
 	constexpr static float END_TIME = 3.0f;
-
 
 	std::unique_ptr<StageManager> stageManager_;
 
@@ -92,7 +91,7 @@ private:
 	int screenHandle1_;
 	int screenHandle2_;
 
-	// 画面サイズ
+	// 画面サイズhttps://www.msn.com/ja-jp/news/entertainment/%E5%85%A8%E5%9B%BD%E3%81%AE%E5%A4%A9%E6%B0%97-%E6%A2%85%E9%9B%A8%E7%B5%82%E7%9B%A4%E3%81%AE%E5%A4%A7%E9%9B%A8-%E3%83%80%E3%83%96%E3%83%AB%E5%8F%B0%E9%A2%A8%E7%99%BA%E7%94%9F%E3%81%B8-%E5%BD%B1%E9%9F%BF%E3%81%84%E3%81%A4-%E4%BB%8A%E9%80%B1%E6%9C%AB%E3%82%82%E5%A4%A7%E9%9B%A8%E8%AD%A6%E6%88%92/vi-AA273mhe
 	int screenWidth_;
 	int screenHeight_;
 

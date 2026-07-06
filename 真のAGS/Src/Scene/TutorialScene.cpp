@@ -20,53 +20,6 @@
 #include "../Renderer/PixelMaterial.h"
 #include "../Renderer/PixelRenderer.h"
 
-
-static bool WorldToScreen(const VECTOR& worldPos, const Camera* cam, int vpW, int vpH, float& outX, float& outY)
-{
-	// カメラ情報取得
-	const VECTOR camPos = cam->GetPos();
-	const VECTOR camTarget = cam->GetTargetPos();
-
-	// 前方ベクトル
-	VECTOR forward = VSub(camTarget, camPos);
-	forward = VNorm(forward);
-
-	// カメラの上ベクトル（Quaternion から取得）
-	VECTOR up = cam->GetQuaRot().GetUp();
-
-	// 右ベクトル = forward x up
-	VECTOR right;
-	right.x = forward.y * up.z - forward.z * up.y;
-	right.y = forward.z * up.x - forward.x * up.z;
-	right.z = forward.x * up.y - forward.y * up.x;
-	right = VNorm(right);
-
-	// ワールド空間での対象位置をカメラローカルに変換（内積で座標取得）
-	VECTOR dir = VSub(worldPos, camPos);
-	float z = forward.x * dir.x + forward.y * dir.y + forward.z * dir.z;
-
-	// カメラの後ろにあるなら描画しない
-	if (z <= 0.001f) return false;
-
-	float x = right.x * dir.x + right.y * dir.y + right.z * dir.z;
-	float y = up.x * dir.x + up.y * dir.y + up.z * dir.z;
-
-	// 単純な透視投影 (FOV は DxLib デフォルトに合わせておおよそ 60deg)
-	const float fovY = 60.0f * (DX_PI_F / 180.0f);
-	const float tanHalf = tanf(fovY * 0.5f);
-	const float aspect = static_cast<float>(vpW) / static_cast<float>(vpH);
-
-	// 正規化デバイス座標（-1..1）
-	float ndcX = (x / z) / (tanHalf * aspect);
-	float ndcY = (y / z) / tanHalf;
-
-	// スクリーン座標に変換（左上が (0,0)）
-	outX = (ndcX * 0.5f + 0.5f) * vpW;
-	outY = (-ndcY * 0.5f + 0.5f) * vpH;
-
-	return true;
-}
-
 TutorialScene::TutorialScene(void)
 	:
 	stageManager_(nullptr),
@@ -131,13 +84,13 @@ void TutorialScene::Init(void)
 	skyDome_->Init();
 
 	// オブジェクト作成（複数）
-	objects_.reserve(2);
+	objects_.reserve(1);
 
-	objects_.push_back(new ObjectBase(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::AKEG));
-	objects_.back()->Init();
+	//objects_.push_back(new ObjectBase(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::AKEG));
+	//objects_.back()->Init();
+	////objects_.back()->SetPosition({ 1260.0f, -500.0f, -50.5f });
 	//objects_.back()->SetPosition({ 1260.0f, -500.0f, -50.5f });
-	objects_.back()->SetPosition({ 1260.0f, -500.0f, -50.5f });
-	objects_.back()->SetScale({ 0.2f, 0.2f, 0.2f });
+	//objects_.back()->SetScale({ 0.2f, 0.2f, 0.2f });
 
 	objects_.push_back(new ObjectBase(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::BUTTON));
 	objects_.back()->Init();
@@ -208,7 +161,6 @@ void TutorialScene::Init(void)
 		}
 	}
 
-	
 
 	// ポストエフェクト用スクリーン
 	postEffectScreen_ = MakeScreen(
@@ -224,17 +176,17 @@ void TutorialScene::Init(void)
 		Vector2(Application::SCREEN_SIZE_X, Application::SCREEN_SIZE_Y)
 	);
 
-	for (auto& wall : walls_)
-	{
-		const ColliderBase* wallCollider =
-			wall->GetOwnCollider(static_cast<int>(Stage::COLLIDER_TYPE::MODEL));
+	//for (auto& wall : walls_)
+	//{
+	//	const ColliderBase* wallCollider =
+	//		wall->GetOwnCollider(static_cast<int>(Stage::COLLIDER_TYPE::MODEL));
 
-		for (int i = 0; i < players_.size(); i++)
-		{
-			// ステージモデルのコライダーをプレイヤーに登録
-			players_[i].player_->AddHitCollider(wallCollider);
-		}
-	}
+	//	for (int i = 0; i < players_.size(); i++)
+	//	{
+	//		// ステージモデルのコライダーをプレイヤーに登録
+	//		players_[i].player_->AddHitCollider(wallCollider);
+	//	}
+	//}
 
 	// プレイヤーコライダ登録
 	for (auto& player : players_)
@@ -291,7 +243,28 @@ void TutorialScene::TutorialInit(void)
 		}
 	);
 
-	// ステップ3: キャラ切替
+	// ステップ3: ボタン操作
+	tutorial_.AddStep(
+		"ボタン操作の練習：ボタンの近くで Space を押してください。\nボタンを押すと次へ進みます。",
+		[this]() -> bool {
+			for (auto* obj : objects_)
+			{
+				if (obj == nullptr) continue;
+
+				if (obj->GetType() == ObjectBase::OBJECT_TYPE::BUTTON)
+				{
+					// ボタンが押されたかを確認
+					if (obj->isPushButtom())
+					{
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+	);
+
+	// ステップ4: キャラ切替
 	tutorial_.AddStep(
 		"プレイヤーの切替の練習：Tab または 右クリックで操作プレイヤー2に切り替えてください。\n切替操作を行うと次へ進みます。",
 		[]() -> bool {
@@ -299,39 +272,7 @@ void TutorialScene::TutorialInit(void)
 		}
 	);
 
-	// ステップ4: ボタン操作
-	tutorial_.AddStep(
-		"ボタン操作の練習：ボタンの近くで Space を押してください。\nボタンを押すと次へ進みます。",
-		[this]() -> bool {
-			bool ret = false;
-			if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE))
-			{
-				for (auto* obj : objects_)
-				{
-					if (obj == nullptr) continue;
-
-					if (obj->GetType() == ObjectBase::OBJECT_TYPE::BUTTON)
-					{
-						VECTOR objectPos = obj->GetTransform().pos;
-
-						for (auto& player : players_)
-						{
-							VECTOR playerPos = player.player_->GetTransform().pos;
-							float distance = VSize(VSub(playerPos, objectPos));
-							if (distance < 180.0f)
-							{
-								obj->SetButtomPushed(true);
-								ret = true;
-							}
-						}
-					}
-				}
-			}
-			return ret;
-		}
-	);
-
-	// ステップ5: オブジェクト操作
+	// ステップ5: オブジェクトの操作
 	tutorial_.AddStep(
 		"オブジェクト操作の練習1：オブジェクトに近づいて E を押してください。\nオブジェクトを押すと次へ進みます。",
 		[this]() -> bool {
@@ -352,7 +293,7 @@ void TutorialScene::TutorialInit(void)
 		}
 	);
 
-	// ステップ6: オブジェクトの設置(正しい位置への設置)
+	// ステップ6: オブジェクトの設置
 	tutorial_.AddStep(
 		"オブジェクト操作の練習2 : オブジェクトを正しい位置に配置してください。\nオブジェクトを配置すると次に進む。",
 		[this]() -> bool {
@@ -377,6 +318,7 @@ void TutorialScene::TutorialInit(void)
 				isEndTutorial_ = true;
 			}
 			return ret;
+
 		}
 	);
 
@@ -408,15 +350,35 @@ void TutorialScene::CheckCollisions(void)
 
 		VECTOR objectPos = obj->GetTransform().pos;
 
-		// ボタンタイプの場合は専用処理
+		// ボタンタイプの場合は専用処理（ButtonProcess に委譲）
 		if (obj->GetType() == ObjectBase::OBJECT_TYPE::BUTTON)
 		{
+			// ButtonProcess は近接と Space 判定を行い、
 			ButtonProcess(*obj, newObjects);
+			continue;
+		}
+
+		for (auto& player : players_)
+		{
+			// プレイヤーとの距離
+			VECTOR playerPos = player.player_->GetTransform().pos;
+			float distance = VSize(VSub(playerPos, objectPos));
+			bool hit = (distance < 180.0f);
+			if (hit)
+			{
+				player.isPlayerHitObject_ = true;
+				VECTOR pushDir = VSub(objectPos, playerPos);
+				pushDir.y = 0.0f; // Y軸(垂直方向)は無視
+				pushDir = VNorm(pushDir); // 正規化
+			}
 		}
 	}
 
-	// ループ終了後に追加
-	MakeNewObject(newObjects);
+	// ButtonProcessによってnewObjectsに追加されたオブジェクトを初期化して登録
+	if (!newObjects.empty())
+	{
+		MakeNewObject(newObjects);
+	}
 }
 
 const void TutorialScene::ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*>& newObjects)
@@ -433,7 +395,7 @@ const void TutorialScene::ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*
 		if (distance < 180.0f)
 		{
 			isNearButton = true;
-			// ボタンが押されたときの処理（例：ゲームクリア、ドアが開くなど）
+
 		}
 	}
 
@@ -445,34 +407,19 @@ const void TutorialScene::ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*
 		ObjectBase* newObj = new ObjectBase(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::AKEG);
 		newObjects.push_back(newObj);
 	}
-
-	//for (auto player : players_)
-	//{
-	//	// プレイヤーとの距離チェック
-	//	VECTOR playerPos = player.player_->GetTransform().pos;
-	//	float distance1 = VSize(VSub(playerPos, objectPos));
-	//	if (distance1 < 180.0f)
-	//	{
-	//		isNearButton = true;
-	//		// ボタンが押されたときの処理（例：ゲームクリア、ドアが開くなど）
-	//	}
-	//}
-	//
-	//// ボタンの近くにいて、スペースキーか左ボタンが押されたら
-	//if (isNearButton &&
-	//	(InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE) || InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::LEFT)))
-	//{
-	//	obj.SetButtomPushed(true);
-	//	// 直接追加せず、一時リストに格納
-	//	ObjectBase* newObj = new ObjectBase(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::AKEG);
-	//	newObjects.push_back(newObj);
-	//}
 }
 
 void TutorialScene::Update(void)
 {
 	// チュートリアル更新
 	tutorial_.Update();
+
+	// チュートリアル全完了ならゲームクリアへ遷移
+	if (isEndTutorial_)
+	{
+		SceneManager::GetInstance()->ChangeScene(std::make_shared<GameClearScene>());
+		return; 
+	}
 
 	// シーン遷移
 	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_ESCAPE))
@@ -553,7 +500,7 @@ void TutorialScene::AnswerChack(void)
 
 	if(endTimer_ > END_TIME)
 	{
-		SceneManager::GetInstance()->ChangeScene(std::make_shared<GameClearScene>());
+
 	}
 }
 
@@ -562,8 +509,8 @@ const void TutorialScene::MakeNewObject(std::vector<ObjectBase*>& newObjects)
 	for (auto& newObj : newObjects)
 	{
 		newObj->Init();
-		newObj->SetPosition({ 0.0f, 200.0f, -0.5f });
-		newObj->SetScale({ 3.0, 3.0, 3.0 });
+		newObj->SetPosition({ 1260.0f, -500.0f, -50.5f });
+		newObj->SetScale({ 0.5, 0.5, 0.5 });
 		for (const auto& stage : stageManager_->GetStage())
 		{
 			// ステージモデルのコライダーをオブジェクトに登録
@@ -576,6 +523,7 @@ const void TutorialScene::MakeNewObject(std::vector<ObjectBase*>& newObjects)
 		// オブジェクトの衝突コライダをプレイヤーに登録
 		const ColliderBase* objCaps = newObj->GetOwnCollider(static_cast<int>(ObjectBase::COLLIDER_TYPE::CAPSULE));
 		if (!objCaps) return;
+
 
 		for (auto& player : players_)
 		{
@@ -608,11 +556,6 @@ void TutorialScene::Draw(void)
 		skyDome_->Draw();
 		stageManager_->Draw();
 		lightPillar_->Draw();
-
-		//for (auto& wall : walls_)
-		//{
-		//	wall->Draw();
-		//}
 
 		for (int j = 0; j < players_.size(); j++)
 		{

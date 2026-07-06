@@ -234,6 +234,24 @@ void GameScene::CheckCollisions(void)
 			
 			continue;
 		}
+
+		auto& objectPos = obj->GetPos();
+
+		for (auto& player : players_)
+		{
+			// ステージモデルのコライダーをプレイヤーに登録
+			VECTOR playerPos = player.player_->GetTransform().pos;
+
+			float distance1 = VSize(VSub(playerPos, objectPos));
+			bool hit = (distance1 < 180.0f);
+			if (hit)
+			{
+				player.isPlayerHitObject_ = true;
+				VECTOR pushDir = VSub(objectPos, playerPos);
+				pushDir.y = 0.0f; // Y軸(垂直方向)は無視
+				pushDir = VNorm(pushDir); // 正規化
+			}
+		}
 	}
 
 	// ループ終了後に追加
