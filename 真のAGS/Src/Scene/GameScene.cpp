@@ -12,6 +12,7 @@
 #include "../Object/Actor/Wall.h"
 #include "../Object/LightPillar.h"
 #include "../Object/Collider/ColliderBase.h"
+#include "../Audio/AudioManager.h"
 #include "GameScene.h"
 #include "GameClearScene.h"
 #include "PauseScene.h"
@@ -203,6 +204,24 @@ void GameScene::Init(void)
 		players_[i].player_->SetActive(isActive);
 		players_[i].camera_->SetControlEnabled(isActive);
 	}
+
+	// シャドウマップ作成
+	shadowMapHandle_ = MakeShadowMap(8192, 8192);
+
+	// ライトの方向 
+	SetShadowMapLightDirection(shadowMapHandle_, VGet(0.3f, -0.7f, 0.8f));
+
+	// 影を描画する空間範囲
+	SetShadowMapDrawArea(shadowMapHandle_,
+		VGet(-5000.0f, -1.0f, -5000.0f),
+		VGet(5000.0f, 5000.0f, 5000.0f));
+
+	// シーンのサウンドを読み込み、BGM を再生
+	if (AudioManager::GetInstance())
+	{
+		AudioManager::GetInstance()->LoadSceneSound(LoadScene::GAME);
+		AudioManager::GetInstance()->PlayBGM(SoundID::BGM_GAME);
+	}
 }
 
 void GameScene::Load(void)
@@ -331,12 +350,26 @@ void GameScene::Update(void)
 
 	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_P))
 	{
+		// BGM停止とシーン用サウンドの削除
+		if (AudioManager::GetInstance())
+		{
+			AudioManager::GetInstance()->StopBGM();
+			AudioManager::GetInstance()->DeleteSceneSound(LoadScene::GAME);
+		}
+
 		SceneManager::GetInstance()->ChangeScene(std::make_shared<TitleScene>());
 		return;
 	}
 
 	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_Q))
 	{
+		// BGM停止とシーン用サウンドの削除
+		if (AudioManager::GetInstance())
+		{
+			AudioManager::GetInstance()->StopBGM();
+			AudioManager::GetInstance()->DeleteSceneSound(LoadScene::GAME);
+		}
+
 		SceneManager::GetInstance()->ChangeScene(std::make_shared<GameClearScene>());
 		return;
 	}
@@ -445,6 +478,17 @@ void GameScene::Update(void)
 
 void GameScene::Draw(void)
 {
+	ShadowMap_DrawSetup(shadowMapHandle_);
+
+	// 影を落とすモデルだけ描く
+	players_[0].player_->Draw();
+	players_[1].player_->Draw();
+	stageManager_->Draw();
+
+	ShadowMap_DrawEnd();
+
+	SetUseShadowMap(0, shadowMapHandle_);
+
 	int halfWidth = screenWidth_ / 2;
 
 	for (int i = 0; i < players_.size(); i++)

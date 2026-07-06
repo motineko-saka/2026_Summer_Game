@@ -6,10 +6,25 @@
 enum class SoundID
 {
 	BGM_TITLE,
-	BGM_BATTLE,
-	SE_BUTTON,
+	BGM_GAME,
+
+	SE_MENU_DECISION,
+	SE_MENU_CHOICE,
+	SE_MENU_OPEN,
+
+	SE_WORK,
 	SE_RUN,
-	SE_ATTACK,
+	SE_HAVE_IRON,
+	SE_HAVE_WOOD,
+	SE_PUT_WOOD,
+	SE_BROKE,
+	SE_WARNING,
+	SE_SUCCESS,
+
+	SE_GAME_CLEAR,
+
+	SE_GAME_OVER,
+
 };
 
 // 読み込むシーン
@@ -18,6 +33,8 @@ enum class LoadScene
 	SYSTEM,		// システム
 	TITLE,		// タイトル
 	GAME,		// ゲーム
+	GAME_CLEAR,	// ゲームクリア
+	GAME_OVER,	// ゲームオーバー
 };
 
 // サウンド属性
