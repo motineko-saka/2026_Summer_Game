@@ -9,6 +9,7 @@ AudioManager* AudioManager::instance_ = nullptr;
 AudioManager::AudioManager(void)
 {
 	currentBgm_ = static_cast<SoundID>(-1);
+	currentLoopSe_ = static_cast<SoundID>(-1);
 	bgmVolume_ = 255;	
 	seVolume_ = 255;
 	masterVolume_ = 255;
@@ -24,6 +25,7 @@ void AudioManager::Init(void)
 {
 	// 現在再生されているBGM
 	currentBgm_ = static_cast<SoundID>(-1);
+	currentLoopSe_ = static_cast<SoundID>(-1);
 
 	bgmVolume_ = 255;		// bgm音量
 	seVolume_ = 255;		// se音量
@@ -167,38 +169,41 @@ void AudioManager::LoopSE(SoundID id)
 
 	// サウンドが読み込まれているか？
 	if (it == handles_.end())
-		// 読み込まれていないので終了
 		return;
 
-	// 現在のBGMが同じならスキップ
-	if (currentBgm_ == id && CheckSoundMem(it->second))
+	// 同じループSEが既に再生中ならスキップ
+	if (currentLoopSe_ == id && CheckSoundMem(it->second))
 		return;
 
-	// 別のBGMが再生中なら停止
-	if (currentBgm_ != static_cast<SoundID>(-1))
-		StopBGM();
+	// 既に別のループSEが再生中なら止める
+	if (currentLoopSe_ != static_cast<SoundID>(-1))
+	{
+		auto itPrev = handles_.find(currentLoopSe_);
+		if (itPrev != handles_.end())
+		{
+			StopSoundMem(itPrev->second);
+		}
+	}
 
-	// BGMを更新
-	currentBgm_ = id;
+	// ループSEを更新
+	currentLoopSe_ = id;
 
-	// 実音量を計算
-	int volume = static_cast<int>(bgmVolume_ * (masterVolume_ / 255.0f));
-
-	// 音量を変更
+	// 実音量を計算（SE用）
+	int volume = static_cast<int>(seVolume_ * (masterVolume_ / 255.0f));
 	ChangeVolumeSoundMem(volume, it->second);
 
-	// BGMなのでループ再生
+	// ループ再生
 	PlaySoundMem(it->second, DX_PLAYTYPE_LOOP, true);
 }
 
 void AudioManager::StopSE(void)
 {
 	// 何も再生されていないなら何もしない
-	if (currentBgm_ == static_cast<SoundID>(-1))
+	if (currentLoopSe_ == static_cast<SoundID>(-1))
 		return;
 
 	// IDからサウンドハンドルを抽出
-	auto it = handles_.find(currentBgm_);
+	auto it = handles_.find(currentLoopSe_);
 
 	// サウンドが読み込まれているか？
 	if (it != handles_.end())
@@ -206,7 +211,7 @@ void AudioManager::StopSE(void)
 		StopSoundMem(it->second);
 
 	// 現在のBGMを再生していない状態に更新
-	currentBgm_ = static_cast<SoundID>(-1);
+	currentLoopSe_ = static_cast<SoundID>(-1);
 }
 
 void AudioManager::DeleteAll(void)

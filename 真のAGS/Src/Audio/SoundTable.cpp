@@ -28,7 +28,7 @@ namespace SoundTable_Game
 	static const std::unordered_map<SoundID, std::string> Table = 
 	{
 		{SoundID::BGM_GAME, "Data/Sound/BGM/GameScene_BGM.mp3"},
-		{SoundID::SE_WORK, "Data/Sound/SE/Work_SE.mp3"},
+		{SoundID::SE_WALK, "Data/Sound/SE/Walk_SE.mp3"},
 		{SoundID::SE_RUN, "Data/Sound/SE/Run_SE.mp3"},
 		{SoundID::SE_HAVE_IRON, "Data/Sound/SE/Have_Iron_SE.mp3"},
 		{SoundID::SE_HAVE_WOOD, "Data/Sound/SE/Have_Wood_SE.mp3"},

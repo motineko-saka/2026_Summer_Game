@@ -56,6 +56,9 @@ private:
 	// Œ»İÄ¶‚³‚ê‚Ä‚¢‚éBGM
 	SoundID currentBgm_;
 
+	// Œ»İ‚Ìƒ‹[ƒvSE
+	SoundID currentLoopSe_;
+
 	int bgmVolume_;		// bgm‰¹—Ê
 	int seVolume_;		// se‰¹—Ê
 	int masterVolume_;	// master‰¹—Ê
