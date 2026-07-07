@@ -12,7 +12,7 @@ enum class SoundID
 	SE_MENU_CHOICE,
 	SE_MENU_OPEN,
 
-	SE_WORK,
+	SE_WALK,
 	SE_RUN,
 	SE_HAVE_IRON,
 	SE_HAVE_WOOD,

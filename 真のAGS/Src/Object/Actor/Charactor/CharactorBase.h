@@ -94,7 +94,4 @@ protected:
 	void CollisionGravity(void);
 	void CollisionCapsule();
 
-	// ŠÛ‰e•`‰æ
-	void DrawShadow(void);
-
 };

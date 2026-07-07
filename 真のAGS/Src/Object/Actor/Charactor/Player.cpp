@@ -7,6 +7,7 @@
 #include "../../../Application.h"
 #include "../../Collider/ColliderLine.h"
 #include "../../Collider/ColliderCapsule.h"
+#include "../../../Audio/AudioManager.h"
 #include "Player.h"
 
 Player::Player(void)
@@ -46,6 +47,14 @@ void Player::Release(void)
 	// 放すときは元に戻す
 	DropHeldObject();
 
+	// プレイ中に再生している歩行SEがあれば停止
+	if (isWalkSePlaying_)
+	{
+		if (AudioManager::GetInstance()) AudioManager::GetInstance()->StopSE();
+		isWalkSePlaying_ = false;
+	}
+
+
 	CharactorBase::Release();
 }
 
@@ -69,6 +78,13 @@ void Player::SetActive(bool active)
 		stepJump_ = 0.0f;
 		// アニメーションを止める
 		if (animController_) animController_->Play(static_cast<int>(ANIM_TYPE::IDLE), true);
+
+		// 非アクティブ時は歩行SE停止
+		if (isWalkSePlaying_)
+		{
+			if (AudioManager::GetInstance()) AudioManager::GetInstance()->StopSE();
+			isWalkSePlaying_ = false;
+		}
 	}
 }
 
@@ -188,6 +204,7 @@ void Player::ProcessMove(void)
 		if (InputManager::GetInstance()->IsNew(KEY_INPUT_S) && InputManager::GetInstance()->IsNew(KEY_INPUT_D)) { dir = AsoUtility::DIR_BR; }
 
 		if (InputManager::GetInstance()->IsNew(KEY_INPUT_RSHIFT)) { isDash = true; }
+
 	}
 	else
 	{
@@ -239,6 +256,13 @@ void Player::ProcessMove(void)
 
 		// 移動量を計算
 		movePow_ = VScale(moveDir_, moveSpeed_);
+
+		// 歩行中ループSE開始（ジャンプ中は除外）
+		if (!isJump_ && !isWalkSePlaying_)
+		{
+			if (AudioManager::GetInstance()) AudioManager::GetInstance()->LoopSE(SoundID::SE_WALK);
+			isWalkSePlaying_ = true;
+		}
 	}
 	else
 	{
@@ -249,6 +273,13 @@ void Player::ProcessMove(void)
 			animController_->Play(
 				static_cast<int>(ANIM_TYPE::IDLE), true);
 
+		}
+
+		// 歩行SE停止
+		if (isWalkSePlaying_)
+		{
+			if (AudioManager::GetInstance()) AudioManager::GetInstance()->StopSE();
+			isWalkSePlaying_ = false;
 		}
 	}
 }

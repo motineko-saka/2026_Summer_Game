@@ -159,4 +159,7 @@ private:
 
 	// 選択状態（true=操作可能、false=操作停止）
 	bool isActive_{ true };
+
+	// 歩行ループSE 再生フラグ
+	bool isWalkSePlaying_{ false };
 };
