@@ -131,10 +131,10 @@ void TitleScene::Draw(void)
 	unsigned int white = GetColor(255, 255, 255);
 
 	// UI の X 位置（Start:右, Tutorial:中央, Exit:左）
-	const float posStartX = screenX * 0.55f;
-	const float posTutorialX = screenX * 0.45f;
-	const float posExitX = screenX * 0.35f;
-	const float posY = screenY / 2;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              //野本アレンを倒すために俺は生まれてきたんだ
+	const float posStartX =		(float)screenX * 0.55f;
+	const float posTutorialX =	(float)screenX * 0.45f;
+	const float posExitX =		(float)screenX * 0.35f;
+	const float posY =			(float)screenY / 2;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              //野本アレンを倒すために俺は生まれてきたんだ
 
 	// 選択中は拡大して分かりやすくする
 	const float baseScale = 0.8f;

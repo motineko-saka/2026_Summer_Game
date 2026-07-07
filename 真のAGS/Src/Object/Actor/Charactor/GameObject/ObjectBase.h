@@ -77,9 +77,14 @@ public:
 	// PUSH_BUTTON のリセット（次のフレーム判定のため）
 	void ResetPushButton(void) { isPushButton_ = false; }
 
+	void SetRot(float rot) { gearRot_ = rot; }
+	void SetIsRot(bool is) { isRot_ = is; }
+
 	//VECTOR GetScale(void){return scale}
 
 protected:
+	// 答えにおいて正誤判定をするオブジェクトかどうか
+	bool isAnswerObject_ = true;
 
 	// リソースロード
 	void InitLoad(void)override;
@@ -100,7 +105,7 @@ protected:
 
 	void UpdateProcessPost(void) override;
 
-	// ボタンの処理
+	// 継承するオブジェクトごとの更新処理
 	virtual void ObjectUpdateProcess(void) {};
 private:
 	// 衝突判定用ライン開始
@@ -143,6 +148,8 @@ private:
 	bool isGrabbed_ = false;
 
 	bool isButtomPushed_ = false;
+
+	bool isRot_ = false;
 
 	// PUSH_BUTTON が踏まれているか
 	bool isPushButton_ = false;

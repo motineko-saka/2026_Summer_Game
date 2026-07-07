@@ -29,11 +29,15 @@ void Gaer::InitAnimation(void)
 
 void Gaer::InitPost(void)
 {
+	isAnswerObject_ = false;
 }
 
 void Gaer::ObjectUpdateProcess(void)
 {
-	gearRot_ += 5.0f;
+	if (isRot_)
+	{
+		gearRot_ += 5.0f;
+	}
 
 	transform_.quaRotLocal = Quaternion::AngleAxis(AsoUtility::Deg2RadD(gearRot_),
 		AsoUtility::AXIS_Z);

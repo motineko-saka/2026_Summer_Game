@@ -16,8 +16,8 @@ class GameScene : public SceneBase
 {
 	struct PlayerS
 	{
-		Player* player_;
-		Camera* camera_;
+		std::unique_ptr<Player> player_;
+		std::unique_ptr<Camera> camera_;
 		bool isPlayerHitObject_;
 	};
 

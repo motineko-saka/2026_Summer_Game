@@ -27,5 +27,6 @@ public:
 	void ObjectUpdateProcess(void)override;
 private:
 	float gearRot_;
+	bool isRot_ = false;
 };
 

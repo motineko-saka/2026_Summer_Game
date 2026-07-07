@@ -29,6 +29,7 @@ Camera::Camera(void)
 
 Camera::~Camera(void)
 {
+	Release();
 }
 
 void Camera::Update(void)

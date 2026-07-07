@@ -52,8 +52,6 @@ void SceneBase::CreateWall(StageManager& stageM)
         // 奥手前（Z固定、Xはステージ中央）
         walls_.push_back(std::make_unique<Wall>(VECTOR(centerX, 0, bb.minPos.z), true));
         walls_.push_back(std::make_unique<Wall>(VECTOR(centerX, 0, bb.maxPos.z), true));
-        DrawSphere3D(VGet(centerX, 0, bb.minPos.z), 10.0f, 16, GetColor(255, 0, 0), GetColor(255, 0, 0), TRUE);
-        DrawSphere3D(VGet(centerX, 0, bb.maxPos.z), 10.0f, 16, GetColor(0, 255, 0), GetColor(0, 255, 0), TRUE);
 
         // 左右（X固定、Zはステージ中央）
         walls_.push_back(std::make_unique<Wall>(VECTOR(bb.minPos.x, 0, centerZ)));

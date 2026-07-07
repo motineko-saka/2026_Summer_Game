@@ -27,6 +27,7 @@ GameScene::GameScene(void)
 	screenWidth_(0),
 	screenHeight_(0),
 	pinID_(-1),
+	shadowMapHandle_(-1),
 	SceneBase()
 {
 }
@@ -55,12 +56,12 @@ void GameScene::Init(void)
 
 	for (int i = 0; i < 2; i++)
 	{
-		players_[i].camera_ = new Camera();
+		players_[i].camera_ = std::make_unique<Camera>();
 		players_[i].camera_->Init();
 
 		// プレイヤー番号を設定
 		Player::PLAYER_NO pno = (i == 0) ? Player::PLAYER_NO::PLAYER1 : Player::PLAYER_NO::PLAYER2;
-		players_[i].player_ = new Player(pno, *players_[i].camera_);
+		players_[i].player_ = std::make_unique<Player>(pno, *players_[i].camera_);
 		players_[i].player_->Init();
 
 		players_[i].camera_->SetFollow(&players_[i].player_->GetTransform());
@@ -129,7 +130,7 @@ void GameScene::Init(void)
 		const ColliderBase* stageCollider =
 			stage->GetOwnCollider(static_cast<int>(Stage::COLLIDER_TYPE::MODEL));
 
-		for (auto player : players_)
+		for (auto& player : players_)
 		{
 			// ステージモデルのコライダーをプレイヤーに登録
 			player.player_->AddHitCollider(stageCollider);
@@ -237,7 +238,7 @@ void GameScene::LoadEnd(void)
 
 void GameScene::CheckCollisions(void)
 {
-	for (auto player : players_)
+	for (auto& player : players_)
 	{
 		player.isPlayerHitObject_ = false;
 	}
@@ -328,7 +329,7 @@ const void GameScene::MakeNewObject(std::vector<ObjectBase*>& newObjects)
 		const ColliderBase* objCaps = newObj->GetOwnCollider(static_cast<int>(ObjectBase::COLLIDER_TYPE::CAPSULE));
 		if (!objCaps) return;
 
-		for (auto player : players_)
+		for (auto& player : players_)
 		{
 			player.player_->AddHitCollider(objCaps);
 		}
@@ -388,6 +389,33 @@ void GameScene::Update(void)
 		}
 		activePlayer_ = (activePlayer_ == Player::PLAYER_NO::PLAYER1) ?
 			Player::PLAYER_NO::PLAYER2 : Player::PLAYER_NO::PLAYER1;
+	}
+
+	// 歯車距離処理（後で消す）
+	for (auto& obj : objects_)
+	{
+		if (obj == nullptr) continue;
+
+		// ギアタイプの場合は専用処理
+		if (obj->GetType() != ObjectBase::OBJECT_TYPE::GEAR)
+		{
+			continue;
+		}
+
+		auto& objectPos = obj->GetPos();
+
+		for (auto& player : players_)
+		{
+			// ステージモデルのコライダーをプレイヤーに登録
+			VECTOR playerPos = player.player_->GetTransform().pos;
+
+			float distance1 = VSize(VSub(playerPos, objectPos));
+			bool hit = (distance1 < 60.0f);
+			if (hit)
+			{
+				obj->SetIsRot(true);
+			}
+		}
 	}
 
 	stageManager_->Update();
@@ -601,8 +629,6 @@ void GameScene::Draw(void)
 		y += 40;
 	}
 
-	VECTOR min, max;
-
 	for(auto& stage : stageManager_->GetStage())
 	{
 		auto bb = stage->GetBoundingBox();
@@ -639,14 +665,11 @@ void GameScene::Release(void)
 	}
 	objects_.clear();
 
+	DeleteGraph(pinID_);
+
 	//enemyManager_->Release();
 	//delete enemyManager_;
 
-	for (auto& player : players_)
-	{
-		player.player_->Release();
-		player.camera_->Release();
-	}
 	players_.clear();
 
 	// スクリーンハンドルの削除

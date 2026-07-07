@@ -119,7 +119,11 @@ void ObjectBase::InitPost(void)
 
 void ObjectBase::UpdateProcess(void)
 {
-	gearRot_ += 5.0f;
+	if(isRot_)
+	{
+		gearRot_ += 5.0f;
+	}
+
 	if (transform_.pos.y < -2000.0f)
 	{
 		transform_.pos = { -1000.0f, 80.0f, -10.0f };

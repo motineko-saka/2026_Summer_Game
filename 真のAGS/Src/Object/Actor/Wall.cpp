@@ -41,13 +41,13 @@ void Wall::InitTransform(void)
 {
 	transform_.scl = STAGE_DEFAULT_SCALE;
 	transform_.quaRot = Quaternion::Identity();
+	transform_.quaRotLocal = Quaternion::Identity();
 
+	// 回転を先に適用してから位置を設定
 	if(isRot_)
 	{
 		transform_.quaRot = Quaternion::AngleAxis(DX_PI_F / 2.0f, AsoUtility::AXIS_Y);
 	}
-
-	transform_.quaRotLocal = Quaternion::Identity();
 
 	transform_.pos = tempPos_;
 	transform_.Update();
@@ -55,10 +55,10 @@ void Wall::InitTransform(void)
 
 void Wall::InitCollider(void)
 {
-	// DxLib側の衝突情報セットアップ
+	// DxLib側のコリジョンセットアップ
 	MV1SetupCollInfo(transform_.modelId);
 
-	// モデルのコライダ
+	// モデルのコライダー
 	ColliderModel* colModel =
 		new ColliderModel(ColliderBase::TAG::STAGE, &transform_);
 

@@ -16,6 +16,7 @@
 #include "../UI/Tutorial.h" 
 #include "GameClearScene.h"
 #include "PauseScene.h"
+#include "TitleScene.h"
 #include "../Manager/EffekseerEffect.h"
 #include "../Renderer/PixelMaterial.h"
 #include "../Renderer/PixelRenderer.h"
@@ -421,6 +422,12 @@ void TutorialScene::Update(void)
 		return; 
 	}
 
+	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_P))
+	{
+		SceneManager::GetInstance()->ChangeScene(std::make_shared<TitleScene>());
+		return;
+	}
+
 	// シーン遷移
 	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_ESCAPE))
 	{
@@ -773,11 +780,6 @@ void TutorialScene::Release(void)
 	//enemyManager_->Release();
 	//delete enemyManager_;
 
-	for (auto& player : players_)
-	{
-		player.player_->Release();
-		player.camera_->Release();
-	}
 	players_.clear();
 
 	// スクリーンハンドルの削除

@@ -143,7 +143,7 @@ private:
 	static constexpr float MOUSE_ROT_SENS = 0.005f;
 
 	// マウスの移動量
-	static constexpr int PIXEL_THRESHOLD = 1.0f;
+	static constexpr float PIXEL_THRESHOLD = 1.0f;
 
 	// カメラの更新前位置
 	VECTOR prePos_;

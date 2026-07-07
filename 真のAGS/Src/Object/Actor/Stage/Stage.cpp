@@ -24,10 +24,16 @@ void Stage::InitLoad(void)
 
 void Stage::InitTransform(void)
 {
+
 	transform_.scl = STAGE_DEFAULT_SCALE;
 	transform_.quaRot = Quaternion::Identity();
 
 	transform_.quaRotLocal = Quaternion::Identity();
+
+	if (stageType_ == STAGE_TYPE::MAIN_STAGE)
+	{
+		transform_.quaRotLocal = Quaternion::AngleAxis(AsoUtility::Deg2RadD(90.0f), AsoUtility::AXIS_Y);
+	}
 
 	transform_.pos = STAGE_DEFAULT_POS;
 	transform_.Update();

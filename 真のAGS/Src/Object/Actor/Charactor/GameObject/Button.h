@@ -7,6 +7,7 @@ public:
 	Button(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type);
 	virtual ~Button() override = default;
 
+private:
 	// リソースロード
 	void InitLoad(void)override;
 
@@ -22,6 +23,10 @@ public:
 	// 初期化後の個別処理
 	void InitPost(void)override;
 
+	bool isPushButtom(void) const { return isButtomPushed_; }
+
 	void ObjectUpdateProcess(void) override;
+
+	bool isButtomPushed_ = false;
 };
 

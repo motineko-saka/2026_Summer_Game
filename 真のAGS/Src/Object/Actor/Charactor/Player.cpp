@@ -33,12 +33,15 @@ Player::Player(PLAYER_NO playerNo, Camera& camera)
 
 Player::~Player(void)
 {
+	Release();
 }
 
 void Player::Draw(void)
 {
 	CharactorBase::Draw();
+#ifdef _DEBUG
 	DrawDebug();
+#endif
 }
 
 void Player::Release(void)
@@ -155,6 +158,11 @@ void Player::UpdateProcess(void)
 
 	// ’Í‚Ş/•ú‚·ˆ—
 	ProcessPickup();
+
+	if (transform_.pos.y < -2000.0f)
+	{
+		transform_.pos = (playerNo_ == PLAYER_NO::PLAYER1) ? PLAYER_ONE__DEFAULT_POS : PLAYER_TWO__DEFAULT_POS;;
+	}
 }
 
 void Player::UpdateProcessPost(void)

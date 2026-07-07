@@ -11,6 +11,7 @@ Button::Button(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type)
 
 void Button::InitLoad(void)
 {
+	transform_.SetModel(ResourceManager::GetInstance().LoadModelDuplicate(ResourceManager::SRC::BUTTON));
 }
 
 void Button::InitTransform(void)
@@ -31,5 +32,5 @@ void Button::InitPost(void)
 
 void Button::ObjectUpdateProcess(void)
 {
-	// 
+	// É{É^ÉìÇÃèàóù
 }
