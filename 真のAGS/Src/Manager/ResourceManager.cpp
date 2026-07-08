@@ -106,6 +106,14 @@ void ResourceManager::Init(void)
 	res = new RES(RES_T::MODEL, PATH_MDL + "Object/Gear.mv1");
 	resourcesMap_.emplace(SRC::GEAR, res);
 
+	// 岩
+	res = new RES(RES_T::MODEL, PATH_MDL + "Object/hasira.mv1");
+	resourcesMap_.emplace(SRC::ROCK, res);
+
+	// キノコ（仮）
+	res = new RES(RES_T::MODEL, PATH_MDL + "Object/kinoko01.mv1");
+	resourcesMap_.emplace(SRC::KINOKO, res);
+
 	// タイトルムービー
 	res = new RES(RES_T::MOVIE, PATH_MOV + "Title.mp4");
 	resourcesMap_.emplace(SRC::TITLE_MOV, res);

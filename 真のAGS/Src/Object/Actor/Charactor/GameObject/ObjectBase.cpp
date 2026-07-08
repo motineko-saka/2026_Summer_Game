@@ -68,9 +68,17 @@ void ObjectBase::InitLoad(void)
 	case OBJECT_TYPE::GEAR:
 		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::GEAR));
 		break;
+	case OBJECT_TYPE::ROCK:
+		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::ROCK));
+		break;
+	case OBJECT_TYPE::KINOKO:
+		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::KINOKO));
+		break;
 	default:
 		break;
 	}
+
+	tag_ = ColliderBase::TAG::OBJECT;
 }
 
 void ObjectBase::InitTransform(void)
@@ -88,6 +96,8 @@ void ObjectBase::InitTransform(void)
 void ObjectBase::InitCollider(void)
 {
 	MV1SetupCollInfo(transform_.modelId);
+
+	InitObjCol();
 
 	// モデルのコライダ
 	ColliderModel* colModel =

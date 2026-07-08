@@ -23,6 +23,7 @@ public:
 		STAGE,
 		PLAYER,
 		OBJECT,
+		KINOKO,
 		CAMERA,
 		ENEMY,
 		VIEW_RANGE,

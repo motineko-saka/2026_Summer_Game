@@ -16,6 +16,8 @@ public:
 		BUTTON,
 		PRESS_BUTTON,
 		GEAR,
+		ROCK,
+		KINOKO,
 	};
 
 	struct BoundingBox
@@ -92,6 +94,8 @@ protected:
 	// 大きさ、回転、座標の初期化
 	void InitTransform(void) override;
 
+	virtual void InitObjCol(void) {};
+
 	// 衝突判定の初期化
 	void InitCollider(void) override;
 
@@ -107,6 +111,8 @@ protected:
 
 	// 継承するオブジェクトごとの更新処理
 	virtual void ObjectUpdateProcess(void) {};
+
+	ColliderBase::TAG tag_;
 private:
 	// 衝突判定用ライン開始
 	static constexpr VECTOR COL_LINE_START_LOCAL_POS = { 0.0f, 80.0f, 0.0f };

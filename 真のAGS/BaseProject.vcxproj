@@ -33,7 +33,7 @@
     <ClCompile Include="Src\Object\Actor\Charactor\GameObject\ObjectBase.cpp" />
     <ClCompile Include="Src\Scene\GameClearScene.cpp" />
     <ClCompile Include="Src\Object\Actor\Stage\AnswerStage.cpp" />
-    <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Object.cpp" />
+    <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Rock.cpp" />
     <ClCompile Include="Src\Object\Collider\ColliderSphere.cpp" />
     <ClCompile Include="Src\Object\Collider\ColliderCapsule.cpp" />
     <ClCompile Include="Src\Object\Collider\ColliderModel.cpp" />
@@ -86,7 +86,7 @@
     <ClInclude Include="Src\Object\Actor\Charactor\GameObject\ObjectBase.h" />
     <ClInclude Include="Src\Scene\GameClearScene.h" />
     <ClInclude Include="Src\Object\Actor\Stage\AnswerStage.h" />
-    <ClInclude Include="Src\Object\Actor\Charactor\GameObject\Object.h" />
+    <ClInclude Include="Src\Object\Actor\Charactor\GameObject\Rock.h" />
     <ClInclude Include="Src\Object\Collider\ColliderSphere.h" />
     <ClInclude Include="Src\Object\Collider\ColliderCapsule.h" />
     <ClInclude Include="Src\Object\Collider\ColliderModel.h" />

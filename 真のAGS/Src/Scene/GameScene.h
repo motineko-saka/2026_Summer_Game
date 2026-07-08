@@ -67,7 +67,7 @@ private:
 	//EnemyManager* enemyManager_;
 
 	// 複数のオブジェクトを管理
-	std::vector<ObjectBase*> objects_;
+	std::vector<std::unique_ptr<ObjectBase>> objects_;
 
 	// 画面分割用のスクリーンハンドル
 	int screenHandle1_;

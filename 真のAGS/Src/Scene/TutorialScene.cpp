@@ -259,7 +259,7 @@ void TutorialScene::TutorialInit(void)
 	tutorial_.AddStep(
 		"ボタン操作の練習：ボタンの近くで Space を押してください。\nボタンを押すと次へ進みます。",
 		[this]() -> bool {
-			for (auto* obj : objects_)
+			for (auto& obj : objects_)
 			{
 				if (obj == nullptr) continue;
 
@@ -288,7 +288,7 @@ void TutorialScene::TutorialInit(void)
 	tutorial_.AddStep(
 		"オブジェクト操作の練習1：オブジェクトに近づいて E を押してください。\nオブジェクトを押すと次へ進みます。",
 		[this]() -> bool {
-			for (auto* obj : objects_)
+			for (auto& obj : objects_)
 			{
 				if (obj == nullptr) continue;
 
@@ -309,7 +309,7 @@ void TutorialScene::TutorialInit(void)
 	tutorial_.AddStep(
 		"オブジェクト操作の練習2 : オブジェクトを正しい位置に配置してください。\nオブジェクトを配置すると次に進む。",
 		[this]() -> bool {
-			for (auto* obj : objects_)
+			for (auto& obj : objects_)
 			{
 				if (obj == nullptr) continue;
 				if (obj->GetObjectType() != ObjectBase::OBJECT_TYPE::AKEG) continue;
@@ -356,7 +356,7 @@ void TutorialScene::CheckCollisions(void)
 
 	std::vector<ObjectBase*> newObjects;  // 新規オブジェクト用
 
-	for (auto* obj : objects_)
+	for (auto& obj : objects_)
 	{
 		if (obj == nullptr) continue;
 
@@ -491,7 +491,7 @@ void TutorialScene::Update(void)
 	CheckCollisions();
 
 	// 全オブジェクトの更新
-	for (auto* obj : objects_)
+	for (auto& obj : objects_)
 	{
 		if (obj) obj->Update();
 	}
@@ -505,7 +505,7 @@ void TutorialScene::AnswerChack(void)
 	bool isAnswer = true;
 	std::vector<ObjectBase*> object;
 
-	for (auto* obj : objects_)
+	for (auto& obj : objects_)
 	{
 		if (!obj->IsAnswerPosition())
 		{
@@ -631,7 +631,7 @@ void TutorialScene::Draw(void)
 		//wall_->Draw();
 
 		// 全オブジェクトを順に描画（それぞれの viewWorld を設定）
-		for (auto* obj : objects_)
+		for (auto& obj : objects_)
 		{
 			if (obj == nullptr) continue;
 
@@ -791,7 +791,7 @@ void TutorialScene::DrawNamePlate(std::string str, VECTOR pos)
 void TutorialScene::Release(void)
 {
 	// 全オブジェクト解放
-	for (auto* obj : objects_)
+	for (auto& obj : objects_)
 	{
 		if (obj)
 		{

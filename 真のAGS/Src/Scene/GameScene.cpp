@@ -10,6 +10,7 @@
 #include "../Object/Actor/Charactor/Player.h"
 #include "../Object/Actor/Charactor/GameObject/ObjectBase.h"
 #include "../Object/Actor/Charactor/GameObject/Gaer.h"
+#include "../Object/Actor/Charactor/GameObject/Rock.h"
 #include "../Object/Actor/Wall.h"
 #include "../Object/LightPillar.h"
 #include "../Object/Collider/ColliderBase.h"
@@ -88,38 +89,44 @@ void GameScene::Init(void)
 	// オブジェクト作成（複数）
 	objects_.reserve(10);
 
-	objects_.push_back(new ObjectBase(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::DEFAULT));
-	objects_.back()->Init();
-	objects_.back()->SetPosition({ 1260.0f, 0.0f, -50.5f });
-	objects_.back()->SetPosition({ 1260.0f, 0.0f, -50.5f });
-	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
-
-
-	objects_.push_back(new ObjectBase(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::WBOX));
+	objects_.push_back(std::make_unique<ObjectBase>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::DEFAULT));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ 1260.0f, 0.0f, -50.5f });
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 
-	objects_.push_back(new ObjectBase(GameScene::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[2], ObjectBase::OBJECT_TYPE::AKEG));
+	objects_.push_back(std::make_unique<ObjectBase>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::WBOX));
+	objects_.back()->Init();
+	objects_.back()->SetPosition({ 1260.0f, 0.0f, -50.5f });
+	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
+
+	objects_.push_back(std::make_unique<ObjectBase>(GameScene::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[2], ObjectBase::OBJECT_TYPE::AKEG));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ -1260.0f, 0.0f, -50.5f });
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 
-	objects_.push_back(new ObjectBase(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[3], ObjectBase::OBJECT_TYPE::BUTTON));
+	objects_.push_back(std::make_unique<ObjectBase>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[3], ObjectBase::OBJECT_TYPE::BUTTON));
 	objects_.back()->Init();
-	objects_.back()->SetPosition({ 1000.0f, 0.0f, -50.5f });
-	//objects_.back()->SetPosition({ 1260.0f, -720.0f, -50.5f });
 	objects_.back()->SetPosition({ 0.0f, 80.0f, -50.0f });
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 
-	objects_.push_back(new Gaer(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::GEAR));
+	objects_.push_back(std::make_unique<Gaer>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::GEAR));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ -900.0f, 0.0f, 0.5f });
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 
-	objects_.push_back(new Gaer(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::GEAR));
+	objects_.push_back(std::make_unique<Gaer>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::GEAR));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ -1000.0f, 0.0f, 0.5f });
+	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
+
+	objects_.push_back(std::make_unique<Rock>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::ROCK));
+	objects_.back()->Init();
+	objects_.back()->SetPosition({ -100.0f, 80.0f, 0.0f });
+	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
+
+	objects_.push_back(std::make_unique<Rock>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::KINOKO));
+	objects_.back()->Init();
+	objects_.back()->SetPosition({ -500.0f, 0.0f, 0.0f });
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 
 
@@ -139,7 +146,7 @@ void GameScene::Init(void)
 		}
 
 		// ステージモデルのコライダーを全オブジェクトに登録
-		for (auto* obj : objects_)
+		for (auto& obj : objects_)
 		{
 			obj->AddHitCollider(stageCollider);
 		}
@@ -182,6 +189,9 @@ void GameScene::Init(void)
 			}
 		}
 	}
+
+	const auto* objCaps = objects_[7]->GetOwnCollider(static_cast<int>(ObjectBase::COLLIDER_TYPE::CAPSULE));
+	objects_[6]->AddHitCollider(objCaps);
 
 	for (auto& wall : walls_)
 	{
@@ -295,7 +305,6 @@ const void GameScene::ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*>& n
 		if (distance1 < 180.0f)
 		{
 			isNearButton = true;
-			// ボタンが押されたときの処理（例：ゲームクリア、ドアが開くなど）
 		}
 	}
 
@@ -303,6 +312,8 @@ const void GameScene::ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*>& n
 	if (isNearButton &&
 		(InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE) || InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::LEFT)))
 	{
+		// ボタンが押されたときの処理（例：ゲームクリア、ドアが開くなど）
+
 		obj.SetButtomPushed(true);
 		// 直接追加せず、一時リストに格納
 		ObjectBase* newObj = new ObjectBase(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::AKEG);
@@ -338,7 +349,7 @@ const void GameScene::MakeNewObject(std::vector<ObjectBase*>& newObjects)
 		//player1_->AddHitCollider(objCaps);
 		//player2_->AddHitCollider(objCaps);
 
-		objects_.push_back(newObj);
+		objects_.push_back(std::unique_ptr<ObjectBase>(newObj));
 	}
 }
 
@@ -352,7 +363,7 @@ void GameScene::Update(void)
 		isPause_ = true;
 	}
 
-	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_P))
+	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_P)) 
 	{
 		// BGM停止とシーン用サウンドの削除
 		if (AudioManager::GetInstance())
@@ -494,7 +505,7 @@ void GameScene::Draw(void)
 	players_[0].player_->Draw();
 	players_[1].player_->Draw();
 	stageManager_->Draw();
-	for (auto* obj : objects_)
+	for (auto& obj : objects_)
 	{
 		obj->Draw();
 	}
@@ -545,7 +556,7 @@ void GameScene::Draw(void)
 		//}
 	
 		// 全オブジェクトを順に描画（それぞれの viewWorld を設定）
-		for (auto* obj : objects_)
+		for (auto& obj : objects_)
 		{
 			if (obj == nullptr) continue;
 			//obj->SetViewWorld(WORLD::LEFT);
@@ -656,12 +667,11 @@ void GameScene::Draw(void)
 void GameScene::Release(void)
 {
 	// 全オブジェクト解放
-	for (auto* obj : objects_)
+	for (auto& obj : objects_)
 	{
 		if (obj)
 		{
 			obj->Release();
-			delete obj;
 		}
 	}
 	objects_.clear();

@@ -29,6 +29,8 @@ public:
 		BUTTON,
 		CUBE,
 		GEAR,
+		ROCK,
+		KINOKO,
 		TITLE_MOV,
 		HONDANA_IMG,
 		UI_GAMESTART,
