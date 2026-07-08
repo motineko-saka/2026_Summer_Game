@@ -15,21 +15,10 @@ void Gaer::InitLoad(void)
 	transform_.SetModel(ResourceManager::GetInstance().LoadModelDuplicate(ResourceManager::SRC::GEAR));
 }
 
-void Gaer::InitTransform(void)
-{
-}
-
-void Gaer::InitCollider(void)
-{
-}
-
-void Gaer::InitAnimation(void)
-{
-}
-
 void Gaer::InitPost(void)
 {
 	isAnswerObject_ = false;
+	isGrav = false;
 }
 
 void Gaer::ObjectUpdateProcess(void)

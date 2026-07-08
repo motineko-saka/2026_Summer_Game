@@ -9,6 +9,7 @@
 #include "../Object/Actor/SkyDome.h"
 #include "../Object/Actor/Charactor/Player.h"
 #include "../Object/Actor/Charactor/GameObject/ObjectBase.h"
+#include "../Object/Actor/Charactor/GameObject/Gaer.h"
 #include "../Object/Actor/Wall.h"
 #include "../Object/LightPillar.h"
 #include "../Object/Collider/ColliderBase.h"
@@ -111,12 +112,12 @@ void GameScene::Init(void)
 	objects_.back()->SetPosition({ 0.0f, 80.0f, -50.0f });
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 
-	objects_.push_back(new ObjectBase(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::GEAR));
+	objects_.push_back(new Gaer(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::GEAR));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ -900.0f, 0.0f, 0.5f });
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 
-	objects_.push_back(new ObjectBase(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::GEAR));
+	objects_.push_back(new Gaer(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::GEAR));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ -1000.0f, 0.0f, 0.5f });
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
