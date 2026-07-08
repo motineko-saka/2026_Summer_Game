@@ -82,11 +82,13 @@ public:
 	void SetRot(float rot) { gearRot_ = rot; }
 	void SetIsRot(bool is) { isRot_ = is; }
 
-	//VECTOR GetScale(void){return scale}
+	bool GetIsRockExist(void) { return isRockExist_; }
 
 protected:
 	// 答えにおいて正誤判定をするオブジェクトかどうか
 	bool isAnswerObject_ = true;
+
+	bool isRockExist_ = true;
 
 	// リソースロード
 	void InitLoad(void)override;

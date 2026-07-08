@@ -121,7 +121,7 @@ void GameScene::Init(void)
 
 	objects_.push_back(std::make_unique<Rock>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::ROCK));
 	objects_.back()->Init();
-	objects_.back()->SetPosition({ -100.0f, 80.0f, 0.0f });
+	objects_.back()->SetPosition({ -1000.0f, 80.0f, 0.0f });
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 
 	objects_.push_back(std::make_unique<Rock>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::KINOKO));
@@ -452,6 +452,20 @@ void GameScene::Update(void)
 	for (auto& obj : objects_)
 	{
 		if (obj) obj->Update();
+	}
+
+	// 削除対象のオブジェクトを配列から削除
+	for (auto it = objects_.begin(); it != objects_.end(); )
+	{
+		if ((*it)->GetObjectType() == ObjectBase::OBJECT_TYPE::ROCK && !(*it)->GetIsRockExist())
+		{
+			(*it)->Release();  // 必要なら Release() を呼ぶ
+			it = objects_.erase(it);  // 削除して次のイテレータを取得
+		}
+		else
+		{
+			++it;
+		}
 	}
 
 	// 踏む

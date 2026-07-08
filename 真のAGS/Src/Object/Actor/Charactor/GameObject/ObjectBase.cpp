@@ -97,11 +97,13 @@ void ObjectBase::InitCollider(void)
 {
 	MV1SetupCollInfo(transform_.modelId);
 
+	tag_ = ColliderBase::TAG::OBJECT;
+
 	InitObjCol();
 
 	// モデルのコライダ
 	ColliderModel* colModel =
-		new ColliderModel(ColliderBase::TAG::OBJECT, &transform_);
+		new ColliderModel(tag_, &transform_);
 	ownColliders_.emplace(static_cast<int>(COLLIDER_TYPE::MODEL), colModel);
 
 	// 主に地面との衝突で使用する線分コライダ
@@ -112,7 +114,7 @@ void ObjectBase::InitCollider(void)
 
 	// 主に壁や木などの衝突で仕様するカプセルコライダ
 	ColliderCapsule* colCapsule = new ColliderCapsule(
-		ColliderBase::TAG::PLAYER, &transform_,
+		tag_, &transform_,
 		COL_CAPSULE_TOP_LOCAL_POS, COL_CAPSULE_DOWN_LOCAL_POS,
 		COL_CAPSULE_RADIUS);
 	ownColliders_.emplace(static_cast<int>(COLLIDER_TYPE::CAPSULE), colCapsule);
@@ -181,13 +183,6 @@ void ObjectBase::UpdateProcess(void)
 	}
 
 	ObjectUpdateProcess();
-
-	// PUSH_BUTTON タイプの場合、プレイヤーが乗っているか判定
-	if (type_ == OBJECT_TYPE::GEAR)
-	{
-		transform_.quaRotLocal = Quaternion::AngleAxis(AsoUtility::Deg2RadD(gearRot_),
-			AsoUtility::AXIS_Z);
-	}
 
 	// 掴まれているコライダがあれば transform をそれに同期する
 	for (const auto& ct : ownColliders_)

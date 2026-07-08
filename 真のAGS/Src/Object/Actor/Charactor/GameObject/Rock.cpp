@@ -25,6 +25,7 @@ void Rock::InitObjCol(void)
 
 void Rock::InitPost(void)
 {
+	isRockExist_ = true;
 }
 
 void Rock::ObjectUpdateProcess(void)
@@ -32,7 +33,7 @@ void Rock::ObjectUpdateProcess(void)
 	for (const auto& hitCol : hitColliders_)
 	{
 		if (hitCol == nullptr) continue;
-		if (hitCol->GetTag() != ColliderBase::TAG::OBJECT) continue;
+		if (hitCol->GetTag() != ColliderBase::TAG::KINOKO) continue;
 
 		const Transform* objectTransform = hitCol->GetFollow();
 		if (objectTransform == nullptr) continue;
@@ -47,7 +48,7 @@ void Rock::ObjectUpdateProcess(void)
 		if (distance < BUTTON_TRIGGER_DISTANCE)
 		{
 			// “¥‚ñ‚¾Žž‚Ìˆ—
-			//isPushButton_ = true;
+			isRockExist_ = false;
 			break;
 		}
 	}
