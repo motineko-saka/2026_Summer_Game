@@ -190,7 +190,6 @@ void CharactorBase::CollisionGravity(void)
 		{
 			isJump_ = false;
 		}
-
 	}
 	if (!isJump_)
 	{

@@ -56,4 +56,8 @@ private:
 
 	// 選択インデックス (0: Start, 1: Tutorial, 2: Exit)
 	int uiSelect_ = 0;
+
+	// 前フレームのマウス位置
+	float prevMouseX_;
+	float prevMouseY_;
 };
