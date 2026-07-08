@@ -21,8 +21,6 @@ ResourceManager& ResourceManager::GetInstance(void)
 
 void ResourceManager::Init(void)
 {
-
-	// 推奨しませんが、どうしても使いたい方は
 	using RES = Resource;
 	using RES_T = RES::TYPE;
 	static std::string PATH_IMG = Application::PATH_IMAGE;
@@ -125,6 +123,10 @@ void ResourceManager::Init(void)
 	// UI終了
 	res = new RES(RES_T::IMG, PATH_IMG + "End.png");
 	resourcesMap_.emplace(SRC::UI_EXIT, res);
+
+	// 宝箱
+	res = new RES(RES_T::MODEL, PATH_MDL + "Object/Box.mv1");
+	resourcesMap_.emplace(SRC::Chest, res);
 }
 
 void ResourceManager::Release(void)
@@ -179,7 +181,6 @@ ResourceManager::ResourceManager(void)
 
 Resource& ResourceManager::_Load(SRC src)
 {
-
 	// ロード済みチェック
 	const auto& lPair = loadedMap_.find(src);
 	if (lPair != loadedMap_.end())
@@ -202,5 +203,4 @@ Resource& ResourceManager::_Load(SRC src)
 	loadedMap_.emplace(src, *rPair->second);
 
 	return *rPair->second;
-
 }

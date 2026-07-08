@@ -61,6 +61,12 @@ public:
 	// 衝突種別
 	TAG GetTag(void) const { return tag_; }
 
+
+	// --- 追加: 掴めるかどうかのフラグ操作 ---
+	void SetGrabbable(bool g) { isGrabbable_ = g; }
+	bool IsGrabbable() const { return isGrabbable_; }
+	// ------------------------------------------
+
 	// 指定された回数と距離で三角形の法線方向に押し戻した座標を取得
 	virtual VECTOR GetPosPushBackAlongNormal(
 		const MV1_COLL_RESULT_POLY& hitColPoly,
@@ -96,4 +102,8 @@ protected:
 
 	VECTOR localPos_;
 
+
+private:
+	// このコライダがプレイヤーに掴まれる対象か
+	bool isGrabbable_ = true;
 };

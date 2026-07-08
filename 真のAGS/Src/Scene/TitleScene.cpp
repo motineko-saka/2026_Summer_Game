@@ -113,8 +113,8 @@ void TitleScene::Update(void)
 	}
 
 	// Œˆ’è
-	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE) || InputManager::GetInstance()->IsTrgMouseLeft()
-		|| InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::DOWN))
+	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE) || InputManager::GetInstance()->IsTrgDown(KEY_INPUT_RETURN)
+		|| InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::DOWN) || InputManager::GetInstance()->IsTrgMouseLeft())
 	{
 		switch (uiSelect_)
 		{

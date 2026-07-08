@@ -16,6 +16,7 @@ public:
 		BUTTON,
 		PRESS_BUTTON,
 		GEAR,
+		CHEST,
 	};
 
 	struct BoundingBox

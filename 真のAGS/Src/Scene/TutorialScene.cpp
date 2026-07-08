@@ -96,7 +96,7 @@ void TutorialScene::Init(void)
 	skyDome_->Init();
 
 	// オブジェクト作成（複数）
-	objects_.reserve(1);
+	objects_.reserve(2);
 
 	//objects_.push_back(new ObjectBase(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::AKEG));
 	//objects_.back()->Init();
@@ -104,10 +104,17 @@ void TutorialScene::Init(void)
 	//objects_.back()->SetPosition({ 1260.0f, -500.0f, -50.5f });
 	//objects_.back()->SetScale({ 0.2f, 0.2f, 0.2f });
 
-	objects_.push_back(new ObjectBase(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::BUTTON));
+	objects_.push_back(new ObjectBase(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::BUTTON));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ 0.0f, -600.0f, -50.0f });
 	objects_.back()->SetScale({ 0.5f, 0.5f, 0.5f });
+	objects_.back()->SetPlaced(true);
+
+	objects_.push_back(new ObjectBase(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::CHEST));
+	objects_.back()->Init();
+	objects_.back()->SetPosition({ 900.0f, -520.0f, 100.0f });
+	objects_.back()->SetScale({ 0.5f, 0.5f, 0.5f });
+	objects_.back()->SetPlaced(true);
 
 	//objects_.push_back(new ObjectBase(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[2], ObjectBase::OBJECT_TYPE::PRESS_BUTTON));
 	//objects_.back()->Init();
@@ -172,7 +179,6 @@ void TutorialScene::Init(void)
 			}
 		}
 	}
-
 
 	// ポストエフェクト用スクリーン
 	postEffectScreen_ = MakeScreen(
@@ -554,7 +560,6 @@ const void TutorialScene::MakeNewObject(std::vector<ObjectBase*>& newObjects)
 		// オブジェクトの衝突コライダをプレイヤーに登録
 		const ColliderBase* objCaps = newObj->GetOwnCollider(static_cast<int>(ObjectBase::COLLIDER_TYPE::CAPSULE));
 		if (!objCaps) return;
-
 
 		for (auto& player : players_)
 		{

@@ -34,6 +34,7 @@ public:
 		UI_GAMESTART,
 		UI_TUTORIAL,
 		UI_EXIT,
+		Chest,
 	};
 
 	// 明示的にインステンスを生成する

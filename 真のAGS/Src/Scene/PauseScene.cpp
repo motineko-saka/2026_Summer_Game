@@ -44,7 +44,7 @@ void PauseScene::Update(void)
 		selectGameEnd_ = false;
 	}
 
-	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_RETURN))
+	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_RETURN) || InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE))
 	{
 		if (selectGameEnd_) SceneManager::GetInstance()->GameEnd();
 		else SceneManager::GetInstance()->PopScene();
