@@ -33,10 +33,6 @@ void SceneManager::Init(void)
 	Loading::GetInstance()->Init();
 	Loading::GetInstance()->Load();
 
-	// カメラ生成
-	camera_ = new Camera();
-	camera_->Init();
-
 	// 最初はタイトル画面から
 	ChangeScene(std::make_shared<TitleScene>());
 	//ChangeScene(std::make_shared<TutorialScene>());
@@ -143,6 +139,8 @@ void SceneManager::ChangeScene(std::shared_ptr<SceneBase> scene)
 		scenes_.back() = scene;
 	}
 
+	SetMouseDispFlag(false);
+
 	// 読み込み(非同期)
 	Loading::GetInstance()->StartAsyncLoad();
 	scenes_.back()->Load();
@@ -161,6 +159,7 @@ void SceneManager::PopScene(void)
 	//積んであるものを消して、もともとあったものを末尾にする
 	if (scenes_.size() > 1)
 	{
+		SetMouseDispFlag(false);
 		scenes_.pop_back();
 	}
 }
@@ -178,11 +177,6 @@ float SceneManager::GetDeltaTime(void) const
 {
 	return deltaTime_;
 	//return 1 / 60.0f;
-}
-
-Camera* SceneManager::GetCamera(void) const
-{
-	return camera_;
 }
 
 int SceneManager::GetMainScreen(void) const

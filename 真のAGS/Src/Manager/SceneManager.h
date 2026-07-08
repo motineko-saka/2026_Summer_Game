@@ -6,7 +6,6 @@
 
 class SceneBase;
 class Fader;
-class Camera;
 
 class SceneManager
 {
@@ -70,9 +69,6 @@ public:
 	// デルタタイムの取得
 	float GetDeltaTime(void) const;
 
-	// カメラの取得
-	Camera* GetCamera(void) const;
-
 	int GetMainScreen(void) const;
 
 private:
@@ -83,9 +79,6 @@ private:
 	//Drawの関係上Backを最新のシーンとする
 	//基本的には要素は一つだけだがポーズシーンなどが積み重なる形
 	std::list<std::shared_ptr<SceneBase>>scenes_;
-
-	// カメラ
-	Camera* camera_;
 
 	// ゲーム終了
 	bool isGameEnd_;

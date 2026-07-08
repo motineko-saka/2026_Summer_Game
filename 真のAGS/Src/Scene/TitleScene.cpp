@@ -32,6 +32,9 @@ void TitleScene::Init(void)
 
 	// UI 選択初期化
 	uiSelect_ = 0;
+
+	prevMouseX_ = -1.0f;
+	prevMouseY_ = -1.0f;
 }
 
 void TitleScene::Load(void)
@@ -69,6 +72,31 @@ void TitleScene::Update(void)
 		SceneManager::GetInstance()->ChangeScene(std::make_shared<GameClearScene>());
 	}
 
+	// マウスで選択
+	auto mousePos = InputManager::GetInstance()->GetMousePos();
+	bool mouseMove = (mousePos.x != prevMouseX_) || (mousePos.y != prevMouseY_);
+	bool mouseClick = InputManager::GetInstance()->IsTrgMouseLeft() || InputManager::GetInstance()->IsClickMouseLeft();
+
+	if (mouseMove || mouseClick)
+	{
+		if (mousePos.x > Application::SCREEN_SIZE_X * 0.5f)
+		{
+			uiSelect_ = 0;
+		}
+		else if (mousePos.x > Application::SCREEN_SIZE_X * 0.4f)
+		{
+			uiSelect_ = 1;
+		}
+		else
+		{
+			uiSelect_ = 2;
+		}
+
+		// 前フレームのマウス位置を更新
+		prevMouseX_ = mousePos.x;
+		prevMouseY_ = mousePos.y;
+	}
+
 	// 十字キー / パッドで選択移動
 	// 左に移動
 	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_LEFT)
@@ -83,22 +111,6 @@ void TitleScene::Update(void)
 	{
 		uiSelect_ = (std::max)(uiSelect_ - 1, 0);
 	}
-
-	// マウスで選択
-	auto mousePos = InputManager::GetInstance()->GetMousePos();
-	if (mousePos.x > Application::SCREEN_SIZE_X * 0.5f)
-	{
-		uiSelect_ = 0;
-	}
-	else if (mousePos.x > Application::SCREEN_SIZE_X * 0.4f)
-	{
-		uiSelect_ = 1;  
-	}
-	else
-	{
-		uiSelect_ = 2; 
-	}
-	
 
 	// 決定
 	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE) || InputManager::GetInstance()->IsTrgMouseLeft()
