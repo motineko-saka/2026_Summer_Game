@@ -1,6 +1,7 @@
 #include "Tutorial.h"
 #include <DxLib.h>
 #include "../Application.h"
+#include "../Manager/ResourceManager.h"
 #include <cstdio>
 #include <cmath>
 
@@ -8,18 +9,31 @@
 #define KEY_TUTORIAL_NEXT KEY_INPUT_Z
 #endif
 
+static std::vector<std::string> SplitUTF8(const std::string& s)
+{
+	std::vector<std::string> out;
+	for (size_t i = 0; i < s.size();)
+	{
+		unsigned char c = static_cast<unsigned char>(s[i]);
+		size_t len = 1;
+		if ((c & 0x80) == 0) len = 1;
+		else if ((c & 0xE0) == 0xC0) len = 2;
+		else if ((c & 0xF0) == 0xE0) len = 3;
+		else if ((c & 0xF8) == 0xF0) len = 4;
+		out.push_back(s.substr(i, len));
+		i += len;
+	}
+	return out;
+}
+
 Tutorial::Tutorial()
-	: steps_()
-	, currentIndex_(-1)
-	, active_(false)
-	, inputDelay_(0)
-	, animCounter_(0)
+	: steps_(), currentIndex_(-1), active_(false), inputDelay_(0),
+	animCounter_(0), revealIndex_(0), typeTick_(0), enoguHandle_(-1),
+	enoguType_(Resource::TYPE::NONE)
 {
 }
 
-Tutorial::~Tutorial()
-{
-}
+Tutorial::~Tutorial() = default;
 
 void Tutorial::Init()
 {
@@ -28,21 +42,25 @@ void Tutorial::Init()
 	active_ = false;
 	inputDelay_ = 0;
 	animCounter_ = 0;
+	revealIndex_ = 0;
+	typeTick_ = 0;
+	enoguHandle_ = -1;
+	enoguType_ = Resource::TYPE::NONE;
 }
 
 void Tutorial::ClearSteps()
 {
 	steps_.clear();
 	currentIndex_ = -1;
+	revealIndex_ = 0;
+	typeTick_ = 0;
+	enoguHandle_ = -1;
+	enoguType_ = Resource::TYPE::NONE;
 }
 
-void Tutorial::AddStep(const std::string& text, ConditionFunc cond, OnEnterFunc onEnter)
+void Tutorial::AddStep(const std::string& text, ConditionFunc cond, OnEnterFunc onEnter, ResourceManager::SRC face)
 {
-	StepInfo s;
-	s.text = text;
-	s.condition = cond;
-	s.onEnter = onEnter;
-	steps_.push_back(std::move(s));
+	steps_.push_back({ text, cond, onEnter, face });
 }
 
 void Tutorial::Start()
@@ -51,13 +69,20 @@ void Tutorial::Start()
 	{
 		active_ = false;
 		currentIndex_ = -1;
+		enoguHandle_ = -1;
+		enoguType_ = Resource::TYPE::NONE;
 		return;
 	}
 	currentIndex_ = 0;
 	active_ = true;
-
 	inputDelay_ = DELAY_MAX;
 	animCounter_ = 0;
+	revealIndex_ = 0;
+	typeTick_ = 0;
+	splitText_ = SplitUTF8(steps_[0].text);
+	const Resource& r0 = ResourceManager::GetInstance().Load(steps_[0].faceSrc);
+	enoguHandle_ = r0.handleId_;
+	enoguType_ = r0.type_;
 	if (steps_[0].onEnter) steps_[0].onEnter();
 }
 
@@ -65,27 +90,25 @@ void Tutorial::Update()
 {
 	if (!active_) return;
 
-	// アニメーションカウンタ更新
 	++animCounter_;
 	if (inputDelay_ > 0) --inputDelay_;
-
 	if (currentIndex_ < 0 || currentIndex_ >= static_cast<int>(steps_.size())) return;
 
-	const auto& curStep = steps_[currentIndex_];
-	bool ready = false;
-	if (curStep.condition)
+	const auto& cur = steps_[currentIndex_];
+	bool condResult = cur.condition ? cur.condition() : false;
+	bool userNextKey = (inputDelay_ == 0) &&
+		(CheckHitKey(KEY_TUTORIAL_NEXT) || CheckHitKey(KEY_INPUT_RETURN) ||
+			CheckHitKey(KEY_INPUT_SPACE) || (GetMouseInput() & MOUSE_INPUT_LEFT));
+
+	// タイプ表示進行
+	if (revealIndex_ < static_cast<int>(splitText_.size()))
 	{
-		// 条件チェック
-		ready = curStep.condition();
+		if (++typeTick_ >= TYPE_SPEED) { ++revealIndex_; typeTick_ = 0; }
+		if (userNextKey) { revealIndex_ = static_cast<int>(splitText_.size()); inputDelay_ = DELAY_MAX; return; }
 	}
-	else
-	{
-		if (inputDelay_ == 0 &&
-			(CheckHitKey(KEY_TUTORIAL_NEXT) || CheckHitKey(KEY_INPUT_RETURN) || CheckHitKey(KEY_INPUT_SPACE)))
-		{
-			ready = true;
-		}
-	}
+
+	// 進行可能判定：条件付きなら condResult が真で進む。未指定なら全文表示後のユーザー入力。
+	bool ready = condResult || (revealIndex_ >= static_cast<int>(splitText_.size()) && userNextKey);
 
 	if (ready && inputDelay_ == 0)
 	{
@@ -95,9 +118,17 @@ void Tutorial::Update()
 		{
 			active_ = false;
 			currentIndex_ = -1;
+			enoguHandle_ = -1;
+			enoguType_ = Resource::TYPE::NONE;
 		}
 		else
 		{
+			const Resource& r = ResourceManager::GetInstance().Load(steps_[currentIndex_].faceSrc);
+			enoguHandle_ = r.handleId_;
+			enoguType_ = r.type_;
+			revealIndex_ = 0;
+			typeTick_ = 0;
+			splitText_ = SplitUTF8(steps_[currentIndex_].text);
 			if (steps_[currentIndex_].onEnter) steps_[currentIndex_].onEnter();
 		}
 	}
@@ -109,115 +140,94 @@ void Tutorial::Draw() const
 
 	const int screenW = Application::SCREEN_SIZE_X;
 	const int screenH = Application::SCREEN_SIZE_Y;
-
-	// チュートリアルボックスサイズ
 	const int margin = 24;
 	const int boxH = 200;
-	int x0 = margin;
-	int y0 = screenH - boxH - margin;
-	int x1 = screenW - margin;
-	int y1 = screenH - margin;
+	int x0 = margin, y0 = screenH - boxH - margin, x1 = screenW - margin, y1 = screenH - margin;
+	const int faceW = 120;
+	const int faceX = x0 + 12;
 
-	// メインボックス
-	SetDrawBlendMode(DX_BLENDMODE_ALPHA, 200);
-	DrawBox(x0, y0, x1, y1, GetColor(18, 24, 40), true); // ダークブルー
-	SetDrawBlendMode(DX_BLENDMODE_ALPHA, 120);
-	DrawBox(x0, y0, x1, y0 + 48, GetColor(48, 68, 120), true); // ヘッダー風
-	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+	const int bubbleX = x0 + faceW + 24;
+	const int bubbleY = y0 + 20;
+	const int bubbleW = x1 - bubbleX - 18;
+	const int bubbleH = boxH - 40;
 
-	// ヘッダテキスト
-	const char* header = "操作チュートリアル";
-	DrawString(x0 + 18, y0 + 8, header, GetColor(255, 230, 120));
+	auto fillBox = [](int x1, int y1, int x2, int y2, int r, int g, int b, int alpha = 255)
+		{
+			SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
+			DrawBox(x1, y1, x2, y2, GetColor(r, g, b), true);
+			SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+		};
+	auto strokeBox = [](int x1, int y1, int x2, int y2, int r, int g, int b)
+		{
+			DrawBox(x1, y1, x2, y2, GetColor(r, g, b), false);
+	};
 
-	// ステップ番号表示
-	char stepbuf[64];
-	int total = static_cast<int>(steps_.size());
-	snprintf(stepbuf, sizeof(stepbuf), "STEP %d / %d", currentIndex_ + 1, total);
-	DrawString(x1 - 160, y0 + 12, stepbuf, GetColor(200, 200, 200));
+	// 吹き出し（背景＋枠）
+	fillBox(bubbleX, bubbleY, bubbleX + bubbleW, bubbleY + bubbleH, 30, 40, 60, 220);
+	strokeBox(bubbleX, bubbleY, bubbleX + bubbleW, bubbleY + bubbleH, 200, 200, 220);
 
-	// プログレスバー
-	const int barX = x0 + 18;
-	const int barY = y1 - 34;
-	const int barW = x1 - x0 - 36;
-	const int barH = 12;
-	// 背景
-	SetDrawBlendMode(DX_BLENDMODE_ALPHA, 140);
-	DrawBox(barX, barY, barX + barW, barY + barH, GetColor(80, 80, 80), true);
-	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+	// 尾
+	const int tailW = 20, tailH = 28;
+	const int tailX = bubbleX - tailW + 2;
+	const int tailY = bubbleY + bubbleH / 2 - tailH / 2;
+	fillBox(tailX, tailY, tailX + tailW, tailY + tailH, 30, 40, 60, 220);
+	strokeBox(tailX, tailY, tailX + tailW, tailY + tailH, 200, 200, 220);
 
-	// 進捗幅
-	float progress = 0.0f;
-	if (total > 0) progress = float(currentIndex_) / float(total);
-	int fillW = static_cast<int>(barW * progress);
-
-	// 説明テキスト
-	const char* text = steps_[currentIndex_].text.c_str();
-	const int tx = x0 + 18;
-	const int ty = y0 + 58;
-	DrawString(tx, ty, text, GetColor(235, 235, 235));
-
-	// 現在ステップ
-	bool stepReady = false;
-	const auto& curStep = steps_[currentIndex_];
-	if (curStep.condition)
+	// 顔画像または簡易キャラ描画
+	if (enoguHandle_ >= 0)
 	{
-		// 条件関数は副作用を起こさない想定で呼ぶ
-		stepReady = curStep.condition();
-	}
-
-	// プログレスバーの塗り
-	float t = animCounter_ * 0.06f;
-	int r = static_cast<int>(160 + 40.0f * std::sin(t));
-	int g = static_cast<int>(200 + 20.0f * std::sin(t * 0.9f));
-	int b = static_cast<int>(220 + 20.0f * std::sin(t * 1.1f));
-	// ready のときは緑系に変える
-	if (stepReady)
-	{
-		// 緑系で強調
-		r = static_cast<int>(120 + 40.0f * std::sin(t * 1.2f));
-		g = static_cast<int>(220 + 20.0f * std::sin(t * 1.1f));
-		b = static_cast<int>(140 + 20.0f * std::sin(t * 0.9f));
-	}
-	SetDrawBlendMode(DX_BLENDMODE_ALPHA, 200);
-	DrawBox(barX, barY, barX + fillW, barY + barH, GetColor(r, g, b), true);
-	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
-
-	// 行動を促す注意テキスト（目立たせる）
-	const char* hint = "行動を行うまで次に進みません。";
-	int hintX = x1 - 420;
-	int hintY = y0 + 56;
-	DrawString(hintX, hintY, hint, GetColor(220, 200, 100));
-
-	// ドット
-	int dotX = barX + fillW + 12;
-	int dotY = barY + (barH / 2);
-	// ドット色決定
-	int dr, dg, db;
-	int dalpha = 200;
-	if (stepReady)
-	{
-		// 緑に点滅
-		float blink = (std::sin(animCounter_ * 0.35f) + 1.0f) * 0.5f;
-		dr = static_cast<int>(120 + 120.0f * blink);
-		dg = static_cast<int>(200 + 55.0f * blink);
-		db = static_cast<int>(80 + 20.0f * blink);
-		dalpha = static_cast<int>(140 + 115.0f * blink);
+		int gw = 0, gh = 0;
+		if (GetGraphSize(enoguHandle_, &gw, &gh) == 0 && gw > 0 && gh > 0)
+		{
+			float scale = static_cast<float>(faceW) / static_cast<float>(gh);
+			int drawW = static_cast<int>(gw * scale);
+			int drawH = static_cast<int>(gh * scale);
+			int drawY = y0 + (boxH - drawH) / 2;
+			DrawExtendGraph(faceX, drawY, faceX + drawW, drawY + drawH, enoguHandle_, TRUE);
+		}
+		else
+		{
+			// フォールバック
+			DrawGraph(faceX, y0 + 20, enoguHandle_, TRUE);
+		}
 	}
 	else
 	{
-		// 待機中はやや暗めのオレンジ
-		dr = 200; dg = 160; db = 100;
-		dalpha = 160;
+		// 簡易キャラ
+		int cx = faceX;
+		int cy = y0 + 58;
+		fillBox(cx + 12, cy + 0, cx + 52, cy + 32, 200, 40, 40, 255); // 頭
+		fillBox(cx + 18, cy + 36, cx + 34, cy + 72, 255, 255, 255, 255); // 体
+		fillBox(cx + 22, cy + 44, cx + 30, cy + 60, 200, 40, 40, 255); // 前面
+		fillBox(cx + 6, cy + 40, cx + 16, cy + 46, 200, 40, 40, 255); // 左腕
+		fillBox(cx + 36, cy + 40, cx + 46, cy + 46, 200, 40, 40, 255); // 右腕
+		fillBox(cx + 20, cy + 72, cx + 24, cy + 88, 0, 0, 0, 255); // 左足
+		fillBox(cx + 28, cy + 72, cx + 32, cy + 88, 0, 0, 0, 255); // 右足
+		// 目
+		fillBox(cx + 20, cy + 8, cx + 24, cy + 12, 0, 0, 0, 255);
+		fillBox(cx + 28, cy + 8, cx + 32, cy + 12, 0, 0, 0, 255);
+	}
+	const auto& cur = steps_[currentIndex_];
+	int visible = revealIndex_;
+	if (visible > static_cast<int>(splitText_.size())) visible = static_cast<int>(splitText_.size());
+	std::string sub;
+	sub.reserve(visible * 3);
+	for (int i = 0; i < visible; ++i) sub += splitText_[i];
+
+	int textX = bubbleX + 16, textY = bubbleY + 16;
+	DrawString(textX, textY, sub.c_str(), GetColor(235, 235, 235));
+
+	if (visible >= static_cast<int>(splitText_.size()) && ((animCounter_ / 12) % 2 == 0))
+	{
+		const char* cont = "▼";
+		DrawString(bubbleX + bubbleW - 28, bubbleY + bubbleH - 28, cont, GetColor(200, 200, 140));
 	}
 
-	// ドットのリングと中点で演出
-	SetDrawBlendMode(DX_BLENDMODE_ALPHA, dalpha);
-	DrawCircle(dotX, dotY, 10, GetColor(dr, dg, db), true);
-	SetDrawBlendMode(DX_BLENDMODE_ALPHA, dalpha / 2);
-	DrawCircle(dotX, dotY, 16, GetColor(dr / 2, dg / 2, db / 2), true);
-	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+	int total = static_cast<int>(steps_.size());
 
-	// 小さな補助説明
+	//const char* hint = "行動を行うまで次に進みません。";
+	//DrawString(x1 - 420, y0 + 56, hint, GetColor(220, 200, 100));
+
 	char progressMsg[64];
 	snprintf(progressMsg, sizeof(progressMsg), "進行: %d / %d", currentIndex_ + 1, total);
 	DrawString(x1 - 160, y1 - 52, progressMsg, GetColor(180, 180, 180));

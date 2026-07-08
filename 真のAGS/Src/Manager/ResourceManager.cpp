@@ -75,7 +75,7 @@ void ResourceManager::Init(void)
 	// ÉçÉ{ÉbÉg
 	res = new RES(RES_T::MODEL, PATH_MDL + "Enemy/Robot/Robot.mv1");
 	resourcesMap_.emplace(SRC::ENEMY_ROBOT, res);
-	
+
 	// éãñÏ
 	res = new RES(RES_T::MODEL, PATH_MDL + "Enemy/Robot/Cone.mv1");
 	resourcesMap_.emplace(SRC::VIEW_RANGE, res);
@@ -127,6 +127,14 @@ void ResourceManager::Init(void)
 	// ïÛî†
 	res = new RES(RES_T::MODEL, PATH_MDL + "Object/Box.mv1");
 	resourcesMap_.emplace(SRC::Chest, res);
+
+	// äGÇÃãÔ
+	res = new RES(RES_T::IMG, PATH_IMG + "Enogukunn/kyara.png");
+	resourcesMap_.emplace(SRC::ENOGU, res);
+
+	// äGÇÃãÔ2
+	res = new RES(RES_T::IMG, PATH_IMG + "Enogukunn/ai.png");
+	resourcesMap_.emplace(SRC::ENOGU2, res);
 }
 
 void ResourceManager::Release(void)
