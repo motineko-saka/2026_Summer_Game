@@ -37,6 +37,7 @@ public:
 		UI_TUTORIAL,
 		UI_EXIT,
 		Chest,
+		OPENCHEST,
 		ENOGU,
 		ENOGU2,
 		ENOGU3,

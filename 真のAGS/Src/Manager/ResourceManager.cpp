@@ -136,6 +136,10 @@ void ResourceManager::Init(void)
 	res = new RES(RES_T::MODEL, PATH_MDL + "Object/Box.mv1");
 	resourcesMap_.emplace(SRC::Chest, res);
 
+	// ŠJ‚¢‚½•ó” 
+	res = new RES(RES_T::MODEL, PATH_MDL + "Object/OpenBox.mv1");
+	resourcesMap_.emplace(SRC::OPENCHEST, res);
+
 	// ŠG‚Ì‹ï
 	res = new RES(RES_T::IMG, PATH_IMG + "Enogukunn/kyara.png");
 	resourcesMap_.emplace(SRC::ENOGU, res);

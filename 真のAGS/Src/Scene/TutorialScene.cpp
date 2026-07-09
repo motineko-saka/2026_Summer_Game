@@ -363,7 +363,7 @@ const void TutorialScene::ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*
 	if (isNearButton && InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE))
 	{
 		obj.SetButtomPushed(true);
-		newObjects.push_back(new ObjectBase(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::CHEST));
+		newObjects.push_back(new ObjectBase(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::OPENCHEST));
 
 		for (size_t i = 0; i < objects_.size(); ++i)
 		{
@@ -478,11 +478,11 @@ const void TutorialScene::MakeNewObject(std::vector<ObjectBase*>& newObjects)
 {
 	for (auto& newObj : newObjects)
 	{
+
 		newObj->Init();
 		newObj->SetPosition({ 900.0f, -520.0f, 100.0f });
 		newObj->SetScale({ 0.8f, 0.8f, 0.8f });
 		newObj->SetPlaced(true);
-
 		for (const auto& stage : stageManager_->GetStage())
 		{
 			const ColliderBase* stageCollider = stage->GetOwnCollider(static_cast<int>(Stage::COLLIDER_TYPE::MODEL));

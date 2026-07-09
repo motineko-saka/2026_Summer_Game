@@ -15,13 +15,20 @@ static std::vector<std::string> SplitUTF8(const std::string& s)
 	for (size_t i = 0; i < s.size();)
 	{
 		unsigned char c = static_cast<unsigned char>(s[i]);
-		size_t len = 1;
-		if ((c & 0x80) == 0) len = 1;
-		else if ((c & 0xE0) == 0xC0) len = 2;
-		else if ((c & 0xF0) == 0xE0) len = 3;
-		else if ((c & 0xF8) == 0xF0) len = 4;
-		out.push_back(s.substr(i, len));
-		i += len;
+
+		// Shift-JISの先頭バイト判定
+		if ((0x81 <= c && c <= 0x9F) || (0xE0 <= c && c <= 0xFC))
+		{
+			// 2バイト文字
+			out.push_back(s.substr(i, 2));
+			i += 2;
+		}
+		else
+		{
+			// 1バイト文字
+			out.push_back(s.substr(i, 1));
+			i += 1;
+		}
 	}
 	return out;
 }

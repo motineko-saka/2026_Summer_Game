@@ -19,6 +19,7 @@ public:
 		ROCK,
 		KINOKO,
 		CHEST,
+		OPENCHEST,
 	};
 
 	struct BoundingBox
@@ -48,7 +49,7 @@ public:
 	void Push(const VECTOR& direction, float speed);
 
 	// İ’uÏ‚İƒtƒ‰ƒO‘€ì
-	void SetPlaced(bool placed) { placed_ = placed; }
+	void SetPlaced(bool placed);
 	bool IsPlaced() const { return placed_; }
 
 	// í—Şæ“¾
