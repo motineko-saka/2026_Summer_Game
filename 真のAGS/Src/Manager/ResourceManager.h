@@ -38,9 +38,14 @@ public:
 		UI_EXIT,
 		Chest,
 		OPENCHEST,
-		ENOGU,
+		ENOGU1,
 		ENOGU2,
 		ENOGU3,
+		ENOGU4,
+		ENOGU5,
+		ENOGU6,
+		ENOGU7,
+		ENOGU8,
 	};
 
 	// 明示的にインステンスを生成する
