@@ -45,42 +45,7 @@ void ObjectBase::Push(const VECTOR& direction, float speed)
 
 void ObjectBase::InitLoad(void)
 {
-	switch (type_)
-	{
-	case OBJECT_TYPE::WBOX:
-		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::WOODBOX));
-		break;
-	case OBJECT_TYPE::AKEG:
-		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::BARREL));
-		break;
-	case OBJECT_TYPE::SCENE_PROP:
-		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::WALL));
-		break;
-	case OBJECT_TYPE::BUTTON:
-		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::BUTTON));
-		break;
-	case OBJECT_TYPE::DEFAULT:
-		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::CUBE));
-		break;
-	case OBJECT_TYPE::PRESS_BUTTON:
-		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::CUBE));
-		break;
-	case OBJECT_TYPE::GEAR:
-		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::GEAR));
-		break;
-	case OBJECT_TYPE::ROCK:
-		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::ROCK));
-		break;
-	case OBJECT_TYPE::KINOKO:
-		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::KINOKO));
-	case OBJECT_TYPE::CHEST:
-		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::Chest));
-		break;
-	default:
-		break;
-	}
-
-	tag_ = ColliderBase::TAG::OBJECT;
+	
 }
 
 void ObjectBase::InitTransform(void)
@@ -91,13 +56,10 @@ void ObjectBase::InitTransform(void)
 
 	transform_.quaRotLocal = Quaternion::Identity();
 
-	if(type_ == OBJECT_TYPE::CHEST)
-	{
-		transform_.quaRotLocal = Quaternion::AngleAxis(AsoUtility::Deg2RadD(90.0f),
-			AsoUtility::AXIS_Y);
-	}
-
 	transform_.pos = { -1000.0f, 80.0f, -10.0f };
+
+	InitObjTrans();
+
 	transform_.Update();
 }
 
@@ -107,6 +69,7 @@ void ObjectBase::InitCollider(void)
 
 	tag_ = ColliderBase::TAG::OBJECT;
 
+	// 各継承先のtag_を変更
 	InitObjCol();
 
 	// モデルのコライダ
@@ -127,7 +90,8 @@ void ObjectBase::InitCollider(void)
 		COL_CAPSULE_RADIUS);
 	ownColliders_.emplace(static_cast<int>(COLLIDER_TYPE::CAPSULE), colCapsule);
 
-	if (type_ == OBJECT_TYPE::BUTTON || type_ == OBJECT_TYPE::CHEST)
+	// 持てなくする
+	if (isHoldable_)
 	{
 		if (colLine) colLine->SetGrabbable(false);
 		if (colCapsule) colCapsule->SetGrabbable(false);
@@ -147,10 +111,6 @@ void ObjectBase::InitPost(void)
 
 void ObjectBase::UpdateProcess(void)
 {
-	if(isRot_)
-	{
-		gearRot_ += 5.0f;
-	}
 
 	if (transform_.pos.y < -2000.0f)
 	{
@@ -170,33 +130,11 @@ void ObjectBase::UpdateProcess(void)
 	isGrabbed_ = false; // デフォルトはつかまれていない
 	isPushButton_ = false; // デフォルトはボタンが踏まれていない
 
-	// PUSH_BUTTON タイプの場合、プレイヤーが乗っているか判定
-	if (type_ == OBJECT_TYPE::PRESS_BUTTON)
-	{
-		PressButton();
-		//for (const auto& hitCol : hitColliders_)
-		//{
-		//	if (hitCol == nullptr) continue;
-		//	if (hitCol->GetTag() != ColliderBase::TAG::PLAYER) continue;
-		//
-		//	const Transform* playerTransform = hitCol->GetFollow();
-		//	if (playerTransform == nullptr) continue;
-		//
-		//	VECTOR playerPos = playerTransform->pos;
-		//	VECTOR diff = VSub(playerPos, transform_.pos);
-		//	
-		//	// 3D距離を計算
-		//	float distance = VSize(diff);
-		//	const float BUTTON_TRIGGER_DISTANCE = 100.0f; // 適切な値に調整
-		//
-		//	if (distance < BUTTON_TRIGGER_DISTANCE)
-		//	{
-		//		// 踏んだ時の処理
-		//		isPushButtom_ = true;
-		//		break;
-		//	}
-		//}
-	}
+	//// PUSH_BUTTON タイプの場合、プレイヤーが乗っているか判定
+	//if (type_ == OBJECT_TYPE::PRESS_BUTTON)
+	//{
+	//	PressButton();
+	//}
 
 	ObjectUpdateProcess();
 

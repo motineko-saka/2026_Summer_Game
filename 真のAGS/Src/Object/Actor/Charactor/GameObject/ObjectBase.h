@@ -1,6 +1,7 @@
 #pragma once
 #include <DxLib.h>
 #include "../../Charactor/CharactorBase.h"
+#include "../../../../Manager/ResourceManager.h"
 #include "../../../../Scene/SceneBase.h"
 
 class ObjectBase : public CharactorBase
@@ -19,12 +20,6 @@ public:
 		ROCK,
 		KINOKO,
 		CHEST,
-	};
-
-	struct BoundingBox
-	{
-		int minPos;
-		int maxPos;
 	};
 
 	// world と種類を指定可能に
@@ -80,7 +75,6 @@ public:
 	// PUSH_BUTTON のリセット（次のフレーム判定のため）
 	void ResetPushButton(void) { isPushButton_ = false; }
 
-	void SetRot(float rot) { gearRot_ = rot; }
 	void SetIsRot(bool is) { isRot_ = is; }
 
 	bool GetIsRockExist(void) { return isRockExist_; }
@@ -91,11 +85,18 @@ protected:
 
 	bool isRockExist_ = true;
 
+	// PUSH_BUTTON が踏まれているか
+	bool isPushButton_ = false;
+
+	bool isHoldable_ = false;
+
 	// リソースロード
 	void InitLoad(void)override;
 
 	// 大きさ、回転、座標の初期化
 	void InitTransform(void) override;
+
+	virtual void InitObjTrans(void) {};
 
 	virtual void InitObjCol(void) {};
 
@@ -160,13 +161,8 @@ private:
 
 	bool isRot_ = false;
 
-	// PUSH_BUTTON が踏まれているか
-	bool isPushButton_ = false;
-
 	// 設置済みフラグ（true のとき掴めない、動かせない）
 	bool placed_{ false };
-
-	float gearRot_ = 0.0f;
 
 	// 答えの場所とオブジェクトの衝突判定
 	void CheckAnswer(void);

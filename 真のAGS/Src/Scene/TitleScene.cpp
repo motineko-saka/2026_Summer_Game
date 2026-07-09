@@ -93,8 +93,8 @@ void TitleScene::Update(void)
 		}
 
 		// 前フレームのマウス位置を更新
-		prevMouseX_ = mousePos.x;
-		prevMouseY_ = mousePos.y;
+		prevMouseX_ = (float)mousePos.x;
+		prevMouseY_ = (float)mousePos.y;
 	}
 
 	// 十字キー / パッドで選択移動

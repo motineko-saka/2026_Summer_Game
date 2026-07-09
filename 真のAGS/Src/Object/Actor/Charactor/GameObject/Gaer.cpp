@@ -13,6 +13,7 @@ Gaer::Gaer(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type)
 void Gaer::InitLoad(void)
 {
 	transform_.SetModel(ResourceManager::GetInstance().LoadModelDuplicate(ResourceManager::SRC::GEAR));
+	isHoldable_ = true;
 }
 
 void Gaer::InitPost(void)

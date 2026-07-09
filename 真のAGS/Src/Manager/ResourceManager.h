@@ -27,6 +27,7 @@ public:
 		WALL,
 		WOODBOX,
 		BUTTON,
+		PRESS_BUTTON,
 		CUBE,
 		GEAR,
 		ROCK,

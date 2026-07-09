@@ -7,6 +7,8 @@ public:
 	Rock(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type);
 	virtual ~Rock() override = default;
 
+private:
+
 	// リソースロード
 	void InitLoad(void)override;
 

@@ -12,25 +12,11 @@ Button::Button(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type)
 void Button::InitLoad(void)
 {
 	transform_.SetModel(ResourceManager::GetInstance().LoadModelDuplicate(ResourceManager::SRC::BUTTON));
-}
-
-void Button::InitTransform(void)
-{
-}
-
-void Button::InitCollider(void)
-{
-}
-
-void Button::InitAnimation(void)
-{
-}
-
-void Button::InitPost(void)
-{
+	
+	isHoldable_ = true;
 }
 
 void Button::ObjectUpdateProcess(void)
 {
-	// É{É^ÉìÇÃèàóù
+	
 }

@@ -9,6 +9,9 @@
 #include "../Object/Actor/SkyDome.h"
 #include "../Object/Actor/Charactor/Player.h"
 #include "../Object/Actor/Charactor/GameObject/ObjectBase.h"
+#include "../Object/Actor/Charactor/GameObject/Object.h"
+#include "../Object/Actor/Charactor/GameObject/Button.h"
+#include "../Object/Actor/Charactor/GameObject/PressButton.h"
 #include "../Object/Actor/Charactor/GameObject/Gaer.h"
 #include "../Object/Actor/Charactor/GameObject/Rock.h"
 #include "../Object/Actor/Wall.h"
@@ -89,22 +92,22 @@ void GameScene::Init(void)
 	// オブジェクト作成（複数）
 	objects_.reserve(10);
 
-	objects_.push_back(std::make_unique<ObjectBase>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::DEFAULT));
+	objects_.push_back(std::make_unique<Object>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::DEFAULT));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ 1260.0f, 0.0f, -50.5f });
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 
-	objects_.push_back(std::make_unique<ObjectBase>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::WBOX));
+	objects_.push_back(std::make_unique<Object>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::WBOX));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ 1260.0f, 0.0f, -50.5f });
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 
-	objects_.push_back(std::make_unique<ObjectBase>(GameScene::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[2], ObjectBase::OBJECT_TYPE::AKEG));
+	objects_.push_back(std::make_unique<Object>(GameScene::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[2], ObjectBase::OBJECT_TYPE::AKEG));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ -1260.0f, 0.0f, -50.5f });
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 
-	objects_.push_back(std::make_unique<ObjectBase>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[3], ObjectBase::OBJECT_TYPE::BUTTON));
+	objects_.push_back(std::make_unique<Button>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[3], ObjectBase::OBJECT_TYPE::BUTTON));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ 0.0f, 80.0f, -50.0f });
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });

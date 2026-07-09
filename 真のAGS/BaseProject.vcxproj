@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Object.cpp" />
     <ClCompile Include="Src\Object\Actor\Charactor\GameObject\PressButton.cpp" />
     <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Gaer.cpp" />
     <ClCompile Include="Src\Renderer\PixelRenderer.cpp" />
@@ -72,6 +73,7 @@
     <ClCompile Include="Src\UI\Tutorial.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Src\Object\Actor\Charactor\GameObject\Object.h" />
     <ClInclude Include="Src\Object\Actor\Charactor\GameObject\PressButton.h" />
     <ClInclude Include="Src\Object\Actor\Charactor\GameObject\Gaer.h" />
     <ClInclude Include="Src\Renderer\PixelRenderer.h" />

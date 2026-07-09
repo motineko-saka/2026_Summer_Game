@@ -9,6 +9,12 @@ public:
 	Gaer(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type);
 	virtual ~Gaer() override = default;
 
+	bool isPushButtom(void) const { return isRot_; }
+private:
+
+	float gearRot_;
+	bool isRot_ = false;
+
 	// リソースロード
 	void InitLoad(void)override;
 
@@ -16,8 +22,5 @@ public:
 	void InitPost(void)override;
 
 	void ObjectUpdateProcess(void)override;
-private:
-	float gearRot_;
-	bool isRot_ = false;
 };
 

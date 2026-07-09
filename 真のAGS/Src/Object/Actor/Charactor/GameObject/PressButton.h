@@ -3,6 +3,14 @@
 class PressButton :
     public ObjectBase
 {
-    virtual void ObjectUpdateProcess(void) {};
+public:
+    PressButton(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type);
+    virtual ~PressButton() override = default;
+
+private:
+    // リソースロード
+    void InitLoad(void)override;
+
+    void ObjectUpdateProcess(void)override;
 };
 
