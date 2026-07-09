@@ -18,6 +18,7 @@ public:
 		GEAR,
 		ROCK,
 		KINOKO,
+		CHEST,
 	};
 
 	struct BoundingBox

@@ -36,6 +36,10 @@ public:
 		UI_GAMESTART,
 		UI_TUTORIAL,
 		UI_EXIT,
+		Chest,
+		ENOGU,
+		ENOGU2,
+		ENOGU3,
 	};
 
 	// 明示的にインステンスを生成する

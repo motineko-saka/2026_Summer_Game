@@ -407,7 +407,7 @@ void Player::CollisionReserve(void)
 
 void Player::ProcessPickup(void)
 {
-	// 押下トリガのみ受け付ける
+	// 入力判定
 	bool btnTrg = false;
 
 	btnTrg = InputManager::GetInstance()->IsTrgDown(KEY_INPUT_E)
@@ -429,7 +429,10 @@ void Player::ProcessPickup(void)
 			{
 				if (tati == nullptr) continue;
 
-				// 既に別のプレイヤー等に掴まれていればスキップ
+				// 追加: 掴めないコライダはスキップ
+				if (!tati->IsGrabbable()) continue;
+
+				// 既に誰かに掴まれているものはスキップ
 				if (tati->IsHeld()) continue;
 
 				const Transform* follow = tati->GetFollow();

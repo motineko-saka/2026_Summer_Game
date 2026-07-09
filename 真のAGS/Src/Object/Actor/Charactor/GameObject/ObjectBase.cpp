@@ -73,6 +73,8 @@ void ObjectBase::InitLoad(void)
 		break;
 	case OBJECT_TYPE::KINOKO:
 		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::KINOKO));
+	case OBJECT_TYPE::CHEST:
+		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::Chest));
 		break;
 	default:
 		break;
@@ -88,6 +90,12 @@ void ObjectBase::InitTransform(void)
 	transform_.quaRot = Quaternion::Identity();
 
 	transform_.quaRotLocal = Quaternion::Identity();
+
+	if(type_ == OBJECT_TYPE::CHEST)
+	{
+		transform_.quaRotLocal = Quaternion::AngleAxis(AsoUtility::Deg2RadD(90.0f),
+			AsoUtility::AXIS_Y);
+	}
 
 	transform_.pos = { -1000.0f, 80.0f, -10.0f };
 	transform_.Update();
@@ -118,7 +126,15 @@ void ObjectBase::InitCollider(void)
 		COL_CAPSULE_TOP_LOCAL_POS, COL_CAPSULE_DOWN_LOCAL_POS,
 		COL_CAPSULE_RADIUS);
 	ownColliders_.emplace(static_cast<int>(COLLIDER_TYPE::CAPSULE), colCapsule);
+
+	if (type_ == OBJECT_TYPE::BUTTON || type_ == OBJECT_TYPE::CHEST)
+	{
+		if (colLine) colLine->SetGrabbable(false);
+		if (colCapsule) colCapsule->SetGrabbable(false);
+		if (colModel) colModel->SetGrabbable(false);
+	}
 }
+
 void ObjectBase::InitAnimation(void)
 {
 	animController_ = new AnimationController(transform_.modelId);
