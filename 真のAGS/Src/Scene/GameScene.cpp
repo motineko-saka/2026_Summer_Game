@@ -1,4 +1,5 @@
 #include <DxLib.h>
+#include <string>
 #include "../Manager/SceneManager.h"
 #include "../Manager/InputManager.h"
 #include "../Manager/Camera.h"
@@ -97,7 +98,7 @@ void GameScene::Init(void)
 	objects_.push_back(std::make_unique<Button>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[3], ObjectBase::OBJECT_TYPE::BUTTON));
 	objects_.back()->Init();
 	objects_.back()->SetPosition(buttonPos_);
-	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
+	objects_.back()->SetScale({ 0.5, 0.5, 0.5 });
 
 	objects_.push_back(std::make_unique<Rock>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::ROCK));
 	objects_.back()->Init();
@@ -107,7 +108,7 @@ void GameScene::Init(void)
 	objects_.push_back(std::make_unique<Bomb>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::KINOKO));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ -500.0f, 0.0f, 0.0f });
-	objects_.back()->SetScale({ 5.0, 5.0, 5.0 });
+	objects_.back()->SetScale({ 8.0, 8.0, 8.0 });
 
 	objects_.push_back(std::make_unique<Object>(GameScene::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::DEFAULT));
 	objects_.back()->Init();
@@ -311,7 +312,7 @@ const void GameScene::ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*>& n
 
 	// ボタンの近くにいて、スペースキーか左ボタンが押されたら
 	if (isNearButton &&
-		(InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE) || InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::RIGHT)))
+		(InputManager::GetInstance()->IsTrgDown(KEY_INPUT_F) || InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::RIGHT)))
 	{
 		// ボタンが押されたときの処理（例：ゲームクリア、ドアが開くなど）
 
@@ -567,6 +568,14 @@ void GameScene::Draw(void)
 	ShadowMap_DrawEnd();
 
 	SetUseShadowMap(0, shadowMapHandle_);
+
+	const auto objectPos = ConvWorldPosToScreenPos(endPos_);
+	std::string str = "ゴール";
+	const int strWidth = GetDrawStringWidth(str.c_str(), static_cast<int>(str.length()));
+	const int drawX = static_cast<int>(objectPos.x) - (strWidth / 2);
+
+	DrawFormatString(drawX, static_cast<int>(objectPos.y) - 120, 0xffff00, str.c_str());
+	DrawFormatString(static_cast<int>(objectPos.x), static_cast<int>(objectPos.y) - 100, 0xffff00, "　↓");
 
 	int halfWidth = screenWidth_ / 2;
 

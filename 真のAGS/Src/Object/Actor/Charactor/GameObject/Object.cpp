@@ -45,6 +45,11 @@ void Object::InitObjTrans(void)
 
 		isHoldable_ = true;
 	}
+
+	if (type_ == OBJECT_TYPE::DEFAULT)
+	{
+		capsule_r = 60.0f;
+	}
 }
 
 void Object::InitPost(void)
