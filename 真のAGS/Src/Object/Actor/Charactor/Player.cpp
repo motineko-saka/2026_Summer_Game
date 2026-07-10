@@ -270,6 +270,9 @@ void Player::ProcessMove(void)
 		{
 			if (AudioManager::GetInstance()) AudioManager::GetInstance()->LoopSE(SoundID::SE_WALK);
 			isWalkSePlaying_ = true;
+
+			if (AudioManager::GetInstance()) AudioManager::GetInstance()->LoopSE(SoundID::SE_TUTORIAL_WALK);
+			isWalkSePlaying_ = true;
 		}
 	}
 	else

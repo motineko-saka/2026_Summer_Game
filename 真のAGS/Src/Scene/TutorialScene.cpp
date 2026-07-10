@@ -416,17 +416,19 @@ void TutorialScene::Update(void)
 	// チュートリアル完了でクリアへ遷移
 	if (isEndTutorial_)
 	{
-		SceneManager::GetInstance()->ChangeScene(std::make_shared<GameClearScene>());
 		AudioManager::GetInstance()->StopBGM();
 		AudioManager::GetInstance()->DeleteSceneSound(LoadScene::GAME_TUTORIAL);
+
+		SceneManager::GetInstance()->ChangeScene(std::make_shared<GameClearScene>());
 		return;
 	}
 
 	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_P))
 	{
-		SceneManager::GetInstance()->ChangeScene(std::make_shared<TitleScene>());
 		AudioManager::GetInstance()->StopBGM();
 		AudioManager::GetInstance()->DeleteSceneSound(LoadScene::GAME_TUTORIAL);
+
+		SceneManager::GetInstance()->ChangeScene(std::make_shared<TitleScene>());
 		return;
 	}
 

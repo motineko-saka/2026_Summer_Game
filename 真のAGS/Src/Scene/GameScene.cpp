@@ -22,6 +22,7 @@
 #include "GameClearScene.h"
 #include "PauseScene.h"
 #include "TitleScene.h"
+#include "GameOverScene.h"
 
 GameScene::GameScene(void)
 	:
@@ -235,6 +236,7 @@ void GameScene::Init(void)
 
 	// オーディオマネージャーのインスタンスの生成
 	AudioManager::GetInstance()->CreateInstance();
+
 	// シーンのサウンドを読み込み、BGM を再生
 	if (AudioManager::GetInstance())
 	{
@@ -391,6 +393,18 @@ void GameScene::Update(void)
 		}
 
 		SceneManager::GetInstance()->ChangeScene(std::make_shared<GameClearScene>());
+		return;
+	}
+
+	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_H))
+	{
+		// BGM停止とシーン用サウンドの削除
+		if (AudioManager::GetInstance())
+		{
+			AudioManager::GetInstance()->StopBGM();
+			AudioManager::GetInstance()->DeleteSceneSound(LoadScene::GAME);
+		}
+		SceneManager::GetInstance()->ChangeScene(std::make_shared<GameOverScene>());
 		return;
 	}
 

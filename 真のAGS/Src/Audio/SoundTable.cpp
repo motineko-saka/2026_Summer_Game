@@ -36,6 +36,8 @@ namespace SoundTable_Game
 		{SoundID::SE_BROKE, "Data/Sound/SE/Broke_SE.mp3"},
 		{SoundID::SE_WARNING, "Data/Sound/SE/Warning_SE.mp3"},
 		{SoundID::SE_SUCCESS, "Data/Sound/SE/Success_SE.mp3"},
+		{SoundID::SE_TUTORIAL_WALK, "Data/Sound/SE/Walk_SE.mp3"},
+
 	};
 }
 
@@ -61,5 +63,6 @@ namespace SoundTable_Tutorial
 	static const std::unordered_map < SoundID, std::string> Table =
 	{
 		{SoundID::BGM_TUTORIAL, "Data/Sound/BGM/GameScene_BGM.mp3"},
+		{SoundID::SE_TUTORIAL_WALK, "Data/Sound/SE/Walk_SE.mp3"},
 	};
 }

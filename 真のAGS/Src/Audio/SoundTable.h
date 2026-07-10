@@ -26,6 +26,8 @@ enum class SoundID
 
 	SE_GAME_OVER,
 
+	SE_TUTORIAL_WALK,
+
 };
 
 // ì«Ç›çûÇﬁÉVÅ[Éì

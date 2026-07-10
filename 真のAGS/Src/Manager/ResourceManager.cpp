@@ -175,6 +175,14 @@ void ResourceManager::Init(void)
 	// 絵の具8
 	res = new RES(RES_T::IMG, PATH_IMG + "enogu/clir.png");
 	resourcesMap_.emplace(SRC::ENOGU8, res);
+
+	// ゲームクリア
+	res = new RES(RES_T::IMG, PATH_IMG + "GameClear.png");
+	resourcesMap_.emplace(SRC::GAME_CLEAR, res);
+
+	// ゲームオーバー
+	res = new RES(RES_T::IMG, PATH_IMG + "GameOver.png");
+	resourcesMap_.emplace(SRC::GAME_OVER, res);
 }
 
 void ResourceManager::Release(void)
