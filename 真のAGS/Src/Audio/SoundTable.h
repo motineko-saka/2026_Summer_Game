@@ -7,6 +7,7 @@ enum class SoundID
 {
 	BGM_TITLE,
 	BGM_GAME,
+	BGM_TUTORIAL,
 
 	SE_MENU_DECISION,
 	SE_MENU_CHOICE,
@@ -35,6 +36,7 @@ enum class LoadScene
 	GAME,		// ゲーム
 	GAME_CLEAR,	// ゲームクリア
 	GAME_OVER,	// ゲームオーバー
+	GAME_TUTORIAL,
 };
 
 // サウンド属性

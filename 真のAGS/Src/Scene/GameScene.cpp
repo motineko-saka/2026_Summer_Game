@@ -233,6 +233,8 @@ void GameScene::Init(void)
 		VGet(-5000.0f, -1.0f, -5000.0f),
 		VGet(5000.0f, 5000.0f, 5000.0f));
 
+	// オーディオマネージャーのインスタンスの生成
+	AudioManager::GetInstance()->CreateInstance();
 	// シーンのサウンドを読み込み、BGM を再生
 	if (AudioManager::GetInstance())
 	{
@@ -683,6 +685,9 @@ void GameScene::Draw(void)
 
 void GameScene::Release(void)
 {
+	// オーディオマネージャーのインスタンスの削除
+	AudioManager::GetInstance()->DeleteInstance();
+
 	// 全オブジェクト解放
 	for (auto& obj : objects_)
 	{

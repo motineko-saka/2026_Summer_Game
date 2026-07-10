@@ -55,3 +55,11 @@ namespace SoundTable_GameOver
 	};
 
 }
+
+namespace SoundTable_Tutorial
+{
+	static const std::unordered_map < SoundID, std::string> Table =
+	{
+		{SoundID::BGM_TUTORIAL, "Data/Sound/BGM/GameScene_BGM.mp3"},
+	};
+}
