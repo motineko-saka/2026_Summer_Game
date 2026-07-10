@@ -45,7 +45,7 @@ namespace SoundTable_GameClear
 {
 	static const std::unordered_map<SoundID, std::string> Table =
 	{
-		{SoundID::SE_GAME_CLEAR, "Data/Sound/SE/Game_Clear_SE.mp3"}
+		{SoundID::SE_GAME_CLEAR, "Data/Sound/SE/GameClaer_SE.mp3"}
 	};
 }
 
@@ -53,7 +53,7 @@ namespace SoundTable_GameOver
 {
 	static const std::unordered_map<SoundID, std::string> Table =
 	{
-		{SoundID::SE_GAME_OVER, "Data/Sound/SE/Game_Over_SE.mp3"}
+		{SoundID::SE_GAME_OVER, "Data/Sound/SE/GameOver_SE.mp3"}
 	};
 
 }

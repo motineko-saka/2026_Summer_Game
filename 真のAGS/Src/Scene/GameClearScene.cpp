@@ -4,6 +4,7 @@
 #include "TitleScene.h"
 #include "../Manager/ResourceManager.h"
 #include "../Application.h"
+#include "../Audio/AudioManager.h"
 
 
 GameClearScene::GameClearScene(void)
@@ -17,11 +18,19 @@ GameClearScene::~GameClearScene(void)
 
 void GameClearScene::Init(void)
 {
+	// ゲームクリアー画像の読み込み
 	bgImage_ = resMng_.Load(ResourceManager::SRC::GAME_CLEAR).handleId_;
+
+	// ゲームクリアーSEの再生
+	AudioManager::GetInstance()->PlaySE(SoundID::SE_GAME_CLEAR);
 }
 
 void GameClearScene::Load(void)
 {
+	// AudioManagerのインスタンスを作成して初期化し、ゲームクリアーシーンのサウンドをロードする
+	AudioManager::GetInstance()->CreateInstance();
+	AudioManager::GetInstance()->Init();
+	AudioManager::GetInstance()->LoadSceneSound(LoadScene::GAME_CLEAR);
 }
 
 void GameClearScene::LoadEnd(void)
@@ -34,6 +43,12 @@ void GameClearScene::Update(void)
 	// シーン遷移
 	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE))
 	{
+		// ゲームクリアシーンからタイトルシーンに遷移する際に、AudioManagerのインスタンスを削除してリセットする
+		AudioManager::GetInstance()->StopSE();
+		AudioManager::GetInstance()->DeleteAll();
+		AudioManager::DeleteInstance();
+
+		// タイトルシーンに遷移
 		SceneManager::GetInstance()->ChangeScene(std::make_shared<TitleScene>());
 	}
 }
