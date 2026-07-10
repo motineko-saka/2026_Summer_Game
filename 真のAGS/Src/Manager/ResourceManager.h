@@ -31,7 +31,7 @@ public:
 		CUBE,
 		GEAR,
 		ROCK,
-		KINOKO,
+		AXE,
 		TITLE_MOV,
 		HONDANA_IMG,
 		UI_GAMESTART,
@@ -47,6 +47,8 @@ public:
 		ENOGU6,
 		ENOGU7,
 		ENOGU8,
+		GAME_CLEAR,
+		GAME_OVER,
 	};
 
 	// 明示的にインステンスを生成する

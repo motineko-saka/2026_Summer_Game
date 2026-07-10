@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Bomb.cpp" />
     <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Object.cpp" />
     <ClCompile Include="Src\Object\Actor\Charactor\GameObject\PressButton.cpp" />
     <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Gaer.cpp" />
@@ -58,7 +59,9 @@
     <ClCompile Include="Src\Object\Common\AnimationController.cpp" />
     <ClCompile Include="Src\Object\Common\Transform.cpp" />
     <ClCompile Include="Src\Scene\DebugScene.cpp" />
+    <ClCompile Include="Src\Scene\GameOverScene.cpp" />
     <ClCompile Include="Src\Scene\GameScene.cpp" />
+    <ClCompile Include="Src\Scene\GameTitleScene.cpp" />
     <ClCompile Include="Src\Scene\PauseScene.cpp" />
     <ClCompile Include="Src\Scene\SceneBase.cpp" />
     <ClCompile Include="Src\Scene\TitleScene.cpp" />
@@ -73,6 +76,7 @@
     <ClCompile Include="Src\UI\Tutorial.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Src\Object\Actor\Charactor\GameObject\Bomb.h" />
     <ClInclude Include="Src\Object\Actor\Charactor\GameObject\Object.h" />
     <ClInclude Include="Src\Object\Actor\Charactor\GameObject\PressButton.h" />
     <ClInclude Include="Src\Object\Actor\Charactor\GameObject\Gaer.h" />
@@ -112,7 +116,9 @@
     <ClInclude Include="Src\Object\Common\AnimationController.h" />
     <ClInclude Include="Src\Object\Common\Transform.h" />
     <ClInclude Include="Src\Scene\DebugScene.h" />
+    <ClInclude Include="Src\Scene\GameOverScene.h" />
     <ClInclude Include="Src\Scene\GameScene.h" />
+    <ClInclude Include="Src\Scene\GameTitleScene.h" />
     <ClInclude Include="Src\Scene\PauseScene.h" />
     <ClInclude Include="Src\Scene\SceneBase.h" />
     <ClInclude Include="Src\Scene\TitleScene.h" />

@@ -1,4 +1,3 @@
-#pragma once
 #include "SceneBase.h"
 #include "../Object/Common/Transform.h"
 #include "../Object/Actor/Charactor/Player.h"
@@ -91,7 +90,7 @@ private:
 	// シェーダー
 	std::unique_ptr<PixelMaterial> pixelMaterial_;
 	std::unique_ptr<PixelRenderer> pixelRenderer_;
-	
+
 	// 画面分割用のスクリーンハンドル
 	int screenHandle1_;
 	int screenHandle2_;
@@ -133,4 +132,6 @@ private:
 	bool isEndTutorial_ = false;
 	VECTOR tempCameraRot_ = { 0,0,0 };
 	float score_ = 0;
+	// SE
+	bool placedSEPlayed_ = false;
 };

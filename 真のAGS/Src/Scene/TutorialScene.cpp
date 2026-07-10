@@ -203,6 +203,15 @@ void TutorialScene::Init(void)
 	score_ = 0;
 
 	TutorialInit();
+
+	// オーディオマネージャーのインスタンスの生成
+	AudioManager::GetInstance()->CreateInstance();
+	// シーンのサウンドを読み込み、BGM を再生
+	if (AudioManager::GetInstance())
+	{
+		AudioManager::GetInstance()->LoadSceneSound(LoadScene::GAME_TUTORIAL);
+		AudioManager::GetInstance()->PlayBGM(SoundID::BGM_TUTORIAL);
+	}
 }
 
 void TutorialScene::TutorialInit(void)
@@ -341,11 +350,16 @@ void TutorialScene::Update(void)
 	if (isEndTutorial_)
 	{
 		SceneManager::GetInstance()->ChangeScene(std::make_shared<GameScene>());
-		return;
+		AudioManager::GetInstance()->StopBGM();
+		AudioManager::GetInstance()->DeleteSceneSound(LoadScene::GAME_TUTORIAL);
+
 	}
 
 	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_P))
 	{
+		AudioManager::GetInstance()->StopBGM();
+		AudioManager::GetInstance()->DeleteSceneSound(LoadScene::GAME_TUTORIAL);
+
 		SceneManager::GetInstance()->ChangeScene(std::make_shared<TitleScene>());
 		return;
 	}
@@ -600,6 +614,9 @@ void TutorialScene::DrawNamePlate(std::string str, VECTOR pos)
 
 void TutorialScene::Release(void)
 {
+	// オーディオマネージャーのインスタンスの削除
+	AudioManager::GetInstance()->DeleteInstance();
+
 	// 全オブジェクト解放
 	for (auto& obj : objects_)
 	{
@@ -720,12 +737,19 @@ void TutorialScene::TyutorialTEXT(void)
 			{
 				if (!obj) continue;
 				if (obj->GetObjectType() != ObjectBase::OBJECT_TYPE::AKEG) continue;
-				if (obj->IsAnswerPosition()) 
-				
-				// 効果音
-				AudioManager::GetInstance()->LoadSceneSound(LoadScene::GAME);
-
-				return true;
+				if (obj->IsAnswerPosition())
+				{
+					// 位置に置かれた瞬間
+					if (!placedSEPlayed_)
+					{
+						if (AudioManager::GetInstance())
+						{
+							AudioManager::GetInstance()->PlaySE(SoundID::SE_SUCCESS);
+						}
+						placedSEPlayed_ = true;
+					}
+					return true;
+				}
 			}
 			return false;
 		},

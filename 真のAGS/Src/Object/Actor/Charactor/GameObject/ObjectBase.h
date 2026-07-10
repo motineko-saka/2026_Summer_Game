@@ -81,6 +81,9 @@ public:
 	bool GetIsRockExist(void) { return isRockExist_; }
 
 protected:
+	// 衝突判定用カプセルの半径
+	float capsule_r = 30.0f;
+
 	// 答えにおいて正誤判定をするオブジェクトかどうか
 	bool isAnswerObject_ = true;
 
@@ -130,9 +133,6 @@ private:
 
 	// 衝突判定用カプセル下部座標
 	static constexpr VECTOR COL_CAPSULE_DOWN_LOCAL_POS = { 0.0f, 50.0f, 0.0f };
-
-	// 衝突判定用カプセルの半径
-	static constexpr float COL_CAPSULE_RADIUS = 30.0f;
 
 	// オブジェクトの押される抵抗力（0.0～1.0）
 	static constexpr float PUSH_RESISTANCE = 0.1f;

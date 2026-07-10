@@ -1,35 +1,34 @@
 #include "../Manager/InputManager.h"
 #include "../Manager/SceneManager.h"
-#include "GameClearScene.h"
+#include <DxLib.h>
+#include "GameOverScene.h"
 #include "TitleScene.h"
 #include "../Manager/ResourceManager.h"
 #include "../Application.h"
 
-
-GameClearScene::GameClearScene(void)
+GameOverScene::GameOverScene(void)
 {
 }
 
-GameClearScene::~GameClearScene(void)
-{
-	Release();
-}
-
-void GameClearScene::Init(void)
-{
-	bgImage_ = resMng_.Load(ResourceManager::SRC::GAME_CLEAR).handleId_;
-}
-
-void GameClearScene::Load(void)
+GameOverScene::~GameOverScene(void)
 {
 }
 
-void GameClearScene::LoadEnd(void)
+void GameOverScene::Init(void)
+{
+	bgImage_ = resMng_.Load(ResourceManager::SRC::GAME_OVER).handleId_;
+}
+
+void GameOverScene::Load(void)
+{
+}
+
+void GameOverScene::LoadEnd(void)
 {
 	Init();
 }
 
-void GameClearScene::Update(void)
+void GameOverScene::Update(void)
 {
 	// ƒV[ƒ“‘JˆÚ
 	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE))
@@ -38,7 +37,7 @@ void GameClearScene::Update(void)
 	}
 }
 
-void GameClearScene::Draw(void)
+void GameOverScene::Draw(void)
 {
 	int screenX = Application::SCREEN_SIZE_X;
 	int screenY = Application::SCREEN_SIZE_Y;
@@ -48,6 +47,6 @@ void GameClearScene::Draw(void)
 	DrawRotaGraph(screenX / 2, screenY / 2, 1.02f, 0.0f, bgImage_, true);
 }
 
-void GameClearScene::Release(void)
+void GameOverScene::Release(void)
 {
 }

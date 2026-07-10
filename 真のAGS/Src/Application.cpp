@@ -38,7 +38,7 @@ void Application::Init(void)
 
 	// ウィンドウサイズ
 	SetGraphMode(SCREEN_SIZE_X, SCREEN_SIZE_Y, 32);
-	ChangeWindowMode(true);
+	ChangeWindowMode(false);
 
 
 

@@ -8,7 +8,6 @@ public:
 	virtual ~Rock() override = default;
 
 private:
-
 	// リソースロード
 	void InitLoad(void)override;
 

@@ -109,12 +109,12 @@ void ResourceManager::Init(void)
 	resourcesMap_.emplace(SRC::GEAR, res);
 
 	// 岩
-	res = new RES(RES_T::MODEL, PATH_MDL + "Object/torii.mv1");
+	res = new RES(RES_T::MODEL, PATH_MDL + "Object/tree01.mv1");
 	resourcesMap_.emplace(SRC::ROCK, res);
 
-	// キノコ（仮）
-	res = new RES(RES_T::MODEL, PATH_MDL + "Object/Cube.mv1");
-	resourcesMap_.emplace(SRC::KINOKO, res);
+	// 斧
+	res = new RES(RES_T::MODEL, PATH_MDL + "Object/Axe.mv1");
+	resourcesMap_.emplace(SRC::AXE, res);
 
 	// タイトルムービー
 	res = new RES(RES_T::MOVIE, PATH_MOV + "Title.mp4");
@@ -175,6 +175,14 @@ void ResourceManager::Init(void)
 	// 絵の具8
 	res = new RES(RES_T::IMG, PATH_IMG + "enogu/clir.png");
 	resourcesMap_.emplace(SRC::ENOGU8, res);
+
+	// ゲームクリア
+	res = new RES(RES_T::IMG, PATH_IMG + "GameClear.png");
+	resourcesMap_.emplace(SRC::GAME_CLEAR, res);
+
+	// ゲームオーバー
+	res = new RES(RES_T::IMG, PATH_IMG + "GameOver.png");
+	resourcesMap_.emplace(SRC::GAME_OVER, res);
 }
 
 void ResourceManager::Release(void)

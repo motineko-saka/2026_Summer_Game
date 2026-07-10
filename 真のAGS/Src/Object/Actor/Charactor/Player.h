@@ -25,7 +25,7 @@ public:
 	};
 
 	Player(void);
-	Player(PLAYER_NO playerNo, Camera& camera); // プレイヤー番号付きコンストラクタ
+	Player(PLAYER_NO playerNo, Camera& camera, bool isGameScene = false); // プレイヤー番号付きコンストラクタ
 	virtual ~Player(void);
 
 	// 描画
@@ -42,6 +42,9 @@ public:
 	// 選択/非選択の切替
 	void SetActive(bool active);
 	bool IsActive() const { return isActive_; }
+
+	void HitColliderErase(int index) { 
+		hitColliders_.erase(hitColliders_.begin() + index); }
 
 protected:
 
@@ -64,7 +67,6 @@ protected:
 	void UpdateProcess(void) override;
 
 	void UpdateProcessPost(void) override;
-
 
 private:
 
@@ -127,6 +129,11 @@ private:
 	PLAYER_NO playerNo_;
 
 	Camera* camera_;
+
+	bool isGameScene_;
+
+	// オブジェクトとの衝突処理
+	void CollisionObject(void);
 
 	// 移動、ジャンプ処理
 	void ProcessMove(void);
