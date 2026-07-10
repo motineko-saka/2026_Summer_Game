@@ -15,14 +15,15 @@ Rock::Rock(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type)
 void Rock::InitLoad(void)
 {
 	transform_.SetModel(ResourceManager::GetInstance().LoadModelDuplicate(ResourceManager::SRC::ROCK));
-	isHoldable_ = true;
-
+	//isHoldable_ = true;
 }
 
 void Rock::InitObjCol(void)
 {
-	// モデルのコライダ
-	tag_ = ColliderBase::TAG::KINOKO;
+	tag_ = ColliderBase::TAG::OBJECT;
+
+	capsule_r = 100.0f;
+
 }
 
 void Rock::InitPost(void)
@@ -45,7 +46,7 @@ void Rock::ObjectUpdateProcess(void)
 
 		// 3D距離を計算
 		float distance = VSize(diff);
-		const float BUTTON_TRIGGER_DISTANCE = 100.0f; // 適切な値に調整
+		const float BUTTON_TRIGGER_DISTANCE = 125.0f;
 
 		if (distance < BUTTON_TRIGGER_DISTANCE)
 		{

@@ -31,7 +31,7 @@ public:
 		CUBE,
 		GEAR,
 		ROCK,
-		KINOKO,
+		AXE,
 		TITLE_MOV,
 		HONDANA_IMG,
 		UI_GAMESTART,

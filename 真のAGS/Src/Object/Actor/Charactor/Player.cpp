@@ -7,6 +7,7 @@
 #include "../../../Application.h"
 #include "../../Collider/ColliderLine.h"
 #include "../../Collider/ColliderCapsule.h"
+#include "../../Collider/ColliderModel.h"
 #include "../../../Audio/AudioManager.h"
 #include "Player.h"
 
@@ -21,13 +22,14 @@ Player::Player(void)
 {
 }
 
-Player::Player(PLAYER_NO playerNo, Camera& camera)
+Player::Player(PLAYER_NO playerNo, Camera& camera, bool isGameScene)
 	:
 	CharactorBase(),
 	playerNo_(playerNo),
 	heldCollider_(nullptr),
 	heldPrevFollow_(nullptr),
-	isActive_(true)
+	isActive_(true),
+	isGameScene_(isGameScene)
 {
 	camera_ = &camera;
 }
@@ -114,6 +116,11 @@ void Player::InitTransform(void)
 
 void Player::InitCollider(void)
 {
+	// モデルのコライダ
+	ColliderModel* colModel =
+		new ColliderModel(ColliderBase::TAG::PLAYER, &transform_);
+	ownColliders_.emplace(static_cast<int>(COLLIDER_TYPE::MODEL), colModel);
+
 	// 主に地面との衝突で使用する線分コライダ
 	ColliderLine* colLine = new ColliderLine(
 		ColliderBase::TAG::PLAYER, &transform_,
@@ -126,7 +133,6 @@ void Player::InitCollider(void)
 		COL_CAPSULE_TOP_LOCAL_POS, COL_CAPSULE_DOWN_LOCAL_POS,
 		COL_CAPSULE_RADIUS);
 	ownColliders_.emplace(static_cast<int>(COLLIDER_TYPE::CAPSULE), colCapsule);
-
 }
 
 void Player::InitAnimation(void)
@@ -175,6 +181,12 @@ void Player::UpdateProcess(void)
 	// 掴む/放す処理
 	ProcessPickup();
 
+	if(isGameScene_)
+	{
+		// オブジェクトとの衝突処理
+		CollisionObject();
+	}
+
 	if (transform_.pos.y < -2000.0f)
 	{
 		transform_.pos = (playerNo_ == PLAYER_NO::PLAYER1) ? PLAYER_ONE__DEFAULT_POS : PLAYER_TWO__DEFAULT_POS;;
@@ -183,7 +195,6 @@ void Player::UpdateProcess(void)
 
 void Player::UpdateProcessPost(void)
 {
-
 }
 
 void Player::ProcessMove(void)
@@ -212,7 +223,6 @@ void Player::ProcessMove(void)
 		if (InputManager::GetInstance()->IsNew(KEY_INPUT_S) && InputManager::GetInstance()->IsNew(KEY_INPUT_D)) { dir = AsoUtility::DIR_BR; }
 
 		if (InputManager::GetInstance()->IsNew(KEY_INPUT_RSHIFT)) { isDash = true; }
-
 	}
 	else
 	{
@@ -492,5 +502,87 @@ void Player::DrawDebug(void)
 	else
 	{
 		DrawFormatString(offsetX, 40, 0x000000, "Holding: NO");
+	}
+}
+
+//void Player::CollisionObject(void)
+//{
+//	// プレイヤーのカプセルコライダを取得
+//	int capsuleType = static_cast<int>(COLLIDER_TYPE::CAPSULE);
+//	if (ownColliders_.count(capsuleType) == 0) return;
+//
+//	ColliderCapsule* playerCapsule =
+//		dynamic_cast<ColliderCapsule*>(ownColliders_.at(capsuleType));
+//	if (playerCapsule == nullptr) return;
+//
+//	// 衝突しているコライダをチェック
+//	for (const auto& hitCol : hitColliders_)
+//	{
+//		if (hitCol == nullptr) continue;
+//
+//		// オブジェクトのモデルコライダのみ対象
+//		if (hitCol->GetTag() != ColliderBase::TAG::OBJECT &&
+//			hitCol->GetTag() != ColliderBase::TAG::KINOKO) continue;
+//
+//		if (hitCol->GetShape() != ColliderBase::SHAPE::MODEL) continue;
+//
+//		const ColliderModel* objModel =
+//			dynamic_cast<const ColliderModel*>(hitCol);
+//		if (objModel == nullptr) continue;
+//
+//		// プレイヤーのカプセルをモデルに対して押し戻す
+//		playerCapsule->PushBackAlongNormal(objModel, transform_,
+//			CNT_TRY_COLLISION, COLLISION_BACK_DIS, false, false, false);
+//	}
+//}
+
+void Player::CollisionObject(void)
+{
+	// プレイヤーのカプセルコライダを取得
+	int capsuleType = static_cast<int>(COLLIDER_TYPE::CAPSULE);
+	if (ownColliders_.count(capsuleType) == 0) return;
+
+	ColliderCapsule* playerCapsule =
+		dynamic_cast<ColliderCapsule*>(ownColliders_.at(capsuleType));
+	if (playerCapsule == nullptr) return;
+
+	// 衝突しているコライダをチェック
+	for (const auto& hitCol : hitColliders_)
+	{
+		if (hitCol == nullptr) continue;
+
+		// オブジェクトのカプセルコライダのみ対象
+		if (hitCol->GetTag() != ColliderBase::TAG::OBJECT &&
+			hitCol->GetTag() != ColliderBase::TAG::KINOKO)continue;
+
+		const ColliderCapsule* objCapsule =
+			dynamic_cast<const ColliderCapsule*>(hitCol);
+		if (objCapsule == nullptr) continue;
+
+		// カプセル同士が衝突しているかチェック
+		if (HitCheck_Capsule_Capsule(
+			playerCapsule->GetPosTop(), playerCapsule->GetPosDown(), playerCapsule->GetRadius(),
+			objCapsule->GetPosTop(), objCapsule->GetPosDown(), objCapsule->GetRadius()))
+		{
+			// オブジェクトの中心からプレイヤーへの方向を計算
+			VECTOR objCenter = objCapsule->GetCenter();
+			VECTOR playerCenter = playerCapsule->GetCenter();
+			VECTOR direction = VSub(playerCenter, objCenter);
+
+			if (VSize(direction) > 0.0f)
+			{
+				direction = VNorm(direction);
+				// 両者の半径の合計
+				float totalRadius = playerCapsule->GetRadius() + objCapsule->GetRadius();
+				float distance = VSize(VSub(playerCenter, objCenter));
+				float pushDist = totalRadius - distance;
+
+				if (pushDist > 0.0f)
+				{
+					// プレイヤーを押し戻す
+					transform_.pos = VAdd(transform_.pos, VScale(direction, pushDist + 1.0f));
+				}
+			}
+		}
 	}
 }

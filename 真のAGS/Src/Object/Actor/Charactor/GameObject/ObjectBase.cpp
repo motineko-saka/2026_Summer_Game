@@ -97,7 +97,7 @@ void ObjectBase::InitLoad(void)
 		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::ROCK));
 		break;
 	case OBJECT_TYPE::KINOKO:
-		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::KINOKO));
+		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::AXE));
 		break;
 	case OBJECT_TYPE::CHEST:
 		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::Chest));
@@ -148,7 +148,7 @@ void ObjectBase::InitCollider(void)
 
 	// 主に地面との衝突で使用する線分コライダ
 	ColliderLine* colLine = new ColliderLine(
-		ColliderBase::TAG::PLAYER, &transform_,
+		ColliderBase::TAG::OBJECT, &transform_,
 		COL_LINE_START_LOCAL_POS, COL_LINE_END_LOCAL_POS);
 	ownColliders_.emplace(static_cast<int>(COLLIDER_TYPE::LINE), colLine);
 
@@ -156,7 +156,7 @@ void ObjectBase::InitCollider(void)
 	ColliderCapsule* colCapsule = new ColliderCapsule(
 		tag_, &transform_,
 		COL_CAPSULE_TOP_LOCAL_POS, COL_CAPSULE_DOWN_LOCAL_POS,
-		COL_CAPSULE_RADIUS);
+		capsule_r);
 	ownColliders_.emplace(static_cast<int>(COLLIDER_TYPE::CAPSULE), colCapsule);
 
 	// 持てなくする
