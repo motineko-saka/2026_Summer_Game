@@ -200,47 +200,63 @@ void TutorialScene::TutorialInit(void)
 
 	// ステップ1: 移動
 	tutorial_.AddStep(
-		"移動の練習：W/A/S/D または 方向キーでプレイヤーを移動させてください。\n実際に移動すると次へ進みます。",
+		"やあ！まずは移動してみよう！\nW/A/S/Dキー または パッドの左スティックで歩けるよ！\n少し動いたら次に進もう！",
 		[this, p1StartPos]() -> bool {
 			const VECTOR cur = players_[0].player_->GetTransform().pos;
 			const float moved = VSize(VSub(cur, p1StartPos));
 			return moved > moveStepe_;
-		}
+		},
+		nullptr,
+		ResourceManager::GetInstance().Load(ResourceManager::SRC::ENOGU1).handleId_
 	);
 
 	// ステップ2: 視点操作
 	tutorial_.AddStep(
-		"視点操作の練習：矢印キーで視点を動かしてください。\n視点操作を行うと次へ進みます。",
+		"いいね！次は周りを見渡してみよう！\nマウス、矢印キー、または パッドの右スティックで視点を動かせるよ！\n視点を動かしたら次へ進もう！",
 		[]() -> bool {
 			return CheckHitKey(KEY_INPUT_UP) || CheckHitKey(KEY_INPUT_DOWN) ||
 				CheckHitKey(KEY_INPUT_LEFT) || CheckHitKey(KEY_INPUT_RIGHT);
-		}
+		},
+		nullptr,
+		ResourceManager::GetInstance().Load(ResourceManager::SRC::ENOGU2).handleId_
 	);
 
-	// ステップ3: ボタン操作
+	// ステップ3: キャラ切替
 	tutorial_.AddStep(
-		"ボタン操作の練習：ボタンの近くで Space を押してください。\nボタンを押すと次へ進みます。",
-		[this]() -> bool {
+		"ここまで順調だね！次はプレイヤーを切り替えてみよう！\nTabキー または 右クリックでプレイヤー2に切り替えられるよ！\n※パッド操作は現在準備中です。\n切り替えられたら次へ進もう！",
+		[]() -> bool {
+			return InputManager::GetInstance()->IsTrgDown(KEY_INPUT_TAB) || InputManager::GetInstance()->IsTrgMouseRight();
+		},
+		nullptr,
+		ResourceManager::GetInstance().Load(ResourceManager::SRC::ENOGU3).handleId_
+	);
+
+	tutorial_.AddStep(
+		"あれ？宝箱があるけど、この世界では開けられないみたい…。\n開ける方法は向こう側の世界にあるのかも！\nもう一度プレイヤーを切り替えて確かめてみよう！",
+		[]() -> bool {
+			return InputManager::GetInstance()->IsTrgDown(KEY_INPUT_TAB) || InputManager::GetInstance()->IsTrgMouseRight();
+		},
+		nullptr,
+		ResourceManager::GetInstance().Load(ResourceManager::SRC::ENOGU4).handleId_
+	);
+
+	// ステップ4: ボタン操作
+	tutorial_.AddStep(
+		"あっ！ボタンを見つけたね！\n押したら何か変わるかもしれないよ。\n近づいて Spaceキー または パッドの〇ボタンで押してみよう！",		[this]() -> bool {
 			for (auto& obj : objects_)
 			{
 				if (!obj) continue;
 				if (obj->GetType() == ObjectBase::OBJECT_TYPE::BUTTON && obj->isPushButtom()) return true;
 			}
 			return false;
-		}
-	);
-
-	// ステップ4: キャラ切替
-	tutorial_.AddStep(
-		"プレイヤーの切替の練習：Tab または 右クリックで操作プレイヤー2に切り替えてください。\n切替操作を行うと次へ進みます。",
-		[]() -> bool {
-			return InputManager::GetInstance()->IsTrgDown(KEY_INPUT_TAB) || InputManager::GetInstance()->IsTrgMouseRight();
-		}
+		},
+		nullptr,
+		ResourceManager::GetInstance().Load(ResourceManager::SRC::ENOGU5).handleId_
 	);
 
 	// ステップ5: オブジェクトの操作
 	tutorial_.AddStep(
-		"オブジェクト操作の練習1：オブジェクトに近づいて E を押してください。\nオブジェクトを押すと次へ進みます。",
+		"やった！宝箱が開いたよ！\n中に樽を見つけたね。\n近づいて Eキー で持ち上げてみよう！\n※パッド操作は現在準備中です。",
 		[this]() -> bool {
 			for (auto& obj : objects_)
 			{
@@ -252,12 +268,14 @@ void TutorialScene::TutorialInit(void)
 				}
 			}
 			return false;
-		}
+		},
+		nullptr,
+		ResourceManager::GetInstance().Load(ResourceManager::SRC::ENOGU6).handleId_
 	);
 
 	// ステップ6: オブジェクトの設置
 	tutorial_.AddStep(
-		"オブジェクト操作の練習2 : オブジェクトを正しい位置に配置してください。\nオブジェクトを配置すると次に進む。",
+		"いい感じ！樽を指定された場所に置いてみよう！\n運んで配置できたら成功だよ！",
 		[this]() -> bool {
 			for (auto& obj : objects_)
 			{
@@ -266,12 +284,14 @@ void TutorialScene::TutorialInit(void)
 				if (obj->IsAnswerPosition()) return true;
 			}
 			return false;
-		}
+		},
+		nullptr,
+		ResourceManager::GetInstance().Load(ResourceManager::SRC::ENOGU7).handleId_
 	);
 
 	// 最終ステップ: 確認して終了
 	tutorial_.AddStep(
-		"チュートリアル完了：Z / Enter / Space でチュートリアルを終了します。",
+		"お疲れさま！これでチュートリアルは完了だよ！\n操作はもうバッチリ！あとは実際に遊びながら慣れていこう！\nZキー / Enterキー / Spaceキー で冒険を始めよう！",
 		[this]() -> bool {
 			if (CheckHitKey(KEY_INPUT_Z) || CheckHitKey(KEY_INPUT_RETURN) || CheckHitKey(KEY_INPUT_SPACE))
 			{
@@ -279,7 +299,9 @@ void TutorialScene::TutorialInit(void)
 				return true;
 			}
 			return false;
-		}
+		},
+		nullptr,
+		ResourceManager::GetInstance().Load(ResourceManager::SRC::ENOGU8).handleId_
 	);
 
 	// 開始
@@ -363,7 +385,7 @@ const void TutorialScene::ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*
 	if (isNearButton && InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE))
 	{
 		obj.SetButtomPushed(true);
-		newObjects.push_back(new ObjectBase(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::CHEST));
+		newObjects.push_back(new ObjectBase(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::OPENCHEST));
 
 		for (size_t i = 0; i < objects_.size(); ++i)
 		{
@@ -478,11 +500,11 @@ const void TutorialScene::MakeNewObject(std::vector<ObjectBase*>& newObjects)
 {
 	for (auto& newObj : newObjects)
 	{
+
 		newObj->Init();
 		newObj->SetPosition({ 900.0f, -520.0f, 100.0f });
 		newObj->SetScale({ 0.8f, 0.8f, 0.8f });
 		newObj->SetPlaced(true);
-
 		for (const auto& stage : stageManager_->GetStage())
 		{
 			const ColliderBase* stageCollider = stage->GetOwnCollider(static_cast<int>(Stage::COLLIDER_TYPE::MODEL));

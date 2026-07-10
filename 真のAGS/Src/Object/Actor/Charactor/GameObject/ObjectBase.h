@@ -20,6 +20,7 @@ public:
 		ROCK,
 		KINOKO,
 		CHEST,
+		OPENCHEST,
 	};
 
 	// world と種類を指定可能に
@@ -43,7 +44,7 @@ public:
 	void Push(const VECTOR& direction, float speed);
 
 	// 設置済みフラグ操作
-	void SetPlaced(bool placed) { placed_ = placed; }
+	void SetPlaced(bool placed);
 	bool IsPlaced() const { return placed_; }
 
 	// 種類取得

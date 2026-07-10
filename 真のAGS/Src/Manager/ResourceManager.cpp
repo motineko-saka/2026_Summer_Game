@@ -140,13 +140,41 @@ void ResourceManager::Init(void)
 	res = new RES(RES_T::MODEL, PATH_MDL + "Object/Box.mv1");
 	resourcesMap_.emplace(SRC::Chest, res);
 
+	// ŠJ‚¢‚½•ó” 
+	res = new RES(RES_T::MODEL, PATH_MDL + "Object/OpenBox.mv1");
+	resourcesMap_.emplace(SRC::OPENCHEST, res);
+
 	// ŠG‚Ì‹ï
-	res = new RES(RES_T::IMG, PATH_IMG + "Enogukunn/kyara.png");
-	resourcesMap_.emplace(SRC::ENOGU, res);
+	res = new RES(RES_T::IMG, PATH_IMG + "enogu/tewofutu.png");
+	resourcesMap_.emplace(SRC::ENOGU1, res);
 
 	// ŠG‚Ì‹ï2
-	res = new RES(RES_T::IMG, PATH_IMG + "Enogukunn/ai.png");
+	res = new RES(RES_T::IMG, PATH_IMG + "enogu/kakunin.png");
 	resourcesMap_.emplace(SRC::ENOGU2, res);
+
+	// ŠG‚Ì‹ï3
+	res = new RES(RES_T::IMG, PATH_IMG + "enogu/yubisasi.png");
+	resourcesMap_.emplace(SRC::ENOGU3, res);
+
+	// ŠG‚Ì‹ï4
+	res = new RES(RES_T::IMG, PATH_IMG + "enogu/gimon.png");
+	resourcesMap_.emplace(SRC::ENOGU4, res);
+
+	// ŠG‚Ì‹ï5
+	res = new RES(RES_T::IMG, PATH_IMG + "enogu/2.png");
+	resourcesMap_.emplace(SRC::ENOGU5, res);
+
+	// ŠG‚Ì‹ï6
+	res = new RES(RES_T::IMG, PATH_IMG + "enogu/tarumoti.png");
+	resourcesMap_.emplace(SRC::ENOGU6, res);
+
+	// ŠG‚Ì‹ï7
+	res = new RES(RES_T::IMG, PATH_IMG + "enogu/happy2.png");
+	resourcesMap_.emplace(SRC::ENOGU7, res);
+
+	// ŠG‚Ì‹ï8
+	res = new RES(RES_T::IMG, PATH_IMG + "enogu/clir.png");
+	resourcesMap_.emplace(SRC::ENOGU8, res);
 }
 
 void ResourceManager::Release(void)
