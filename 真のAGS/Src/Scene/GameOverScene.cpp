@@ -5,6 +5,7 @@
 #include "TitleScene.h"
 #include "../Manager/ResourceManager.h"
 #include "../Application.h"
+#include "../Audio/AudioManager.h"
 
 GameOverScene::GameOverScene(void)
 {
@@ -16,11 +17,19 @@ GameOverScene::~GameOverScene(void)
 
 void GameOverScene::Init(void)
 {
+	// ゲームオーバー画像の読み込み
 	bgImage_ = resMng_.Load(ResourceManager::SRC::GAME_OVER).handleId_;
+
+	// ゲームオーバー時SEの再生
+	AudioManager::GetInstance()->PlaySE(SoundID::SE_GAME_OVER);
 }
 
 void GameOverScene::Load(void)
 {
+	// Audio
+	AudioManager::GetInstance()->CreateInstance();
+	AudioManager::GetInstance()->Init();
+	AudioManager::GetInstance()->LoadSceneSound(LoadScene::GAME_OVER);
 }
 
 void GameOverScene::LoadEnd(void)
@@ -33,6 +42,12 @@ void GameOverScene::Update(void)
 	// シーン遷移
 	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE))
 	{
+		// ゲームオーバーシーンからタイトルシーンに遷移する際に、AudioManagerのインスタンスを削除してリセットする
+		AudioManager::GetInstance()->StopSE();
+		AudioManager::GetInstance()->DeleteAll();
+		AudioManager::DeleteInstance();
+
+		// タイトルシーンに遷移
 		SceneManager::GetInstance()->ChangeScene(std::make_shared<TitleScene>());
 	}
 }

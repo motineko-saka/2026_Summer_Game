@@ -27,6 +27,7 @@ void GameClearScene::Init(void)
 
 void GameClearScene::Load(void)
 {
+	// AudioManagerのインスタンスを作成して初期化し、ゲームクリアーシーンのサウンドをロードする
 	AudioManager::GetInstance()->CreateInstance();
 	AudioManager::GetInstance()->Init();
 	AudioManager::GetInstance()->LoadSceneSound(LoadScene::GAME_CLEAR);
@@ -47,6 +48,7 @@ void GameClearScene::Update(void)
 		AudioManager::GetInstance()->DeleteAll();
 		AudioManager::DeleteInstance();
 
+		// タイトルシーンに遷移
 		SceneManager::GetInstance()->ChangeScene(std::make_shared<TitleScene>());
 	}
 }
