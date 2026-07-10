@@ -23,6 +23,7 @@
 #include "../Manager/EffekseerEffect.h"
 #include "../Renderer/PixelMaterial.h"
 #include "../Renderer/PixelRenderer.h"
+#include "../Audio/AudioManager.h"
 
 TutorialScene::TutorialScene(void)
 	:
@@ -187,6 +188,15 @@ void TutorialScene::Init(void)
 	}
 
 	TutorialInit();
+
+	// オーディオマネージャーのインスタンスの生成
+	AudioManager::GetInstance()->CreateInstance();
+	// シーンのサウンドを読み込み、BGM を再生
+	if (AudioManager::GetInstance())
+	{
+		AudioManager::GetInstance()->LoadSceneSound(LoadScene::GAME_TUTORIAL);
+		AudioManager::GetInstance()->PlayBGM(SoundID::BGM_TUTORIAL);
+	}
 }
 
 void TutorialScene::TutorialInit(void)
@@ -406,12 +416,18 @@ void TutorialScene::Update(void)
 	// チュートリアル完了でクリアへ遷移
 	if (isEndTutorial_)
 	{
+		AudioManager::GetInstance()->StopBGM();
+		AudioManager::GetInstance()->DeleteSceneSound(LoadScene::GAME_TUTORIAL);
+
 		SceneManager::GetInstance()->ChangeScene(std::make_shared<GameClearScene>());
 		return;
 	}
 
 	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_P))
 	{
+		AudioManager::GetInstance()->StopBGM();
+		AudioManager::GetInstance()->DeleteSceneSound(LoadScene::GAME_TUTORIAL);
+
 		SceneManager::GetInstance()->ChangeScene(std::make_shared<TitleScene>());
 		return;
 	}
@@ -667,6 +683,9 @@ void TutorialScene::DrawNamePlate(std::string str, VECTOR pos)
 
 void TutorialScene::Release(void)
 {
+	// オーディオマネージャーのインスタンスの削除
+	AudioManager::GetInstance()->DeleteInstance();
+
 	// 全オブジェクト解放
 	for (auto& obj : objects_)
 	{
