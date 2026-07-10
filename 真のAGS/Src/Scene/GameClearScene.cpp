@@ -37,7 +37,7 @@ void GameClearScene::Update(void)
 
 void GameClearScene::Draw(void)
 {
-	DrawFormatString(100, 200, 0xffffff, "Game Clear");
+	//DrawFormatString(100, 200, 0xffffff, "Game Clear");
 }
 
 void GameClearScene::Release(void)

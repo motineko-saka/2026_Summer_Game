@@ -29,7 +29,8 @@ void PauseScene::LoadEnd(void)
 
 void PauseScene::Update(void)
 {
-	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_ESCAPE))
+	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_ESCAPE)
+		|| InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::OPTION))
 	{
 		// 自分自身を消す
 		SceneManager::GetInstance()->PopScene();
@@ -44,7 +45,28 @@ void PauseScene::Update(void)
 		selectGameEnd_ = false;
 	}
 
-	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_RETURN) || InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE))
+	// 左スティクで選択切り替え
+	auto padState = InputManager::GetInstance()->GetJPadInputState(InputManager::JOYPAD_NO::PAD1);
+	float stickX = static_cast<float>(padState.AKeyLX) / InputManager::AKEY_VAL_MAX;
+
+	static bool stickMoved = false;
+	if (stickX < -InputManager::THRESHOLD && !stickMoved)
+	{
+		selectGameEnd_ = true;
+		stickMoved = true;
+	}
+	else if (stickX > InputManager::THRESHOLD && !stickMoved)
+	{
+		selectGameEnd_ = false;
+		stickMoved = true;
+	}
+	else if (stickX > -InputManager::THRESHOLD && stickX < InputManager::THRESHOLD)
+	{
+		stickMoved = false;
+	}
+
+	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_RETURN) || InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE)
+		|| InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::RIGHT))
 	{
 		if (selectGameEnd_) SceneManager::GetInstance()->GameEnd();
 		else SceneManager::GetInstance()->PopScene();
@@ -62,7 +84,7 @@ void PauseScene::Update(void)
 		else
 		{
 			selectGameEnd_ = false;
-		
+
 			SceneManager::GetInstance()->PopScene();
 		}
 	}

@@ -154,7 +154,7 @@ void GameScene::Init(void)
 			obj->AddHitCollider(stageCollider);
 		}
 
-		if (stageCollider == nullptr) DrawFormatString(100, 100, 0xffffff, "stageCollider is null\n");
+		//if (stageCollider == nullptr) DrawFormatString(100, 100, 0xffffff, "stageCollider is null\n");
 	}
 
 	// “¥‚ÞButton‚Ìindex‚ð‚Æ‚é

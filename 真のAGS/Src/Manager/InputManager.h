@@ -42,6 +42,9 @@ public:
 		DOWN,
 		R_TRIGGER,
 		L_TRIGGER,
+		R2_TRIGGER,
+		L2_TRIGGER,
+		OPTION,
 		MAX
 	};
 

@@ -58,10 +58,12 @@ public:
 	// ‰ğ•ú
 	void Release(void) override;
 
+	void TyutorialTEXT(void);
+
 private:
 
 	constexpr static VECTOR ANSWER_VECTOR_LENGTH[] = { {760.0f, -520.0f, 600.0f} ,
-														{0.0f, -600.0f, -50.0f},
+														{0.0f, -680.0f, 100.0f},
 	};
 
 	// ƒJƒƒ‰
@@ -129,4 +131,6 @@ private:
 	Tutorial tutorial_; // ’Ç‰Á
 	int moveStepe_ = 650; // ˆÚ“®‚·‚é‹——£
 	bool isEndTutorial_ = false;
+	VECTOR tempCameraRot_ = { 0,0,0 };
+	float score_ = 0;
 };

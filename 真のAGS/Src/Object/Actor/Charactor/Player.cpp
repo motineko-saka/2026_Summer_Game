@@ -211,7 +211,7 @@ void Player::ProcessMove(void)
 		if (InputManager::GetInstance()->IsNew(KEY_INPUT_S) && InputManager::GetInstance()->IsNew(KEY_INPUT_A)) { dir = AsoUtility::DIR_BL; }
 		if (InputManager::GetInstance()->IsNew(KEY_INPUT_S) && InputManager::GetInstance()->IsNew(KEY_INPUT_D)) { dir = AsoUtility::DIR_BR; }
 
-		if (InputManager::GetInstance()->IsNew(KEY_INPUT_RSHIFT)) { isDash = true; }
+		//if (InputManager::GetInstance()->IsNew(KEY_INPUT_LSHIFT)) { isDash = true; }
 
 	}
 	else
@@ -223,22 +223,17 @@ void Player::ProcessMove(void)
 		// アナログキーの入力値を正規化して取得
 		dir = InputManager::GetInstance()->GetDirectionXZAKey(padState.AKeyLX, padState.AKeyLY);
 
-		if (InputManager::GetInstance()->IsPadBtnNew(InputManager::JOYPAD_NO::PAD1,
-			InputManager::JOYPAD_BTN::R_TRIGGER))
-		{
-			isDash = true;
-		}
+		//if (InputManager::GetInstance()->IsPadBtnNew(InputManager::JOYPAD_NO::PAD1,
+		//	InputManager::JOYPAD_BTN::R_TRIGGER))
+		//{
+		//	isDash = true;
+		//}
 	}
 
 	if (!AsoUtility::EqualsVZero(dir))
 	{
 		// 移動スピード
 		moveSpeed_ = SPEED_MOVE;
-
-		if (isDash)
-		{
-			moveSpeed_ = SPEED_DASH;
-		}
 
 		// ジャンプ中はアニメーション変えない
 		if (!isJump_)
@@ -411,7 +406,7 @@ void Player::ProcessPickup(void)
 	bool btnTrg = false;
 
 	btnTrg = InputManager::GetInstance()->IsTrgDown(KEY_INPUT_E)
-		|| InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::TOP);
+		|| InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::LEFT);
 
 	if (btnTrg)
 	{
@@ -482,15 +477,15 @@ void Player::DropHeldObject(void)
 void Player::DrawDebug(void)
 {
 	int offsetX = (playerNo_ == PLAYER_NO::PLAYER2) ? 400 : 15;
-	DrawFormatString(offsetX, 20, 0x000000, "%f,%f,%f", transform_.pos.x, transform_.pos.y, transform_.pos.z);
+	//DrawFormatString(offsetX, 20, 0x000000, "%f,%f,%f", transform_.pos.x, transform_.pos.y, transform_.pos.z);
 
 	// 持っているか表示
-	if (IsHolding())
-	{
-		DrawFormatString(offsetX, 40, 0x000000, "Holding: YES");
-	}
-	else
-	{
-		DrawFormatString(offsetX, 40, 0x000000, "Holding: NO");
-	}
+	//if (IsHolding())
+	//{
+	//	DrawFormatString(offsetX, 40, 0x000000, "Holding: YES");
+	//}
+	//else
+	//{
+	//	DrawFormatString(offsetX, 40, 0x000000, "Holding: NO");
+	//}
 }

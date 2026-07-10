@@ -1,10 +1,11 @@
+#include <algorithm>
 #include "../../Manager/ResourceManager.h"
 #include "../../Manager/SceneManager.h"
 #include "../Collider/ColliderBase.h"
 #include "ActorBase.h"
 
 ActorBase::ActorBase(void)
-	: 
+	:
 	resMng_(ResourceManager::GetInstance()),
 	transform_()
 {
@@ -95,4 +96,10 @@ void ActorBase::AddHitCollider(const ColliderBase* hitCollider)
 void ActorBase::ClearHitCollider(void)
 {
 	hitColliders_.clear();
+}
+
+// 追加: 指定コライダを登録解除する
+void ActorBase::RemoveHitCollider(const ColliderBase* hitCollider)
+{
+	hitColliders_.erase(std::remove(hitColliders_.begin(), hitColliders_.end(), hitCollider), hitColliders_.end());
 }
