@@ -43,9 +43,73 @@ void ObjectBase::Push(const VECTOR& direction, float speed)
 	pushPow_ = VAdd(pushPow_, VScale(direction, speed));
 }
 
+void ObjectBase::SetPlaced(bool placed)
+{
+	placed_ = placed;
+
+	// 所有するコライダ全ての掴めるフラグを更新する
+	for (auto& ct : ownColliders_)
+	{
+		ColliderBase* col = ct.second;
+		if (!col) continue;
+
+		// 設置済なら掴めなくする、未設置なら掴めるようにする
+		col->SetGrabbable(!placed_);
+
+		// もし既に誰かに掴まれている状態ならフォローを元に戻して解除する
+		if (placed_ && col->IsHeld())
+		{
+			const Transform* orig = col->GetOriginalFollow();
+			if (orig)
+			{
+				col->SetFollow(const_cast<Transform*>(orig));
+			}
+		}
+	}
+}
+
 void ObjectBase::InitLoad(void)
 {
-	
+	switch (type_)
+	{
+	case OBJECT_TYPE::WBOX:
+		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::WOODBOX));
+		break;
+	case OBJECT_TYPE::AKEG:
+		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::BARREL));
+		break;
+	case OBJECT_TYPE::SCENE_PROP:
+		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::WALL));
+		break;
+	case OBJECT_TYPE::BUTTON:
+		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::BUTTON));
+		break;
+	case OBJECT_TYPE::DEFAULT:
+		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::CUBE));
+		break;
+	case OBJECT_TYPE::PRESS_BUTTON:
+		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::CUBE));
+		break;
+	case OBJECT_TYPE::GEAR:
+		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::GEAR));
+		break;
+	case OBJECT_TYPE::ROCK:
+		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::ROCK));
+		break;
+	case OBJECT_TYPE::KINOKO:
+		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::KINOKO));
+		break;
+	case OBJECT_TYPE::CHEST:
+		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::Chest));
+		break;
+	case OBJECT_TYPE::OPENCHEST:
+		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::OPENCHEST));
+		break;
+	default:
+		break;
+	}
+
+	tag_ = ColliderBase::TAG::OBJECT;
 }
 
 void ObjectBase::InitTransform(void)
@@ -56,6 +120,11 @@ void ObjectBase::InitTransform(void)
 
 	transform_.quaRotLocal = Quaternion::Identity();
 
+	if(type_ == OBJECT_TYPE::CHEST || type_ == OBJECT_TYPE::OPENCHEST)
+	{
+		transform_.quaRotLocal = Quaternion::AngleAxis(AsoUtility::Deg2RadD(90.0f),
+			AsoUtility::AXIS_Y);
+	}
 	transform_.pos = { -1000.0f, 80.0f, -10.0f };
 
 	InitObjTrans();

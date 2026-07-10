@@ -15,37 +15,50 @@ static std::vector<std::string> SplitUTF8(const std::string& s)
 	for (size_t i = 0; i < s.size();)
 	{
 		unsigned char c = static_cast<unsigned char>(s[i]);
-		size_t len = 1;
-		if ((c & 0x80) == 0) len = 1;
-		else if ((c & 0xE0) == 0xC0) len = 2;
-		else if ((c & 0xF0) == 0xE0) len = 3;
-		else if ((c & 0xF8) == 0xF0) len = 4;
-		out.push_back(s.substr(i, len));
-		i += len;
+
+		// Shift-JISの先頭バイト判定
+		if ((0x81 <= c && c <= 0x9F) || (0xE0 <= c && c <= 0xFC))
+		{
+			// 2バイト文字
+			out.push_back(s.substr(i, 2));
+			i += 2;
+		}
+		else
+		{
+			// 1バイト文字
+			out.push_back(s.substr(i, 1));
+			i += 1;
+		}
 	}
 	return out;
 }
 
 Tutorial::Tutorial()
 	: steps_(), currentIndex_(-1), active_(false), inputDelay_(0),
-	animCounter_(0), revealIndex_(0), typeTick_(0), enoguHandle_(-1),
-	enoguType_(Resource::TYPE::NONE)
+	animCounter_(0), revealIndex_(0), typeTick_(0), fontHandle_(-1)
 {
 }
 
-Tutorial::~Tutorial() = default;
+Tutorial::~Tutorial()
+{
+	if (fontHandle_ != -1)
+	{
+		DeleteFontToHandle(fontHandle_);
+		fontHandle_ = -1;
+	}
+}
 
 void Tutorial::Init()
 {
 	steps_.clear();
-	currentIndex_ = -1;
-	active_ = false;
-	inputDelay_ = 0;
-	animCounter_ = 0;
-	revealIndex_ = 0;
-	typeTick_ = 0;
-	enoguHandle_ = -1;
-	enoguType_ = Resource::TYPE::NONE;
+
+	// フォントを作成
+	if (fontHandle_ != -1)
+	{
+		DeleteFontToHandle(fontHandle_);
+		fontHandle_ = -1;
+	}
+	fontHandle_ = CreateFontToHandle("Yu Gothic UI", fontSize_, 400, DX_FONTTYPE_ANTIALIASING);
 }
 
 void Tutorial::ClearSteps()
@@ -54,13 +67,11 @@ void Tutorial::ClearSteps()
 	currentIndex_ = -1;
 	revealIndex_ = 0;
 	typeTick_ = 0;
-	enoguHandle_ = -1;
-	enoguType_ = Resource::TYPE::NONE;
 }
 
-void Tutorial::AddStep(const std::string& text, ConditionFunc cond, OnEnterFunc onEnter, ResourceManager::SRC face)
+void Tutorial::AddStep(const std::string& text, ConditionFunc cond, OnEnterFunc onEnter, int enoguHandle)
 {
-	steps_.push_back({ text, cond, onEnter, face });
+	steps_.push_back({ text, cond, onEnter, enoguHandle });
 }
 
 void Tutorial::Start()
@@ -69,8 +80,6 @@ void Tutorial::Start()
 	{
 		active_ = false;
 		currentIndex_ = -1;
-		enoguHandle_ = -1;
-		enoguType_ = Resource::TYPE::NONE;
 		return;
 	}
 	currentIndex_ = 0;
@@ -80,9 +89,7 @@ void Tutorial::Start()
 	revealIndex_ = 0;
 	typeTick_ = 0;
 	splitText_ = SplitUTF8(steps_[0].text);
-	const Resource& r0 = ResourceManager::GetInstance().Load(steps_[0].faceSrc);
-	enoguHandle_ = r0.handleId_;
-	enoguType_ = r0.type_;
+
 	if (steps_[0].onEnter) steps_[0].onEnter();
 }
 
@@ -107,7 +114,7 @@ void Tutorial::Update()
 		if (userNextKey) { revealIndex_ = static_cast<int>(splitText_.size()); inputDelay_ = DELAY_MAX; return; }
 	}
 
-	// 進行可能判定：条件付きなら condResult が真で進む。未指定なら全文表示後のユーザー入力。
+	// 条件付きならcondResultが真で進む。
 	bool ready = condResult || (revealIndex_ >= static_cast<int>(splitText_.size()) && userNextKey);
 
 	if (ready && inputDelay_ == 0)
@@ -118,14 +125,9 @@ void Tutorial::Update()
 		{
 			active_ = false;
 			currentIndex_ = -1;
-			enoguHandle_ = -1;
-			enoguType_ = Resource::TYPE::NONE;
 		}
 		else
 		{
-			const Resource& r = ResourceManager::GetInstance().Load(steps_[currentIndex_].faceSrc);
-			enoguHandle_ = r.handleId_;
-			enoguType_ = r.type_;
 			revealIndex_ = 0;
 			typeTick_ = 0;
 			splitText_ = SplitUTF8(steps_[currentIndex_].text);
@@ -134,101 +136,140 @@ void Tutorial::Update()
 	}
 }
 
+// Layoutの計算
+Tutorial::Layout Tutorial::ComputeLayout() const
+{
+	Layout l;
+	l.screenW = Application::SCREEN_SIZE_X;
+	l.screenH = Application::SCREEN_SIZE_Y;
+	l.margin = 24;
+
+	// テキストの行数を概算
+	int lines = 1;
+	if (currentIndex_ >= 0 && currentIndex_ < static_cast<int>(steps_.size()))
+	{
+		const std::string& txt = steps_[currentIndex_].text;
+		for (char c : txt) if (c == '\n') ++lines;
+	}
+	const int lineH = fontSize_ + lineSpacing_;
+	int bubbleH = lines * lineH + bubblePaddingY_ * 2;
+	if (bubbleH < minBubbleH_) bubbleH = minBubbleH_;
+	if (bubbleH > maxBubbleH_) bubbleH = maxBubbleH_;
+
+	// 全体ボックス高さは顔領域＋吹き出し（既存の見た目を保つため +40）
+	l.boxH = bubbleH + 40;
+
+	l.x0 = l.margin;
+	l.y0 = l.screenH - l.boxH - l.margin;
+	l.x1 = l.screenW - l.margin;
+	l.y1 = l.screenH - l.margin;
+	l.faceW = 120;
+	l.faceX = l.x0 + 12;
+	l.bubbleX = l.x0 + l.faceW + 24;
+	l.bubbleY = l.y0 + 20;
+	l.bubbleW = l.x1 - l.bubbleX - 18;
+	l.bubbleH = bubbleH;
+	l.tailW = 20;
+	l.tailH = 28;
+	l.tailX = l.bubbleX - l.tailW + 2;
+	l.tailY = l.bubbleY + l.bubbleH / 2 - l.tailH / 2;
+	return l;
+}
+
+void Tutorial::FillBox(int x1, int y1, int x2, int y2, int r, int g, int b, int alpha)
+{
+	SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
+	DrawBox(x1, y1, x2, y2, GetColor(r, g, b), true);
+	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+}
+
+void Tutorial::StrokeBox(int x1, int y1, int x2, int y2, int r, int g, int b)
+{
+	DrawBox(x1, y1, x2, y2, GetColor(r, g, b), false);
+}
+
+// 絵の具描画
+void Tutorial::DrawEnogu(int handle, const Layout& l)
+{
+	if (handle <= 0) return;
+
+	int gw = 0, gh = 0;
+	GetGraphSize(handle, &gw, &gh);
+
+	if (gw > 0 && gh > 0)
+	{
+		const float scale = (std::min)(static_cast<float>(l.faceW) / gw, static_cast<float>(l.faceW) / gh);
+		const int w = static_cast<int>(gw * scale);
+		const int h = static_cast<int>(gh * scale);
+		const int x = l.faceX + (l.faceW - w) / 2;
+		const int y = l.y0 + (l.boxH - h) / 2;
+		DrawExtendGraph(x, y, x + w, y + h, handle, true);
+	}
+	else
+	{
+		const int y = l.y0 + (l.boxH - l.faceW) / 2;
+		DrawExtendGraph(l.faceX, y, l.faceX + l.faceW, y + l.faceW, handle, true);
+	}
+}
+
 void Tutorial::Draw() const
 {
 	if (!active_ || currentIndex_ < 0 || currentIndex_ >= static_cast<int>(steps_.size())) return;
 
-	const int screenW = Application::SCREEN_SIZE_X;
-	const int screenH = Application::SCREEN_SIZE_Y;
-	const int margin = 24;
-	const int boxH = 200;
-	int x0 = margin, y0 = screenH - boxH - margin, x1 = screenW - margin, y1 = screenH - margin;
-	const int faceW = 120;
-	const int faceX = x0 + 12;
+	// レイアウトを一つの構造体で取得
+	const Layout l = ComputeLayout();
 
-	const int bubbleX = x0 + faceW + 24;
-	const int bubbleY = y0 + 20;
-	const int bubbleW = x1 - bubbleX - 18;
-	const int bubbleH = boxH - 40;
-
-	auto fillBox = [](int x1, int y1, int x2, int y2, int r, int g, int b, int alpha = 255)
-		{
-			SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
-			DrawBox(x1, y1, x2, y2, GetColor(r, g, b), true);
-			SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
-		};
-	auto strokeBox = [](int x1, int y1, int x2, int y2, int r, int g, int b)
-		{
-			DrawBox(x1, y1, x2, y2, GetColor(r, g, b), false);
-	};
-
-	// 吹き出し（背景＋枠）
-	fillBox(bubbleX, bubbleY, bubbleX + bubbleW, bubbleY + bubbleH, 30, 40, 60, 220);
-	strokeBox(bubbleX, bubbleY, bubbleX + bubbleW, bubbleY + bubbleH, 200, 200, 220);
+	// 吹き出し
+	FillBox(l.bubbleX, l.bubbleY, l.bubbleX + l.bubbleW, l.bubbleY + l.bubbleH, 30, 40, 60, 220);
+	StrokeBox(l.bubbleX, l.bubbleY, l.bubbleX + l.bubbleW, l.bubbleY + l.bubbleH, 200, 200, 220);
 
 	// 尾
-	const int tailW = 20, tailH = 28;
-	const int tailX = bubbleX - tailW + 2;
-	const int tailY = bubbleY + bubbleH / 2 - tailH / 2;
-	fillBox(tailX, tailY, tailX + tailW, tailY + tailH, 30, 40, 60, 220);
-	strokeBox(tailX, tailY, tailX + tailW, tailY + tailH, 200, 200, 220);
+	//FillBox(l.tailX, l.tailY, l.tailX + l.tailW, l.tailY + l.tailH, 30, 40, 60, 220);
+	//StrokeBox(l.tailX, l.tailY, l.tailX + l.tailW, l.tailY + l.tailH, 200, 200, 220);
 
-	// 顔画像または簡易キャラ描画
-	if (enoguHandle_ >= 0)
-	{
-		int gw = 0, gh = 0;
-		if (GetGraphSize(enoguHandle_, &gw, &gh) == 0 && gw > 0 && gh > 0)
-		{
-			float scale = static_cast<float>(faceW) / static_cast<float>(gh);
-			int drawW = static_cast<int>(gw * scale);
-			int drawH = static_cast<int>(gh * scale);
-			int drawY = y0 + (boxH - drawH) / 2;
-			DrawExtendGraph(faceX, drawY, faceX + drawW, drawY + drawH, enoguHandle_, TRUE);
-		}
-		else
-		{
-			// フォールバック
-			DrawGraph(faceX, y0 + 20, enoguHandle_, TRUE);
-		}
-	}
-	else
-	{
-		// 簡易キャラ
-		int cx = faceX;
-		int cy = y0 + 58;
-		fillBox(cx + 12, cy + 0, cx + 52, cy + 32, 200, 40, 40, 255); // 頭
-		fillBox(cx + 18, cy + 36, cx + 34, cy + 72, 255, 255, 255, 255); // 体
-		fillBox(cx + 22, cy + 44, cx + 30, cy + 60, 200, 40, 40, 255); // 前面
-		fillBox(cx + 6, cy + 40, cx + 16, cy + 46, 200, 40, 40, 255); // 左腕
-		fillBox(cx + 36, cy + 40, cx + 46, cy + 46, 200, 40, 40, 255); // 右腕
-		fillBox(cx + 20, cy + 72, cx + 24, cy + 88, 0, 0, 0, 255); // 左足
-		fillBox(cx + 28, cy + 72, cx + 32, cy + 88, 0, 0, 0, 255); // 右足
-		// 目
-		fillBox(cx + 20, cy + 8, cx + 24, cy + 12, 0, 0, 0, 255);
-		fillBox(cx + 28, cy + 8, cx + 32, cy + 12, 0, 0, 0, 255);
-	}
+	// 絵の具の描画
+	int selectedHandle = -1;
 	const auto& cur = steps_[currentIndex_];
+	if (cur.enoguHandle >= 0)
+	{
+		selectedHandle = cur.enoguHandle;
+	}
+
+	// 絵の具描画
+	DrawEnogu(selectedHandle, l);
+
 	int visible = revealIndex_;
 	if (visible > static_cast<int>(splitText_.size())) visible = static_cast<int>(splitText_.size());
 	std::string sub;
 	sub.reserve(visible * 3);
 	for (int i = 0; i < visible; ++i) sub += splitText_[i];
 
-	int textX = bubbleX + 16, textY = bubbleY + 16;
-	DrawString(textX, textY, sub.c_str(), GetColor(235, 235, 235));
+	int textX = l.bubbleX + 16, textY = l.bubbleY + 12; // 上余白を少し減らす
+	// Yu Gothic UIフォントを使って描画
+	if (fontHandle_ != -1)
+	{
+		DrawStringToHandle(textX, textY, sub.c_str(), GetColor(235, 235, 235), fontHandle_);
+	}
+	else
+	{
+		DrawString(textX, textY, sub.c_str(), GetColor(235, 235, 235));
+	}
 
 	if (visible >= static_cast<int>(splitText_.size()) && ((animCounter_ / 12) % 2 == 0))
 	{
 		const char* cont = "▼";
-		DrawString(bubbleX + bubbleW - 28, bubbleY + bubbleH - 28, cont, GetColor(200, 200, 140));
+		if (fontHandle_ != -1)
+			DrawStringToHandle(l.bubbleX + l.bubbleW - 28, l.bubbleY + l.bubbleH - 28, cont, GetColor(200, 200, 140), fontHandle_);
+		else
+			DrawString(l.bubbleX + l.bubbleW - 28, l.bubbleY + l.bubbleH - 28, cont, GetColor(200, 200, 140));
 	}
 
 	int total = static_cast<int>(steps_.size());
 
-	//const char* hint = "行動を行うまで次に進みません。";
-	//DrawString(x1 - 420, y0 + 56, hint, GetColor(220, 200, 100));
-
 	char progressMsg[64];
 	snprintf(progressMsg, sizeof(progressMsg), "進行: %d / %d", currentIndex_ + 1, total);
-	DrawString(x1 - 160, y1 - 52, progressMsg, GetColor(180, 180, 180));
+	if (fontHandle_ != -1)
+		DrawStringToHandle(l.x1 - 160, l.y1 - 52, progressMsg, GetColor(180, 180, 180), fontHandle_);
+	else
+		DrawString(l.x1 - 160, l.y1 - 52, progressMsg, GetColor(180, 180, 180));
 }

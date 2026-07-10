@@ -20,7 +20,8 @@ public:
 	bool IsActive() const { return active_; }
 
 	void ClearSteps();
-	void AddStep(const std::string& text, ConditionFunc cond, OnEnterFunc onEnter = nullptr, ResourceManager::SRC face = ResourceManager::SRC::ENOGU);
+	// 画像ハンドルをステップごとに指定できるように第4引数を追加
+	void AddStep(const std::string& text, ConditionFunc cond, OnEnterFunc onEnter = nullptr, int enoguHandle = -1);
 
 private:
 	struct StepInfo
@@ -28,7 +29,7 @@ private:
 		std::string text;
 		ConditionFunc condition;
 		OnEnterFunc onEnter;
-		ResourceManager::SRC faceSrc = ResourceManager::SRC::ENOGU;
+		int enoguHandle = -1; // ステップ固有の絵の具ハンドル
 	};
 
 	std::vector<StepInfo> steps_;
@@ -46,6 +47,30 @@ private:
 
 	mutable std::vector<std::string> splitText_;
 
-	mutable int enoguHandle_ = -1;
-	mutable Resource::TYPE enoguType_ = Resource::TYPE::NONE;
+	// Yu GothicUIを使）
+	int fontHandle_ = -1;
+	int fontSize_ = 20;        // フォントの高さ
+	int lineSpacing_ = 4;      // 行間ピクセル
+	int bubblePaddingY_ = 8;   // 吹き出し上下の余白
+	int minBubbleH_ = 64;      // 最小の吹き出し高さ
+	int maxBubbleH_ = 200;     // 最大の吹き出し高さ）
+
+	// 描画レイアウト
+	struct Layout
+	{
+		int screenW;
+		int screenH;
+		int margin;
+		int boxH;     
+		int x0, y0, x1, y1;
+		int faceW;
+		int faceX;
+		int bubbleX, bubbleY, bubbleW, bubbleH;
+		int tailW, tailH, tailX, tailY;
+	};
+
+	Layout ComputeLayout() const;
+	static void FillBox(int x1, int y1, int x2, int y2, int r, int g, int b, int alpha = 255);
+	static void StrokeBox(int x1, int y1, int x2, int y2, int r, int g, int b);
+	static void DrawEnogu(int handle, const Layout& l);
 };
