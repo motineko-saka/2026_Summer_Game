@@ -49,13 +49,12 @@ public:
 private:
 	constexpr static VECTOR ANSWER_VECTOR = { 1260.0f, -720.0f, -50.5f };
 
-	constexpr static VECTOR ANSWER_VECTOR_LENGTH[] = { {-1260.0f, -720.0f, -50.5f} ,
+	constexpr static VECTOR ANSWER_VECTOR_LENGTH[] = {	{-1260.0f, -720.0f, -50.5f} ,
 														{-1260.0f, -720.0f, -50.5f},
-														{1260.0f, -720.0f, -50.5f},
+														{ 1260.0f, -720.0f, -50.5f},
 														{-1260.0f, -720.0f, -50.5f},
 														{-1260.0f, -720.0f, -50.5f},
 														};
-
 	std::unique_ptr<StageManager> stageManager_;
 
 	std::unique_ptr<SkyDome> skyDome_;
@@ -82,6 +81,10 @@ private:
 	bool isPause_ = false;
 
 	VECTOR ansVec_ = {};
+
+	VECTOR buttonPos_ = { -770.0f, -300.0f, 760.0f };
+	VECTOR rockPos_ =	{ -660.0f, -320.0f, 630.0f };
+	VECTOR endPos_ =	{ 1364.0f, -300.0f, 620.0f };
 
 	// 現在選択中のプレイヤー
 	Player::PLAYER_NO activePlayer_{ Player::PLAYER_NO::PLAYER1 };

@@ -143,8 +143,8 @@ void ColliderCapsule::PushBackAlongNormal(const ColliderModel* colliderModel,
 
 
 		// 指定された回数と距離で三角形の法線方向に押し戻す
-		//transform.pos =
-		//	GetPosPushBackAlongNormal(hitPoly, maxTryCnt, pushDistance);
+		transform.pos =
+			GetPosPushBackAlongNormal(hitPoly, maxTryCnt, pushDistance);
 	}
 	// 検出した地面ポリゴン情報の後始末
 	MV1CollResultPolyDimTerminate(hits);

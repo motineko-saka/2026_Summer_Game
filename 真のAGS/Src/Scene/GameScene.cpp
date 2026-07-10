@@ -14,6 +14,7 @@
 #include "../Object/Actor/Charactor/GameObject/PressButton.h"
 #include "../Object/Actor/Charactor/GameObject/Gaer.h"
 #include "../Object/Actor/Charactor/GameObject/Rock.h"
+#include "../Object/Actor/Charactor/GameObject/Bomb.h"
 #include "../Object/Actor/Wall.h"
 #include "../Object/LightPillar.h"
 #include "../Object/Collider/ColliderBase.h"
@@ -67,7 +68,7 @@ void GameScene::Init(void)
 
 		// プレイヤー番号を設定
 		Player::PLAYER_NO pno = (i == 0) ? Player::PLAYER_NO::PLAYER1 : Player::PLAYER_NO::PLAYER2;
-		players_[i].player_ = std::make_unique<Player>(pno, *players_[i].camera_);
+		players_[i].player_ = std::make_unique<Player>(pno, *players_[i].camera_, true);
 		players_[i].player_->Init();
 
 		players_[i].camera_->SetFollow(&players_[i].player_->GetTransform());
@@ -93,44 +94,24 @@ void GameScene::Init(void)
 	// オブジェクト作成（複数）
 	objects_.reserve(10);
 
-	objects_.push_back(std::make_unique<Object>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::DEFAULT));
-	objects_.back()->Init();
-	objects_.back()->SetPosition({ 1260.0f, 0.0f, -50.5f });
-	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
-
-	objects_.push_back(std::make_unique<Object>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::WBOX));
-	objects_.back()->Init();
-	objects_.back()->SetPosition({ 1260.0f, 0.0f, -50.5f });
-	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
-
-	objects_.push_back(std::make_unique<Object>(GameScene::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[2], ObjectBase::OBJECT_TYPE::AKEG));
-	objects_.back()->Init();
-	objects_.back()->SetPosition({ -1260.0f, 0.0f, -50.5f });
-	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
-
 	objects_.push_back(std::make_unique<Button>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[3], ObjectBase::OBJECT_TYPE::BUTTON));
 	objects_.back()->Init();
-	objects_.back()->SetPosition({ 0.0f, 80.0f, -50.0f });
-	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
-
-	objects_.push_back(std::make_unique<Gaer>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::GEAR));
-	objects_.back()->Init();
-	objects_.back()->SetPosition({ -900.0f, 0.0f, 0.5f });
-	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
-
-	objects_.push_back(std::make_unique<Gaer>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::GEAR));
-	objects_.back()->Init();
-	objects_.back()->SetPosition({ -1000.0f, 0.0f, 0.5f });
+	objects_.back()->SetPosition(buttonPos_);
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 
 	objects_.push_back(std::make_unique<Rock>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::ROCK));
 	objects_.back()->Init();
-	objects_.back()->SetPosition({ -1000.0f, 80.0f, 0.0f });
+	objects_.back()->SetPosition(rockPos_);
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 
-	objects_.push_back(std::make_unique<Rock>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::KINOKO));
+	objects_.push_back(std::make_unique<Bomb>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::KINOKO));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ -500.0f, 0.0f, 0.0f });
+	objects_.back()->SetScale({ 5.0, 5.0, 5.0 });
+
+	objects_.push_back(std::make_unique<Object>(GameScene::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::DEFAULT));
+	objects_.back()->Init();
+	objects_.back()->SetPosition({ 1300.0f, -320.0f, 440.0f });
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 
 
@@ -170,19 +151,32 @@ void GameScene::Init(void)
 		pushButtonIndex.push_back(i);
 	}
 
+	// 岩のindexをとる
+	std::vector<int> rockButtonIndex = {};
+
+	for (int i = 0; i < objects_.size(); i++)
+	{
+		auto& obj = objects_[i];
+
+		if (obj->GetObjectType() != ObjectBase::OBJECT_TYPE::ROCK) continue;
+
+		rockButtonIndex.push_back(i);
+	}
+
 	// 各オブジェクトの衝突コライダをプレイヤーに登録
 	for (int i = 0; i < objects_.size(); i++)
 	{
 		auto& obj = objects_[i];
 
-		const auto* objCaps = obj->GetOwnCollider(static_cast<int>(ObjectBase::COLLIDER_TYPE::CAPSULE));
+		const auto* objCaps = 
+			obj->GetOwnCollider(static_cast<int>(ObjectBase::COLLIDER_TYPE::CAPSULE));
 
 		if (!objCaps) continue;
 
-		for (int i = 0; i < players_.size(); i++)
+		for (auto& player : players_)
 		{
 			// ステージモデルのコライダーをプレイヤーに登録
-			players_[i].player_->AddHitCollider(objCaps);
+			player.player_->AddHitCollider(objCaps);
 		}
 
 		for (auto index : pushButtonIndex)
@@ -194,8 +188,8 @@ void GameScene::Init(void)
 		}
 	}
 
-	const auto* objCaps = objects_[7]->GetOwnCollider(static_cast<int>(ObjectBase::COLLIDER_TYPE::CAPSULE));
-	objects_[6]->AddHitCollider(objCaps);
+	const auto* objCaps = objects_[2]->GetOwnCollider(static_cast<int>(ObjectBase::COLLIDER_TYPE::CAPSULE));
+	objects_[1]->AddHitCollider(objCaps);
 
 	for (auto& wall : walls_)
 	{
@@ -204,7 +198,7 @@ void GameScene::Init(void)
 
 		for (int i = 0; i < players_.size(); i++)
 		{
-			// ステージモデルのコライダーをプレイヤーに登録
+			// 壁モデルのコライダーをプレイヤーに登録
 			players_[i].player_->AddHitCollider(wallCollider);
 		}
 	}
@@ -268,7 +262,7 @@ void GameScene::CheckCollisions(void)
 		if (obj == nullptr) continue;
 
 		// ボタンタイプの場合は専用処理
-		if (obj->GetType() == ObjectBase::OBJECT_TYPE::BUTTON)
+		if (!obj->isPushButtom() && (obj->GetType() == ObjectBase::OBJECT_TYPE::BUTTON))
 		{
 			ButtonProcess(*obj, newObjects);
 			
@@ -309,7 +303,7 @@ const void GameScene::ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*>& n
 		// プレイヤーとの距離チェック
 		VECTOR playerPos = player.player_->GetTransform().pos;
 		float distance1 = VSize(VSub(playerPos, objectPos));
-		if (distance1 < 180.0f)
+		if (distance1 < 80.0f)
 		{
 			isNearButton = true;
 		}
@@ -317,14 +311,21 @@ const void GameScene::ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*>& n
 
 	// ボタンの近くにいて、スペースキーか左ボタンが押されたら
 	if (isNearButton &&
-		(InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE) || InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::LEFT)))
+		(InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE) || InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::RIGHT)))
 	{
 		// ボタンが押されたときの処理（例：ゲームクリア、ドアが開くなど）
 
 		obj.SetButtomPushed(true);
+
+		objects_[2]->Release();
+		objects_.erase(objects_.begin() + 2);
+		for (auto& player : players_)
+		{
+			player.player_->HitColliderErase(4);
+		}
 		// 直接追加せず、一時リストに格納
-		ObjectBase* newObj = new ObjectBase(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::AKEG);
-		newObjects.push_back(newObj);
+		//ObjectBase* newObj = new ObjectBase(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::AKEG);
+		//newObjects.push_back(newObj);
 	}
 }
 
@@ -422,6 +423,22 @@ void GameScene::Update(void)
 			Player::PLAYER_NO::PLAYER2 : Player::PLAYER_NO::PLAYER1;
 	}
 
+	// クリア
+	for (const auto& player : players_)
+	{
+		// ステージモデルのコライダーをプレイヤーに登録
+		const auto& playerPos = player.player_->GetTransform().pos;
+
+		float distance1 = VSize(VSub(playerPos, endPos_));
+		float distanceMax = 100.0f;
+		bool hit = (distance1 < distanceMax);
+		if (hit)
+		{
+			SceneManager::GetInstance()->ChangeScene(std::make_shared<GameClearScene>());
+			return;
+		}
+	}
+
 	// 歯車距離処理（後で消す）
 	for (auto& obj : objects_)
 	{
@@ -480,6 +497,10 @@ void GameScene::Update(void)
 		{
 			(*it)->Release();  // 必要なら Release() を呼ぶ
 			it = objects_.erase(it);  // 削除して次のイテレータを取得
+			for (auto& player : players_)
+			{
+				player.player_->HitColliderErase(2);
+			}
 		}
 		else
 		{
