@@ -105,9 +105,9 @@ void TutorialScene::Init(void)
 		objects_.push_back(o);
 		};
 
-	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::BUTTON, { -500.0f, -500.0f, 500.0f }, { 0.5f, 0.5f, 0.5f }, true);
-	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::CHEST, { 900.0f, -520.0f, 100.0f }, { 0.8f, 0.8f, 0.8f }, true);
+	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::BUTTON, { 0.0f, 0.0f, 0.0f }, { 0.5f, 0.5f, 0.5f }, true);
 	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::AKEG, { 900.0f, -520.0f, 100.0f }, { 0.3f, 0.3f, 0.3f }, false);
+	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::CHEST, { 900.0f, -520.0f, 100.0f }, { 0.8f, 0.8f, 0.8f }, true);
 
 	CreateWall(*stageManager_);
 
@@ -158,17 +158,17 @@ void TutorialScene::Init(void)
 		}
 	}
 
-	for (auto& wall : walls_)
-	{
-		const ColliderBase* wallCollider =
-			wall->GetOwnCollider(static_cast<int>(Stage::COLLIDER_TYPE::MODEL));
+	//for (auto& wall : walls_)
+	//{
+	//	const ColliderBase* wallCollider =
+	//		wall->GetOwnCollider(static_cast<int>(Stage::COLLIDER_TYPE::MODEL));
 
-		for (int i = 0; i < players_.size(); i++)
-		{
-			// ステージモデルのコライダーをプレイヤーに登録
-			players_[i].player_->AddHitCollider(wallCollider);
-		}
-	}
+	//	for (int i = 0; i < players_.size(); i++)
+	//	{
+	//		// ステージモデルのコライダーをプレイヤーに登録
+	//		players_[i].player_->AddHitCollider(wallCollider);
+	//	}
+	//}
 
 	// ポストエフェクト用スクリーン
 	postEffectScreen_ = MakeScreen(Application::SCREEN_SIZE_X, Application::SCREEN_SIZE_Y, true);
@@ -349,10 +349,15 @@ void TutorialScene::Update(void)
 	// チュートリアル完了でクリアへ遷移
 	if (isEndTutorial_)
 	{
-		SceneManager::GetInstance()->ChangeScene(std::make_shared<GameScene>());
-		AudioManager::GetInstance()->StopBGM();
-		AudioManager::GetInstance()->DeleteSceneSound(LoadScene::GAME_TUTORIAL);
+		// 先にオーディオを停止／削除してからシーン切替
+		if (AudioManager::GetInstance())
+		{
+			AudioManager::GetInstance()->StopBGM();
+			AudioManager::GetInstance()->DeleteSceneSound(LoadScene::GAME_TUTORIAL);
+		}
 
+		SceneManager::GetInstance()->ChangeScene(std::make_shared<TitleScene>());
+		return;
 	}
 
 	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_P))
@@ -397,7 +402,7 @@ void TutorialScene::Update(void)
 	}
 
 	lightPillar_->Update();
-	for (auto& wall : walls_) wall->Update();
+	//for (auto& wall : walls_) wall->Update();
 
 	// 衝突判定（Object更新前）
 	CheckCollisions();
@@ -503,7 +508,11 @@ void TutorialScene::Draw(void)
 			MV1DrawModel(pinID_);
 		}
 
-		if (!isHold && pinID_ != -1) pinID_ = -1;
+		if (!isHold && pinID_ != -1)
+		{
+			MV1DeleteModel(pinID_);
+			pinID_ = -1;
+		}
 
 		//wall_->Draw();
 
@@ -609,13 +618,20 @@ void TutorialScene::DrawNamePlate(std::string str, VECTOR pos)
 	const int drawX = static_cast<int>(objectPos.x) - (strWidth / 2);
 
 	DrawFormatString(drawX, static_cast<int>(objectPos.y) - 120, 0xffff00, str.c_str());
-	DrawFormatString(static_cast<int>(objectPos.x), static_cast<int>(objectPos.y) - 100, 0xffff00, "　↓");
+	DrawFormatString(static_cast<int>(objectPos.x), static_cast<int>(objectPos.y) - 100, 0xffff00, "↓");
 }
 
 void TutorialScene::Release(void)
 {
 	// オーディオマネージャーのインスタンスの削除
 	AudioManager::GetInstance()->DeleteInstance();
+
+	// 複製したモデルが残っていれば削除
+	if (pinID_ != -1)
+	{
+		MV1DeleteModel(pinID_);
+		pinID_ = -1;
+	}
 
 	// 全オブジェクト解放
 	for (auto& obj : objects_)
@@ -624,10 +640,21 @@ void TutorialScene::Release(void)
 	}
 	objects_.clear();
 
+	// プレイヤー配列をクリア
 	players_.clear();
 
-	if (screenHandle1_ != -1) DeleteGraph(screenHandle1_);
-	if (screenHandle2_ != -1) DeleteGraph(screenHandle2_);
+	// スクリーンハンドルの削除
+	if (screenHandle1_ != -1) { DeleteGraph(screenHandle1_); screenHandle1_ = -1; }
+	if (screenHandle2_ != -1) { DeleteGraph(screenHandle2_); screenHandle2_ = -1; }
+
+	// ポストエフェクト
+	if (postEffectScreen_ != -1) { DeleteGraph(postEffectScreen_); postEffectScreen_ = -1; }
+
+	if (camera_)
+	{
+		delete camera_;
+		camera_ = nullptr;
+	}
 }
 
 void TutorialScene::TyutorialTEXT(void)

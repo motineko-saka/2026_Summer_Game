@@ -63,6 +63,8 @@ public:
 	void SetScale(const VECTOR& scl) { transform_.scl = scl; transform_.Update(); }
 	VECTOR GetScale() const { return transform_.scl; }
 
+	VECTOR GetAnswerPos() const { return ansVec_; }
+
 	bool isPushButtom(void) const{ return isButtomPushed_; }
 
 	const bool IsGrabbed(void) const { return isGrabbed_; }
