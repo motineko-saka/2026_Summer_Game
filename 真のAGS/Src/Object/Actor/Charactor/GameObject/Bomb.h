@@ -6,7 +6,6 @@ class Bomb :
 {
 public:
 	Bomb(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type);
-	virtual ~Bomb() override = default;
 
 	bool isPushButtom(void) const { return isButtomPushed_; }
 

@@ -14,6 +14,7 @@ StageBase::StageBase()
 
 StageBase::~StageBase(void)
 {
+	Release();
 }
 
 void StageBase::Update(void)

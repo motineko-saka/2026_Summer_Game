@@ -7,7 +7,6 @@ class Object :
 {
 public:
 	Object(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type);
-	virtual ~Object() override = default;
 
 private:
 	// オブジェクト種類

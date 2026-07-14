@@ -25,6 +25,7 @@ ObjectBase::ObjectBase(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type)
 
 ObjectBase::~ObjectBase()
 {
+	Release();
 }
 
 void ObjectBase::Draw(void)
@@ -180,30 +181,14 @@ void ObjectBase::InitPost(void)
 
 void ObjectBase::UpdateProcess(void)
 {
-
+	// 落下したときに戻す
 	if (transform_.pos.y < -2000.0f)
 	{
 		transform_.pos = { -1000.0f, 80.0f, -10.0f };
 	}
 
-	//if (!(type_ == OBJECT_TYPE::BUTTON ||
-	//	type_ == OBJECT_TYPE::PRESS_BUTTON))
-	//{
-	//	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_C))
-	//	{
-	//		world_ = (world_ == SceneBase::WORLD::LEFT) ? SceneBase::WORLD::RIGHT : SceneBase::WORLD::LEFT;
-	//		transform_.pos.x = -transform_.pos.x;
-	//	}
-	//}
-
 	isGrabbed_ = false; // デフォルトはつかまれていない
 	isPushButton_ = false; // デフォルトはボタンが踏まれていない
-
-	//// PUSH_BUTTON タイプの場合、プレイヤーが乗っているか判定
-	//if (type_ == OBJECT_TYPE::PRESS_BUTTON)
-	//{
-	//	PressButton();
-	//}
 
 	ObjectUpdateProcess();
 

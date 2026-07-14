@@ -7,7 +7,6 @@ class Stage : public StageBase
 public:	
 
 	Stage(int modelID);
-	~Stage(void) override;
 
 	// œŠOƒtƒŒ[ƒ€–¼Ì
 	const std::vector<std::string> EXCLUDE_FRAME_NAMES = {"Mush", "Grass",};

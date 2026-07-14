@@ -5,7 +5,6 @@ class PressButton :
 {
 public:
     PressButton(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type);
-    virtual ~PressButton() override = default;
 
 private:
     // リソースロード
