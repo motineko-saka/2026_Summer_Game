@@ -47,6 +47,10 @@ public:
 	void Release(void) override;
 
 private:
+
+	// プレイヤーの数
+	static constexpr int PLAYER_NUM = 2;
+
 	constexpr static VECTOR ANSWER_VECTOR = { 1260.0f, -720.0f, -50.5f };
 
 	constexpr static VECTOR ANSWER_VECTOR_LENGTH[] = {	{-1260.0f, -720.0f, -50.5f} ,
@@ -80,8 +84,6 @@ private:
 
 	bool isPause_ = false;
 
-	VECTOR ansVec_ = {};
-
 	VECTOR buttonPos_ = { -770.0f, -300.0f, 760.0f };
 	VECTOR rockPos_ =	{ -660.0f, -320.0f, 630.0f };
 	VECTOR endPos_ =	{ 1364.0f, -300.0f, 620.0f };
@@ -96,6 +98,11 @@ private:
 	const void MakeNewObject(std::vector<ObjectBase*>& newObjects);
 
 	const void ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*>& newObjects);
+
+	void DrawNamePlate(std::string str, VECTOR pos);
+
+	// ゲームシーンでのシーンチェンジのまとめ
+	void ChangeScene(const std::shared_ptr<SceneBase>& scene) const;
 
 	// シャドウマップ用のハンドル
 	int shadowMapHandle_;

@@ -49,8 +49,6 @@ void GameScene::Init(void)
 	// 画面サイズの取得
 	GetScreenState(&screenWidth_, &screenHeight_, nullptr);
 
-	ansVec_ = ANSWER_VECTOR;
-
 	// 分割画面用のスクリーン作成(左右画面)
 	int halfWidth = screenWidth_ / 2;
 	screenHandle1_ = MakeScreen(halfWidth, screenHeight_, true);
@@ -60,9 +58,9 @@ void GameScene::Init(void)
 
 	lightPillar_ = std::make_unique<LightPillar>();
 
-	players_.resize(2);
+	players_.resize(PLAYER_NUM);
 
-	for (int i = 0; i < 2; i++)
+	for (int i = 0; i < players_.size(); i++)
 	{
 		players_[i].camera_ = std::make_unique<Camera>();
 		players_[i].camera_->Init();
@@ -206,9 +204,6 @@ void GameScene::Init(void)
 
 #pragma endregion
 
-	// 衝突フラグの初期化
-	ansVec_ = ANSWER_VECTOR;
-
 	// 初期アクティブ状態（プレイヤー1 を操作）
 	activePlayer_ = Player::PLAYER_NO::PLAYER1;
 	for (int i = 0; i < players_.size(); i++)
@@ -242,6 +237,7 @@ void GameScene::Init(void)
 
 void GameScene::Load(void)
 {
+	
 }
 
 void GameScene::LoadEnd(void)
@@ -374,39 +370,19 @@ void GameScene::Update(void)
 
 	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_P)) 
 	{
-		// BGM停止とシーン用サウンドの削除
-		if (AudioManager::GetInstance())
-		{
-			AudioManager::GetInstance()->StopBGM();
-			AudioManager::GetInstance()->DeleteSceneSound(LoadScene::GAME);
-		}
-
-		SceneManager::GetInstance()->ChangeScene(std::make_shared<TitleScene>());
+		ChangeScene(std::make_shared<TitleScene>());
 		return;
 	}
 
 	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_Q))
 	{
-		// BGM停止とシーン用サウンドの削除
-		if (AudioManager::GetInstance())
-		{
-			AudioManager::GetInstance()->StopBGM();
-			AudioManager::GetInstance()->DeleteSceneSound(LoadScene::GAME);
-		}
-
-		SceneManager::GetInstance()->ChangeScene(std::make_shared<GameClearScene>());
+		ChangeScene(std::make_shared<GameClearScene>());
 		return;
 	}
 
 	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_H))
 	{
-		// BGM停止とシーン用サウンドの削除
-		if (AudioManager::GetInstance())
-		{
-			AudioManager::GetInstance()->StopBGM();
-			AudioManager::GetInstance()->DeleteSceneSound(LoadScene::GAME);
-		}
-		SceneManager::GetInstance()->ChangeScene(std::make_shared<GameOverScene>());
+		ChangeScene(std::make_shared<GameOverScene>());
 		return;
 	}
 
@@ -435,7 +411,7 @@ void GameScene::Update(void)
 		bool hit = (distance1 < distanceMax);
 		if (hit)
 		{
-			SceneManager::GetInstance()->ChangeScene(std::make_shared<GameClearScene>());
+			ChangeScene(std::make_shared<GameClearScene>());
 			return;
 		}
 	}
@@ -569,13 +545,7 @@ void GameScene::Draw(void)
 
 	SetUseShadowMap(0, shadowMapHandle_);
 
-	const auto objectPos = ConvWorldPosToScreenPos(endPos_);
-	std::string str = "ゴール";
-	const int strWidth = GetDrawStringWidth(str.c_str(), static_cast<int>(str.length()));
-	const int drawX = static_cast<int>(objectPos.x) - (strWidth / 2);
 
-	DrawFormatString(drawX, static_cast<int>(objectPos.y) - 120, 0xffff00, str.c_str());
-	DrawFormatString(static_cast<int>(objectPos.x), static_cast<int>(objectPos.y) - 100, 0xffff00, "　↓");
 
 	int halfWidth = screenWidth_ / 2;
 
@@ -625,6 +595,8 @@ void GameScene::Draw(void)
 			//obj->SetViewWorld(WORLD::LEFT);
 			obj->Draw();
 		}
+
+		DrawNamePlate("ゴール", endPos_);;
 	}
 
 	// メイン画面に転送
@@ -727,19 +699,42 @@ void GameScene::Draw(void)
 #pragma endregion
 }
 
+void GameScene::DrawNamePlate(std::string str, VECTOR pos)
+{
+	// オブジェクトの位置
+	const auto objectPos = ConvWorldPosToScreenPos(pos);
+
+	// 文字の長さ
+	const int strWidth = GetDrawStringWidth(str.c_str(), static_cast<int>(str.length()));
+
+	// 半分に
+	const int drawX = static_cast<int>(objectPos.x) - (strWidth / 2);
+
+	// 文字を書く
+	DrawFormatString(drawX, static_cast<int>(objectPos.y) - 120, 0xffff00, str.c_str());
+
+	// 矢印を書く
+	DrawFormatString(static_cast<int>(objectPos.x), static_cast<int>(objectPos.y) - 100, 0xffff00, "　↓");
+}
+
+void GameScene::ChangeScene(const std::shared_ptr<SceneBase>& scene) const
+{
+	// BGM停止とシーン用サウンドの削除
+	if (AudioManager::GetInstance())
+	{
+		AudioManager::GetInstance()->StopBGM();
+		AudioManager::GetInstance()->DeleteSceneSound(LoadScene::GAME);
+	}
+
+	DeleteShadowMap(shadowMapHandle_);
+	SceneManager::GetInstance()->ChangeScene(scene);
+}
+
 void GameScene::Release(void)
 {
 	// オーディオマネージャーのインスタンスの削除
 	AudioManager::GetInstance()->DeleteInstance();
 
-	// 全オブジェクト解放
-	for (auto& obj : objects_)
-	{
-		if (obj)
-		{
-			obj->Release();
-		}
-	}
 	objects_.clear();
 
 	DeleteGraph(pinID_);

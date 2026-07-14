@@ -61,7 +61,8 @@ public:
 
 	// ƒXƒP[ƒ‹İ’è/æ“¾
 	void SetScale(const VECTOR& scl) { transform_.scl = scl; transform_.Update(); }
-	VECTOR GetScale() const { return transform_.scl; }
+
+	const VECTOR GetAnswerPos(void)const { return ansVec_; }
 
 	bool isPushButtom(void) const{ return isButtomPushed_; }
 

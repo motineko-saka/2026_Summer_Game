@@ -13,10 +13,6 @@ Stage::Stage(int modelID)
 	transform_.SetModel(modelID);
 }
 
-Stage::~Stage(void)
-{
-}
-
 void Stage::InitLoad(void)
 {
 	//transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::TUTORIAL_STAGE));
