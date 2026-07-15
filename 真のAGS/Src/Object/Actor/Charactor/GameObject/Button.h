@@ -6,13 +6,11 @@ class Player;
 class Button : public ObjectBase
 {
 public:
-	Button(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type, Player& player);
+	Button(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type);
 
 	bool isPushButtom(void) const { return isButtomPushed_; }
 
 private:
-	std::vector<Player::PlayerS>Player& player_;
-
 	// リソースロード
 	void InitLoad(void)override;
 
