@@ -116,6 +116,10 @@ void ResourceManager::Init(void)
 	res = new RES(RES_T::MODEL, PATH_MDL + "Object/Axe.mv1");
 	resourcesMap_.emplace(SRC::AXE, res);
 
+	// ゲート
+	res = new RES(RES_T::MODEL, PATH_MDL + "Object/Gate/GateMist.mv1");
+	resourcesMap_.emplace(SRC::GATE, res);
+
 	// タイトルムービー
 	res = new RES(RES_T::MOVIE, PATH_MOV + "Title.mp4");
 	resourcesMap_.emplace(SRC::TITLE_MOV, res);

@@ -15,7 +15,7 @@ Rock::Rock(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type)
 void Rock::InitLoad(void)
 {
 	transform_.SetModel(ResourceManager::GetInstance().LoadModelDuplicate(ResourceManager::SRC::ROCK));
-	//isHoldable_ = true;
+	isHoldable_ = true;
 }
 
 void Rock::InitObjCol(void)

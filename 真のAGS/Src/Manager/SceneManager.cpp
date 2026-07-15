@@ -34,9 +34,9 @@ void SceneManager::Init(void)
 	Loading::GetInstance()->Load();
 
 	// 最初はタイトル画面から
-	ChangeScene(std::make_shared<TitleScene>());
+	//ChangeScene(std::make_shared<TitleScene>());
 	//ChangeScene(std::make_shared<TutorialScene>());
-	//ChangeScene(std::make_shared<GameScene>());
+	ChangeScene(std::make_shared<GameScene>());
 
 		// メインスクリーン
 	mainScreen_ = MakeScreen(

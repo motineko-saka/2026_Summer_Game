@@ -32,6 +32,7 @@ public:
 		GEAR,
 		ROCK,
 		AXE,
+		GATE,
 		TITLE_MOV,
 		HONDANA_IMG,
 		UI_GAMESTART,

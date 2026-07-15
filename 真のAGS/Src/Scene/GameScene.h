@@ -14,6 +14,7 @@ class LightPillar;
 
 class GameScene : public SceneBase
 {
+public:
 	struct PlayerS
 	{
 		std::unique_ptr<Player> player_;
@@ -21,7 +22,6 @@ class GameScene : public SceneBase
 		bool isPlayerHitObject_;
 	};
 
-public:
 	// コンストラクタ
 	GameScene(void);
 

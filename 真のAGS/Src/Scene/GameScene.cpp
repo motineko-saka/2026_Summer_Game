@@ -16,6 +16,7 @@
 #include "../Object/Actor/Charactor/GameObject/Gaer.h"
 #include "../Object/Actor/Charactor/GameObject/Rock.h"
 #include "../Object/Actor/Charactor/GameObject/Bomb.h"
+#include "../Object/Actor/Charactor/GameObject/Gate.h"
 #include "../Object/Actor/Wall.h"
 #include "../Object/LightPillar.h"
 #include "../Object/Collider/ColliderBase.h"
@@ -108,7 +109,7 @@ void GameScene::Init(void)
 	objects_.back()->SetPosition({ -500.0f, 0.0f, 0.0f });
 	objects_.back()->SetScale({ 8.0, 8.0, 8.0 });
 
-	objects_.push_back(std::make_unique<Object>(GameScene::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::DEFAULT));
+	objects_.push_back(std::make_unique<Gate>(GameScene::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::DEFAULT));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ 1300.0f, -320.0f, 440.0f });
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
@@ -168,7 +169,7 @@ void GameScene::Init(void)
 		auto& obj = objects_[i];
 
 		const auto* objCaps = 
-			obj->GetOwnCollider(static_cast<int>(ObjectBase::COLLIDER_TYPE::CAPSULE));
+			obj->GetOwnCollider(static_cast<int>(ObjectBase::COLLIDER_TYPE::MODEL));
 
 		if (!objCaps) continue;
 
@@ -190,6 +191,7 @@ void GameScene::Init(void)
 	const auto* objCaps = objects_[2]->GetOwnCollider(static_cast<int>(ObjectBase::COLLIDER_TYPE::CAPSULE));
 	objects_[1]->AddHitCollider(objCaps);
 
+	// •Ç
 	for (auto& wall : walls_)
 	{
 		const ColliderBase* wallCollider =
