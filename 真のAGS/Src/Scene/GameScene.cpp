@@ -455,7 +455,6 @@ void GameScene::Update(void)
 
 	//enemyManager_->Update();
 	// プレイヤー1用のカメラ設定
-	
 
 	//wall_->Update();
 	lightPillar_->Update();
