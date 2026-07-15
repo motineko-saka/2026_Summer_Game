@@ -105,7 +105,10 @@ void TutorialScene::Init(void)
 		objects_.push_back(o);
 		};
 
-	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::BUTTON, { 0.0f, 0.0f, 0.0f }, { 0.5f, 0.5f, 0.5f }, true);
+	// ボタンを左右両方に配置
+	pushObject(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::BUTTON, { -200.0f, 0.0f, 100.0f }, { 0.5f, 0.5f, 0.5f }, true);
+	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::BUTTON, { 200.0f, 0.0f, 100.0f }, { 0.5f, 0.5f, 0.5f }, true);
+
 	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::AKEG, { 900.0f, -520.0f, 100.0f }, { 0.3f, 0.3f, 0.3f }, false);
 	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::CHEST, { 900.0f, -520.0f, 100.0f }, { 0.8f, 0.8f, 0.8f }, true);
 
@@ -324,20 +327,44 @@ const void TutorialScene::ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*
 		if (distance < 180.0f) { isNearButton = true; break; }
 	}
 
-	// 近くでスペースならチェストを出現させ、既存チェストを消す
+	// スペースでシーケンスチェック&&オブジェクト出現処理
 	if (isNearButton && (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_F) || InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::RIGHT)))
 	{
+		// ボタンの押下状態をセット
 		obj.SetButtomPushed(true);
-		newObjects.push_back(new ObjectBase(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::OPENCHEST));
 
-		for (size_t i = 0; i < objects_.size(); ++i)
+		// ボタンのカウント
+		buttonPCount_++;
+
+		// タイマーのリセット
+		buttonSRTime_ = 0.0f;
+
+		// 目標に達したら新規オブジェクト（OPENCHEST）を生成し、既存チェストを削除する
+		if (buttonPCount_ >= buttonPTarget_)
 		{
-			if (objects_[i] && objects_[i]->GetObjectType() == ObjectBase::OBJECT_TYPE::CHEST)
+			newObjects.push_back(new ObjectBase(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::OPENCHEST));
+
+			for (size_t i = 0; i < objects_.size(); ++i)
 			{
-				removeIndices.push_back(static_cast<int>(i));
-				break;
+				if (objects_[i] && objects_[i]->GetObjectType() == ObjectBase::OBJECT_TYPE::CHEST)
+				{
+					removeIndices.push_back(static_cast<int>(i));
+					break;
+				}
 			}
+
+
+				// シーケンスをリセット
+				buttonSP_ = 0;
+				buttonSRTime_ = 0.0f;
+
+				// SE再生
+				if (AudioManager::GetInstance())
+				{
+					AudioManager::GetInstance()->PlaySE(SoundID::SE_SUCCESS);
+				}
 		}
+
 	}
 }
 
@@ -412,6 +439,17 @@ void TutorialScene::Update(void)
 	{
 		if (obj) obj->Update();
 	}
+
+	if (buttonSP_ > 0)
+	{
+		buttonSRTime_ += SceneManager::GetInstance()->GetDeltaTime();
+		if (buttonSRTime_ > buttonSTimer_)
+		{
+			buttonSP_ = 0;
+			buttonSRTime_ = 0.0f;
+		}
+	}
+
 
 	AnswerChack();
 }

@@ -134,4 +134,15 @@ private:
 	float score_ = 0;
 	// SE
 	bool placedSEPlayed_ = false;
+
+	// 押すべき順
+	std::vector<SceneBase::WORLD> buttonRequiredOrder_{ SceneBase::WORLD::LEFT, SceneBase::WORLD::RIGHT };
+	int buttonPTarget_ = 5; 
+	int buttonPCount_ = 0;
+	// 現在どこまで進行したか
+	size_t buttonSP_ = 0;
+	// シーケンス入力のタイムアウト
+	float buttonSRTime_ = 3.0f;
+	// 現在のタイマー
+	float buttonSTimer_ = 0.0f;
 };
