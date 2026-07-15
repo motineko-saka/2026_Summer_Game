@@ -1,4 +1,3 @@
-#pragma once
 #include "SceneBase.h"
 #include "../Object/Common/Transform.h"
 #include "../Object/Actor/Charactor/Player.h"
@@ -58,10 +57,12 @@ public:
 	// 解放
 	void Release(void) override;
 
+	void TyutorialTEXT(void);
+
 private:
 
 	constexpr static VECTOR ANSWER_VECTOR_LENGTH[] = { {760.0f, -520.0f, 600.0f} ,
-														{0.0f, -600.0f, -50.0f},
+														{0.0f, -600.0f, 50.0f}
 	};
 
 	// カメラ
@@ -89,7 +90,7 @@ private:
 	// シェーダー
 	std::unique_ptr<PixelMaterial> pixelMaterial_;
 	std::unique_ptr<PixelRenderer> pixelRenderer_;
-	
+
 	// 画面分割用のスクリーンハンドル
 	int screenHandle1_;
 	int screenHandle2_;
@@ -129,4 +130,8 @@ private:
 	Tutorial tutorial_; // 追加
 	int moveStepe_ = 650; // 移動する距離
 	bool isEndTutorial_ = false;
+	VECTOR tempCameraRot_ = { 0,0,0 };
+	float score_ = 0;
+	// SE
+	bool placedSEPlayed_ = false;
 };

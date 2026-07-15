@@ -42,10 +42,13 @@ public:
 	const ColliderBase* GetOwnCollider(int key) const;
 
 	// 衝突対象となるコライダを登録
-	void AddHitCollider(const ColliderBase * hitCollider);
+	void AddHitCollider(const ColliderBase* hitCollider);
 
 	// 衝突対象となるコライダをクリア
 	void ClearHitCollider(void);
+
+	// 追加: 指定コライダの登録解除
+	void RemoveHitCollider(const ColliderBase* hitCollider);
 
 protected:
 

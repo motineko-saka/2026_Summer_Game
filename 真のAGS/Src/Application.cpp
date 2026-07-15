@@ -40,8 +40,6 @@ void Application::Init(void)
 	SetGraphMode(SCREEN_SIZE_X, SCREEN_SIZE_Y, 32);
 	ChangeWindowMode(true);
 
-
-
 	// FPSêßå‰èâä˙âª
 	fpsController_ = new FpsController(FRAME_RATE);
 

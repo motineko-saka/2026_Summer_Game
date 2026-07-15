@@ -60,4 +60,7 @@ private:
 	// 前フレームのマウス位置
 	float prevMouseX_;
 	float prevMouseY_;
+
+	// 前フレームのスティックX
+	float prevStickX_ = 0.0f;
 };

@@ -104,8 +104,7 @@ void Tutorial::Update()
 	const auto& cur = steps_[currentIndex_];
 	bool condResult = cur.condition ? cur.condition() : false;
 	bool userNextKey = (inputDelay_ == 0) &&
-		(CheckHitKey(KEY_TUTORIAL_NEXT) || CheckHitKey(KEY_INPUT_RETURN) ||
-			CheckHitKey(KEY_INPUT_SPACE) || (GetMouseInput() & MOUSE_INPUT_LEFT));
+		(CheckHitKey(KEY_TUTORIAL_NEXT) || CheckHitKey(KEY_INPUT_RETURN));
 
 	// タイプ表示進行
 	if (revealIndex_ < static_cast<int>(splitText_.size()))

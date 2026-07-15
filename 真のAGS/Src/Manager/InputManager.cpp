@@ -259,6 +259,14 @@ InputManager::JOYPAD_IN_STATE InputManager::GetJPadInputState(JOYPAD_NO no)
 		auto d = GetJPadDInputState(no);
 		auto x = GetJPadXInputState(no);
 
+		for (int i = 0; i < 32; i++)
+		{
+			if (d.Buttons[i] > 0)
+			{
+				printf("d.Buttons[%d] = %d\n", i, d.Buttons[i]);
+			}
+		}
+
 		int idx;
 
 		//   Y
@@ -283,6 +291,15 @@ InputManager::JOYPAD_IN_STATE InputManager::GetJPadInputState(JOYPAD_NO no)
 		idx = static_cast<int>(JOYPAD_BTN::L_TRIGGER);
 		ret.ButtonsNew[idx] = x.LeftTrigger; // L_TRIGGER
 
+		idx = static_cast<int>(JOYPAD_BTN::L2_TRIGGER);
+		ret.ButtonsNew[idx] = d.Buttons[4];// L2_TRIGGER
+
+		idx = static_cast<int>(JOYPAD_BTN::R2_TRIGGER);
+		ret.ButtonsNew[idx] = d.Buttons[5];// R2_TRIGGER
+	
+		idx = static_cast<int>(JOYPAD_BTN::OPTION);
+		ret.ButtonsNew[idx] = d.Buttons[7];// OPTION
+
 		// 左スティック
 		ret.AKeyLX = d.X;
 		ret.AKeyLY = d.Y;
@@ -290,7 +307,6 @@ InputManager::JOYPAD_IN_STATE InputManager::GetJPadInputState(JOYPAD_NO no)
 		// 右スティック
 		ret.AKeyRX = d.Rx;
 		ret.AKeyRY = d.Ry;
-
 	}
 	break;
 	case InputManager::JOYPAD_TYPE::DUAL_SENSE:
