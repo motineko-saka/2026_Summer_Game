@@ -1,4 +1,3 @@
-#include "SceneBase.h"
 #include "../Object/Common/Transform.h"
 #include "../Object/Actor/Charactor/Player.h"
 #include <vector>
@@ -12,8 +11,6 @@ class ObjectBase;
 class LightPillar;
 class ModelRenderer;
 class ModelMaterial;
-class PixelRenderer;
-class PixelMaterial;
 
 class TutorialScene : public SceneBase
 {
@@ -58,10 +55,11 @@ public:
 	void Release(void) override;
 
 	void TyutorialTEXT(void);
-
+	void Hint(void);
 private:
 
 	constexpr static VECTOR ANSWER_VECTOR_LENGTH[] = { {760.0f, -520.0f, 600.0f} ,
+														{0.0f, -600.0f, 50.0f},
 														{0.0f, -600.0f, 50.0f}
 	};
 
@@ -83,13 +81,6 @@ private:
 
 	// 複数のオブジェクトを管理
 	std::vector<ObjectBase*> objects_;
-
-	// ポストエフェクト用スクリーン
-	int postEffectScreen_;
-
-	// シェーダー
-	std::unique_ptr<PixelMaterial> pixelMaterial_;
-	std::unique_ptr<PixelRenderer> pixelRenderer_;
 
 	// 画面分割用のスクリーンハンドル
 	int screenHandle1_;
@@ -135,14 +126,18 @@ private:
 	// SE
 	bool placedSEPlayed_ = false;
 
-	// 押すべき順
-	std::vector<SceneBase::WORLD> buttonRequiredOrder_{ SceneBase::WORLD::LEFT, SceneBase::WORLD::RIGHT };
-	int buttonPTarget_ = 5; 
+	// ボタンの正解パターン（右, 左, 左, 右, 左）
+	std::vector<SceneBase::WORLD> buttonRequiredPattern_{ SceneBase::WORLD::RIGHT, SceneBase::WORLD::LEFT, SceneBase::WORLD::LEFT, SceneBase::WORLD::RIGHT, SceneBase::WORLD::LEFT };
+
+	std::vector<SceneBase::WORLD> buttonPressHistory_;
+	int buttonPTarget_ = 5;
 	int buttonPCount_ = 0;
-	// 現在どこまで進行したか
+	// 現在進行
 	size_t buttonSP_ = 0;
-	// シーケンス入力のタイムアウト
-	float buttonSRTime_ = 3.0f;
-	// 現在のタイマー
-	float buttonSTimer_ = 0.0f;
+
+	// ヒント関連
+	bool showHint_ = false;                       // ヒントを表示中か
+	VECTOR hintWorldPos_ = { 0.0f, 0.0f, 0.0f };   // ヒントを表示するワールド座標（オブジェクト位置）
+	int hintHandle_ = -1;                         // 画像ハンドル
+
 };

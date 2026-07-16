@@ -187,6 +187,10 @@ void ResourceManager::Init(void)
 	// ゲームオーバー
 	res = new RES(RES_T::IMG, PATH_IMG + "GameOver.png");
 	resourcesMap_.emplace(SRC::GAME_OVER, res);
+
+	// ヒント
+	res = new RES(RES_T::IMG, PATH_IMG + "enogu/Hinto2.png");
+	resourcesMap_.emplace(SRC::HINTO, res);
 }
 
 void ResourceManager::Release(void)

@@ -50,6 +50,7 @@ public:
 		ENOGU8,
 		GAME_CLEAR,
 		GAME_OVER,
+		HINTO,
 	};
 
 	// 明示的にインステンスを生成する
