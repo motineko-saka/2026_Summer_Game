@@ -130,14 +130,14 @@ private:
 	std::vector<SceneBase::WORLD> buttonRequiredPattern_{ SceneBase::WORLD::RIGHT, SceneBase::WORLD::LEFT, SceneBase::WORLD::LEFT, SceneBase::WORLD::RIGHT, SceneBase::WORLD::LEFT };
 
 	std::vector<SceneBase::WORLD> buttonPressHistory_;
-	int buttonPTarget_ = 5;
+	int buttonPTarget_ = 1;
 	int buttonPCount_ = 0;
 	// 現在進行
 	size_t buttonSP_ = 0;
 
 	// ヒント関連
-	bool showHint_ = false;                       // ヒントを表示中か
-	VECTOR hintWorldPos_ = { 0.0f, 0.0f, 0.0f };   // ヒントを表示するワールド座標（オブジェクト位置）
+	bool showHint_ = false;                       // ヒントを表示中
+	VECTOR hintWorldPos_ = { 0.0f, 0.0f, 0.0f };   // ヒントを表示するワールド座標
 	int hintHandle_ = -1;                         // 画像ハンドル
 
 };

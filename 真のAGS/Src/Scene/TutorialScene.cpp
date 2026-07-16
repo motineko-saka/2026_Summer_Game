@@ -372,6 +372,7 @@ const void TutorialScene::ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*
 
 			if (AudioManager::GetInstance())
 			{
+				AudioManager::GetInstance()->LoadSceneSound(LoadScene::GAME);
 				AudioManager::GetInstance()->PlaySE(SoundID::SE_SUCCESS);
 			}
 		}
@@ -386,6 +387,14 @@ void TutorialScene::Update(void)
 {
 	// チュートリアル更新
 	tutorial_.Update();
+	Hint();
+
+	// ヒント表示中はその他の更新を停止（ヒントは Hint() が開閉する）
+	if (showHint_)
+	{
+		// 更新処理をスキップ
+		return;
+	}
 
 	// チュートリアル完了でクリアへ遷移
 	if (isEndTutorial_)
@@ -453,8 +462,6 @@ void TutorialScene::Update(void)
 	{
 		if (obj) obj->Update();
 	}
-
-	Hint();
 
 	AnswerChack();
 }
@@ -824,6 +831,7 @@ void TutorialScene::TyutorialTEXT(void)
 					{
 						if (AudioManager::GetInstance())
 						{
+							AudioManager::GetInstance()->LoadSceneSound(LoadScene::GAME);
 							AudioManager::GetInstance()->PlaySE(SoundID::SE_SUCCESS);
 						}
 						placedSEPlayed_ = true;
@@ -861,31 +869,40 @@ void TutorialScene::Hint(void)
 {
 	const bool isEDown = InputManager::GetInstance()->IsTrgDown(KEY_INPUT_E)
 		|| InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::LEFT);
-	if (isEDown)
+
+	if (!isEDown) return;
+
+	// ヒントを閉じる
+	if (showHint_)
 	{
-		for (auto& obj : objects_)
+		showHint_ = false;
+		hintHandle_ = -1;
+		return;
+	}
+
+	// ヒントの表示条件式にゃん
+	for (auto& obj : objects_)
+	{
+		if (!obj) continue;
+		if (obj->GetObjectType() != ObjectBase::OBJECT_TYPE::WBOX) continue;
+
+		// プレイヤーとの距離
+		bool isnear = false;
+		for (auto& p : players_)
 		{
-			if (!obj) continue;
-			if (obj->GetObjectType() != ObjectBase::OBJECT_TYPE::WBOX) continue;
-
-			// プレイヤー全員との距離をチェック
-			bool isnear = false;
-			for (auto& p : players_)
+			const float dist = VSize(VSub(p.player_->GetTransform().pos, obj->GetTransform().pos));
+			if (dist < 90.0f)
 			{
-				const float dist = VSize(VSub(p.player_->GetTransform().pos, obj->GetTransform().pos));
-				if (dist < 90.0f)
-				{
-					isnear = true;
-					break;
-				}
+				isnear = true;
+				break;
 			}
-			if (!isnear) continue;
-
-			// ヒント表示開始
-			showHint_ = true;
-			hintWorldPos_ = obj->GetPos();
-			hintHandle_ = ResourceManager::GetInstance().Load(ResourceManager::SRC::HINTO).handleId_;
-			break;
 		}
+		if (!isnear) continue;
+
+		// ヒント表示
+		showHint_ = true;
+		hintWorldPos_ = obj->GetPos();
+		hintHandle_ = ResourceManager::GetInstance().Load(ResourceManager::SRC::HINTO).handleId_;
+		break;
 	}
 }

@@ -390,7 +390,8 @@ void GameScene::Update(void)
 
 	// プレイヤー選択切替（TAB か 右クリック)
 	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_TAB) ||
-		InputManager::GetInstance()->IsTrgMouseRight())
+		InputManager::GetInstance()->IsTrgMouseRight() ||
+		InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::R_TRIGGER))
 	{
 		for (int i = 0; i < players_.size(); i++)
 		{
