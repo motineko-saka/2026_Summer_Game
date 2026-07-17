@@ -26,7 +26,7 @@ void Object::InitLoad(void)
 		transform_.SetModel(ResourceManager::GetInstance().LoadModelDuplicate(ResourceManager::SRC::WALL));
 		break;
 	case OBJECT_TYPE::DEFAULT:
-		transform_.SetModel(ResourceManager::GetInstance().LoadModelDuplicate(ResourceManager::SRC::CUBE));
+		transform_.SetModel(ResourceManager::GetInstance().LoadModelDuplicate(ResourceManager::SRC::GATE));
 		break;
 	case OBJECT_TYPE::CHEST:
 		transform_.SetModel(ResourceManager::GetInstance().LoadModelDuplicate(ResourceManager::SRC::Chest));
@@ -38,14 +38,6 @@ void Object::InitLoad(void)
 
 void Object::InitObjTrans(void)
 {
-	if (type_ == OBJECT_TYPE::CHEST)
-	{
-		transform_.quaRotLocal = Quaternion::AngleAxis(AsoUtility::Deg2RadD(90.0f),
-			AsoUtility::AXIS_Y);
-
-		isHoldable_ = true;
-	}
-
 	if (type_ == OBJECT_TYPE::DEFAULT)
 	{
 		capsule_r = 60.0f;

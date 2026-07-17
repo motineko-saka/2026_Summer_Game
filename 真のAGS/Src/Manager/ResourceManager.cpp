@@ -116,6 +116,10 @@ void ResourceManager::Init(void)
 	res = new RES(RES_T::MODEL, PATH_MDL + "Object/Axe.mv1");
 	resourcesMap_.emplace(SRC::AXE, res);
 
+	// ゲート
+	res = new RES(RES_T::MODEL, PATH_MDL + "Object/Gate/GateMist.mv1");
+	resourcesMap_.emplace(SRC::GATE, res);
+
 	// タイトルムービー
 	res = new RES(RES_T::MOVIE, PATH_MOV + "Title.mp4");
 	resourcesMap_.emplace(SRC::TITLE_MOV, res);
@@ -137,11 +141,11 @@ void ResourceManager::Init(void)
 	resourcesMap_.emplace(SRC::UI_EXIT, res);
 
 	// 宝箱
-	res = new RES(RES_T::MODEL, PATH_MDL + "Object/Box.mv1");
+	res = new RES(RES_T::MODEL, PATH_MDL + "Object/Chest.mv1");
 	resourcesMap_.emplace(SRC::Chest, res);
 
 	// 開いた宝箱
-	res = new RES(RES_T::MODEL, PATH_MDL + "Object/OpenBox.mv1");
+	res = new RES(RES_T::MODEL, PATH_MDL + "Object/ChestOpen.mv1");
 	resourcesMap_.emplace(SRC::OPENCHEST, res);
 
 	// 絵の具
@@ -183,6 +187,10 @@ void ResourceManager::Init(void)
 	// ゲームオーバー
 	res = new RES(RES_T::IMG, PATH_IMG + "GameOver.png");
 	resourcesMap_.emplace(SRC::GAME_OVER, res);
+
+	// ヒント
+	res = new RES(RES_T::IMG, PATH_IMG + "enogu/Hinto.png");
+	resourcesMap_.emplace(SRC::HINTO, res);
 }
 
 void ResourceManager::Release(void)

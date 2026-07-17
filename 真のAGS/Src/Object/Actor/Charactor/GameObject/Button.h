@@ -1,6 +1,8 @@
 #pragma once
 #include "ObjectBase.h"
 
+class Player;
+
 class Button : public ObjectBase
 {
 public:

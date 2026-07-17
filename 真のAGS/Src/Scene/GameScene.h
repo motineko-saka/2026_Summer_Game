@@ -14,6 +14,7 @@ class LightPillar;
 
 class GameScene : public SceneBase
 {
+public:
 	struct PlayerS
 	{
 		std::unique_ptr<Player> player_;
@@ -21,7 +22,6 @@ class GameScene : public SceneBase
 		bool isPlayerHitObject_;
 	};
 
-public:
 	// コンストラクタ
 	GameScene(void);
 
@@ -53,7 +53,7 @@ private:
 
 	constexpr static VECTOR ANSWER_VECTOR = { 1260.0f, -720.0f, -50.5f };
 
-	constexpr static VECTOR ANSWER_VECTOR_LENGTH[] = {	{-1260.0f, -720.0f, -50.5f} ,
+	constexpr static VECTOR ANSWER_VECTOR_LENGTH[] = {	{-1260.0f, -720.0f, -50.5f},
 														{-1260.0f, -720.0f, -50.5f},
 														{ 1260.0f, -720.0f, -50.5f},
 														{-1260.0f, -720.0f, -50.5f},
@@ -106,4 +106,6 @@ private:
 
 	// シャドウマップ用のハンドル
 	int shadowMapHandle_;
+
+
 };

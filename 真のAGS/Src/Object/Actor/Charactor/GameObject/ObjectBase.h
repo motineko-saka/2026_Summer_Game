@@ -72,10 +72,10 @@ public:
 	void PressButton(void);
 
 	// PUSH_BUTTON が踏まれているか取得
-	bool IsPushButtonPressed(void) const { return isPushButton_; }
+	bool IsPushButtonPressed(void) const { return isPressButton_; }
 
 	// PUSH_BUTTON のリセット（次のフレーム判定のため）
-	void ResetPushButton(void) { isPushButton_ = false; }
+	void ResetPushButton(void) { isPressButton_ = false; }
 
 	void SetIsRot(bool is) { isRot_ = is; }
 
@@ -91,9 +91,14 @@ protected:
 	bool isRockExist_ = true;
 
 	// PUSH_BUTTON が踏まれているか
-	bool isPushButton_ = false;
+	bool isPressButton_ = false;
+
+	// BUTTON が押されているか
+	bool isButtomPushed_ = false;
 
 	bool isHoldable_ = false;
+
+	int handFrame_;
 
 	// リソースロード
 	void InitLoad(void)override;
@@ -121,6 +126,7 @@ protected:
 	// 継承するオブジェクトごとの更新処理
 	virtual void ObjectUpdateProcess(void) {};
 
+	virtual void SetFlame(const Transform* follow) {};
 	ColliderBase::TAG tag_;
 private:
 	// 衝突判定用ライン開始
@@ -158,8 +164,6 @@ private:
 	// つかまれているかどうか 
 	// true:つかまれている false:つかまれていない
 	bool isGrabbed_ = false;
-
-	bool isButtomPushed_ = false;
 
 	bool isRot_ = false;
 

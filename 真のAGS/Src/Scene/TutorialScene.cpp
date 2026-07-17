@@ -17,12 +17,10 @@
 #include "../Object/Collider/ColliderBase.h"
 #include "TutorialScene.h"
 #include "../UI/Tutorial.h"
-#include "GameClearScene.h"
+#include "GameScene.h"
 #include "PauseScene.h"
 #include "TitleScene.h"
 #include "../Manager/EffekseerEffect.h"
-#include "../Renderer/PixelMaterial.h"
-#include "../Renderer/PixelRenderer.h"
 #include "../Audio/AudioManager.h"
 
 TutorialScene::TutorialScene(void)
@@ -105,9 +103,14 @@ void TutorialScene::Init(void)
 		objects_.push_back(o);
 		};
 
-	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::BUTTON, { 0.0f, -600.0f, -50.0f }, { 0.5f, 0.5f, 0.5f }, true);
-	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::CHEST, { 900.0f, -520.0f, 100.0f }, { 0.8f, 0.8f, 0.8f }, true);
-	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::AKEG, { 900.0f, -520.0f, 100.0f }, { 0.3f, 0.3f, 0.3f }, false);
+	// ボタンを左右両方に配置
+	pushObject(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::BUTTON, { -700.0f, -520.0f, 100.0f }, { 0.5f, 0.5f, 0.5f }, true);
+	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::BUTTON, { 900.0f, -520.0f, 100.0f }, { 0.5f, 0.5f, 0.5f }, true);
+	buttonPressHistory_.clear();
+
+	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::AKEG, { 900.0f, -520.0f, 300.0f }, { 0.3f, 0.3f, 0.3f }, true);
+	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::CHEST, { 900.0f, -520.0f, 300.0f }, { 0.6f, 0.6f, 0.6f }, true);
+	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[2], ObjectBase::OBJECT_TYPE::WBOX, { 800.0f, -520.0f, 100.0f }, { 0.5f, 0.5f, 0.5f }, true);
 
 	CreateWall(*stageManager_);
 
@@ -124,20 +127,10 @@ void TutorialScene::Init(void)
 		{
 			obj->AddHitCollider(stageCollider);
 		}
-		if (stageCollider == nullptr) DrawFormatString(100, 100, 0xffffff, "stageCollider is null\n");
+		//if (stageCollider == nullptr) DrawFormatString(100, 100, 0xffffff, "stageCollider is null\n");
 	}
 
-	// 踏むタイプのボタンのインデックスを収集
-	std::vector<size_t> pushButtonIndex;
-	for (size_t i = 0; i < objects_.size(); ++i)
-	{
-		if (objects_[i]->GetObjectType() == ObjectBase::OBJECT_TYPE::PRESS_BUTTON)
-		{
-			pushButtonIndex.push_back(i);
-		}
-	}
-
-	// 各オブジェクトの衝突コライダをプレイヤーに登録（重複チェック内包）
+	// 各オブジェクトの衝突コライダをプレイヤーに登録
 	for (size_t i = 0; i < objects_.size(); ++i)
 	{
 		auto* obj = objects_[i];
@@ -148,34 +141,12 @@ void TutorialScene::Init(void)
 		{
 			players_[p].player_->AddHitCollider(objCaps);
 		}
-
-		for (auto index : pushButtonIndex)
-		{
-			if (i != index)
-			{
-				objects_[index]->AddHitCollider(objCaps);
-			}
-		}
 	}
-
-	// ポストエフェクト用スクリーン
-	postEffectScreen_ = MakeScreen(Application::SCREEN_SIZE_X, Application::SCREEN_SIZE_Y, true);
-
-	// ポストエフェクト用マテリアル／レンダラ
-	pixelMaterial_ = std::make_unique<PixelMaterial>("Monotone.cso", 1);
-	pixelMaterial_->AddConstBuf({ 1.0f, 1.0f, 1.0f, 1.0f });
-	pixelMaterial_->AddTextureBuf(SceneManager::GetInstance()->GetMainScreen());
-	pixelRenderer_ = std::make_unique<PixelRenderer>(*pixelMaterial_);
-	pixelRenderer_->MakeSquereVertex(Vector2(0, 0), Vector2(Application::SCREEN_SIZE_X, Application::SCREEN_SIZE_Y));
 
 	// プレイヤーのラインコライダをButtonに登録
 	for (auto& player : players_)
 	{
 		const ColliderBase* playerCollider = player.player_->GetOwnCollider(static_cast<int>(Player::COLLIDER_TYPE::LINE));
-		for (auto index : pushButtonIndex)
-		{
-			objects_[index]->AddHitCollider(playerCollider);
-		}
 	}
 
 	// 初期アクティブ状態（プレイヤー1）
@@ -187,6 +158,9 @@ void TutorialScene::Init(void)
 		players_[i].camera_->SetControlEnabled(isActive);
 	}
 
+	tempCameraRot_ = { 0,0,0 };
+	score_ = 0;
+
 	TutorialInit();
 
 	// オーディオマネージャーのインスタンスの生成
@@ -197,122 +171,21 @@ void TutorialScene::Init(void)
 		AudioManager::GetInstance()->LoadSceneSound(LoadScene::GAME_TUTORIAL);
 		AudioManager::GetInstance()->PlayBGM(SoundID::BGM_TUTORIAL);
 	}
+
+	EffekseerEffect::CreateInstance();
+	if (EffekseerEffect::GetInstance())
+	{
+		EffekseerEffect::GetInstance()->Init();
+	}
 }
 
 void TutorialScene::TutorialInit(void)
 {
-	// チュートリアル開始（ステップ登録）
+	// チュートリアル開始
 	tutorial_.Init();
 	tutorial_.ClearSteps();
 
-	// プレイヤー1 の初期位置をキャプチャ
-	const VECTOR p1StartPos = players_[0].player_->GetTransform().pos;
-
-	// ステップ1: 移動
-	tutorial_.AddStep(
-		"やあ！まずは移動してみよう！\nW/A/S/Dキー または パッドの左スティックで歩けるよ！\n少し動いたら次に進もう！",
-		[this, p1StartPos]() -> bool {
-			const VECTOR cur = players_[0].player_->GetTransform().pos;
-			const float moved = VSize(VSub(cur, p1StartPos));
-			return moved > moveStepe_;
-		},
-		nullptr,
-		ResourceManager::GetInstance().Load(ResourceManager::SRC::ENOGU1).handleId_
-	);
-
-	// ステップ2: 視点操作
-	tutorial_.AddStep(
-		"いいね！次は周りを見渡してみよう！\nマウス、矢印キー、または パッドの右スティックで視点を動かせるよ！\n視点を動かしたら次へ進もう！",
-		[]() -> bool {
-			return CheckHitKey(KEY_INPUT_UP) || CheckHitKey(KEY_INPUT_DOWN) ||
-				CheckHitKey(KEY_INPUT_LEFT) || CheckHitKey(KEY_INPUT_RIGHT);
-		},
-		nullptr,
-		ResourceManager::GetInstance().Load(ResourceManager::SRC::ENOGU2).handleId_
-	);
-
-	// ステップ3: キャラ切替
-	tutorial_.AddStep(
-		"ここまで順調だね！次はプレイヤーを切り替えてみよう！\nTabキー または 右クリックでプレイヤー2に切り替えられるよ！\n※パッド操作は現在準備中です。\n切り替えられたら次へ進もう！",
-		[]() -> bool {
-			return InputManager::GetInstance()->IsTrgDown(KEY_INPUT_TAB) || InputManager::GetInstance()->IsTrgMouseRight();
-		},
-		nullptr,
-		ResourceManager::GetInstance().Load(ResourceManager::SRC::ENOGU3).handleId_
-	);
-
-	tutorial_.AddStep(
-		"あれ？宝箱があるけど、この世界では開けられないみたい…。\n開ける方法は向こう側の世界にあるのかも！\nもう一度プレイヤーを切り替えて確かめてみよう！",
-		[]() -> bool {
-			return InputManager::GetInstance()->IsTrgDown(KEY_INPUT_TAB) || InputManager::GetInstance()->IsTrgMouseRight();
-		},
-		nullptr,
-		ResourceManager::GetInstance().Load(ResourceManager::SRC::ENOGU4).handleId_
-	);
-
-	// ステップ4: ボタン操作
-	tutorial_.AddStep(
-		"あっ！ボタンを見つけたね！\n押したら何か変わるかもしれないよ。\n近づいて Spaceキー または パッドの〇ボタンで押してみよう！",		[this]() -> bool {
-			for (auto& obj : objects_)
-			{
-				if (!obj) continue;
-				if (obj->GetType() == ObjectBase::OBJECT_TYPE::BUTTON && obj->isPushButtom()) return true;
-			}
-			return false;
-		},
-		nullptr,
-		ResourceManager::GetInstance().Load(ResourceManager::SRC::ENOGU5).handleId_
-	);
-
-	// ステップ5: オブジェクトの操作
-	tutorial_.AddStep(
-		"やった！宝箱が開いたよ！\n中に樽を見つけたね。\n近づいて Eキー で持ち上げてみよう！\n※パッド操作は現在準備中です。",
-		[this]() -> bool {
-			for (auto& obj : objects_)
-			{
-				if (!obj) continue;
-				for (auto& player : players_)
-				{
-					const float dist = VSize(VSub(player.player_->GetTransform().pos, obj->GetTransform().pos));
-					if (dist < 180.0f && InputManager::GetInstance()->IsTrgDown(KEY_INPUT_E)) return true;
-				}
-			}
-			return false;
-		},
-		nullptr,
-		ResourceManager::GetInstance().Load(ResourceManager::SRC::ENOGU6).handleId_
-	);
-
-	// ステップ6: オブジェクトの設置
-	tutorial_.AddStep(
-		"いい感じ！樽を指定された場所に置いてみよう！\n運んで配置できたら成功だよ！",
-		[this]() -> bool {
-			for (auto& obj : objects_)
-			{
-				if (!obj) continue;
-				if (obj->GetObjectType() != ObjectBase::OBJECT_TYPE::AKEG) continue;
-				if (obj->IsAnswerPosition()) return true;
-			}
-			return false;
-		},
-		nullptr,
-		ResourceManager::GetInstance().Load(ResourceManager::SRC::ENOGU7).handleId_
-	);
-
-	// 最終ステップ: 確認して終了
-	tutorial_.AddStep(
-		"お疲れさま！これでチュートリアルは完了だよ！\n操作はもうバッチリ！あとは実際に遊びながら慣れていこう！\nZキー / Enterキー / Spaceキー で冒険を始めよう！",
-		[this]() -> bool {
-			if (CheckHitKey(KEY_INPUT_Z) || CheckHitKey(KEY_INPUT_RETURN) || CheckHitKey(KEY_INPUT_SPACE))
-			{
-				isEndTutorial_ = true;
-				return true;
-			}
-			return false;
-		},
-		nullptr,
-		ResourceManager::GetInstance().Load(ResourceManager::SRC::ENOGU8).handleId_
-	);
+	TyutorialTEXT();
 
 	// 開始
 	tutorial_.Start();
@@ -345,20 +218,6 @@ void TutorialScene::CheckCollisions(void)
 			ButtonProcess(*obj, newObjects, removeIndices);
 			continue;
 		}
-
-		for (auto& player : players_)
-		{
-			const VECTOR playerPos = player.player_->GetTransform().pos;
-			const float distance = VSize(VSub(playerPos, objectPos));
-			if (distance < 180.0f)
-			{
-				player.isPlayerHitObject_ = true;
-				VECTOR pushDir = VSub(objectPos, playerPos);
-				pushDir.y = 0.0f;
-				pushDir = VNorm(pushDir);
-				(void)pushDir; // 現状は計算するのみ（既存コードの挙動を保持）
-			}
-		}
 	}
 
 	if (!removeIndices.empty())
@@ -371,12 +230,32 @@ void TutorialScene::CheckCollisions(void)
 		{
 			if (idx >= 0 && idx < static_cast<int>(objects_.size()))
 			{
-				if (objects_[idx]) { objects_[idx]->Release(); delete objects_[idx]; }
+				if (objects_[idx])
+				{
+					const auto& ownCols = objects_[idx]->GetOwnColliders();
+					for (const auto& ct : ownCols)
+					{
+						const ColliderBase* col = ct.second;
+						if (!col) continue;
+
+						// プレイヤーから解除
+						for (auto& p : players_)
+						{
+							if (p.player_) p.player_->RemoveHitCollider(col);
+						}
+
+						// 他のオブジェクトから解除
+						for (auto& otherObj : objects_)
+						{
+							if (!otherObj || otherObj == objects_[idx]) continue;
+							otherObj->RemoveHitCollider(col);
+						}
+					}
+				}
 				objects_.erase(objects_.begin() + idx);
 			}
 		}
 	}
-
 	if (!newObjects.empty()) MakeNewObject(newObjects);
 }
 
@@ -384,27 +263,114 @@ const void TutorialScene::ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*
 {
 	const VECTOR objectPos = obj.GetTransform().pos;
 
-	bool isNearButton = false;
-	for (auto& player : players_)
+	// ボタンを押したか
+	bool isPush = InputManager::GetInstance()->IsTrgDown(KEY_INPUT_F);
+	bool isPadPush = InputManager::GetInstance()->IsPadBtnTrgDown(
+		InputManager::JOYPAD_NO::PAD1,
+		InputManager::JOYPAD_BTN::RIGHT);
+
+	// 入力がなければ終了
+	if (!isPush && !isPadPush)
 	{
-		const float distance = VSize(VSub(player.player_->GetTransform().pos, objectPos));
-		if (distance < 180.0f) { isNearButton = true; break; }
+		return;
 	}
 
-	// 近くでスペースならチェストを出現させ、既存チェストを消す
-	if (isNearButton && InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE))
-	{
-		obj.SetButtomPushed(true);
-		newObjects.push_back(new ObjectBase(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::OPENCHEST));
+	// 押したプレイヤー
+	int playerNo = 0;
 
-		for (size_t i = 0; i < objects_.size(); ++i)
+	if (isPadPush)
+	{
+		playerNo = 0;
+	}
+	else
+	{
+		if (activePlayer_ == Player::PLAYER_NO::PLAYER1)
 		{
-			if (objects_[i] && objects_[i]->GetObjectType() == ObjectBase::OBJECT_TYPE::CHEST)
-			{
-				removeIndices.push_back(static_cast<int>(i));
-				break;
-			}
+			playerNo = 0;
 		}
+		else
+		{
+			playerNo = 1;
+		}
+	}
+
+	// ボタンとの距離チェック
+	const float distance = VSize(VSub(
+		players_[playerNo].player_->GetTransform().pos,
+		objectPos));
+
+	if (distance >= 180.0f)
+	{
+		return;
+	}
+
+	// ボタンを押した
+	obj.SetButtomPushed(true);
+
+	SceneBase::WORLD pressed = obj.GetWorld();
+
+	if (buttonPTarget_ <= 0 ||
+		buttonPTarget_ != static_cast<int>(buttonRequiredPattern_.size()))
+	{
+		buttonPTarget_ = static_cast<int>(buttonRequiredPattern_.size());
+	}
+
+	if (buttonSP_ < buttonRequiredPattern_.size() &&
+		pressed == buttonRequiredPattern_[buttonSP_])
+	{
+		buttonSP_++;
+
+		if (buttonSP_ == buttonPTarget_)
+		{
+			newObjects.push_back(new ObjectBase(
+				SceneBase::WORLD::LEFT,
+				ANSWER_VECTOR_LENGTH[1],
+				ObjectBase::OBJECT_TYPE::OPENCHEST));
+
+			printfDx("Play Effect\n");
+			// エフェクトを再生
+			const VECTOR effectPos = { 900.0f, -520.0f, 300.0f };
+			if (EffekseerEffect::GetInstance())
+			{
+				EffekseerEffect::GetInstance()->PlayTutorialEffect(effectPos, 0.0f);
+			}
+
+			// AKEGオブジェクトのSetPlacedをfalseにする
+			for (auto* ao : objects_)
+			{
+				if (ao && ao->GetObjectType() == ObjectBase::OBJECT_TYPE::AKEG)
+				{
+					ao->SetPlaced(false);
+					break;
+				}
+			}
+
+			for (size_t i = 0; i < objects_.size(); i++)
+			{
+				if (objects_[i] &&
+					objects_[i]->GetObjectType() == ObjectBase::OBJECT_TYPE::CHEST)
+				{
+					removeIndices.push_back(static_cast<int>(i));
+					break;
+				}
+			}
+
+			buttonSP_ = 0;
+			buttonPCount_ = 0;
+
+			if (AudioManager::GetInstance())
+			{
+				AudioManager::GetInstance()->LoadSceneSound(LoadScene::GAME);
+				AudioManager::GetInstance()->PlaySE(SoundID::SE_SUCCESS);
+			}
+			butcount_ = true;
+
+		}
+	}
+	else
+	{
+		buttonSP_ = 0;
+		buttonPCount_++;
 	}
 }
 
@@ -413,13 +379,32 @@ void TutorialScene::Update(void)
 	// チュートリアル更新
 	tutorial_.Update();
 
+	// Effekseer更新
+	if (EffekseerEffect::GetInstance())
+	{
+		EffekseerEffect::GetInstance()->Update();
+	}
+
+	Hint();
+
+	// ヒント表示中は更新を停止
+	if (showHint_)
+	{
+		// 更新処理をスキップ
+		return;
+	}
+
 	// チュートリアル完了でクリアへ遷移
 	if (isEndTutorial_)
 	{
-		AudioManager::GetInstance()->StopBGM();
-		AudioManager::GetInstance()->DeleteSceneSound(LoadScene::GAME_TUTORIAL);
+		// 先にオーディオを停止／削除してからシーン切替
+		if (AudioManager::GetInstance())
+		{
+			AudioManager::GetInstance()->StopBGM();
+			AudioManager::GetInstance()->DeleteSceneSound(LoadScene::GAME_TUTORIAL);
+		}
 
-		SceneManager::GetInstance()->ChangeScene(std::make_shared<GameClearScene>());
+		SceneManager::GetInstance()->ChangeScene(std::make_shared<TitleScene>());
 		return;
 	}
 
@@ -433,13 +418,13 @@ void TutorialScene::Update(void)
 	}
 
 	// ポーズ
-	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_ESCAPE))
+	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_ESCAPE) || InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::OPTION))
 	{
 		SceneManager::GetInstance()->PushScene(std::make_shared<PauseScene>());
 	}
 
-	// プレイヤー切替（TAB or 右クリック）
-	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_TAB) || InputManager::GetInstance()->IsTrgMouseRight())
+	// プレイヤー切替（TAB)
+	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_TAB) || InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::R_TRIGGER))
 	{
 		for (size_t i = 0; i < players_.size(); ++i)
 		{
@@ -465,7 +450,7 @@ void TutorialScene::Update(void)
 	}
 
 	lightPillar_->Update();
-	for (auto& wall : walls_) wall->Update();
+	//for (auto& wall : walls_) wall->Update();
 
 	// 衝突判定（Object更新前）
 	CheckCollisions();
@@ -503,12 +488,10 @@ void TutorialScene::AnswerChack(void)
 	if (isAnswer && isEndTutorial_)
 	{
 		endTimer_ += SceneManager::GetInstance()->GetDeltaTime();
-		// SceneManager::GetInstance()->ChangeScene(std::make_shared<GameClearScene>());
 	}
 
 	if (endTimer_ > END_TIME)
 	{
-		// END 動作があればここへ
 	}
 }
 
@@ -516,10 +499,9 @@ const void TutorialScene::MakeNewObject(std::vector<ObjectBase*>& newObjects)
 {
 	for (auto& newObj : newObjects)
 	{
-
 		newObj->Init();
-		newObj->SetPosition({ 900.0f, -520.0f, 100.0f });
-		newObj->SetScale({ 0.8f, 0.8f, 0.8f });
+		newObj->SetPosition({ 900.0f, -520.0f, 300.0f });
+		newObj->SetScale({ 0.6f, 0.6f, 0.6f });
 		newObj->SetPlaced(true);
 		for (const auto& stage : stageManager_->GetStage())
 		{
@@ -572,11 +554,15 @@ void TutorialScene::Draw(void)
 			MV1DrawModel(pinID_);
 		}
 
-		if (!isHold && pinID_ != -1) pinID_ = -1;
+		if (!isHold && pinID_ != -1)
+		{
+			MV1DeleteModel(pinID_);
+			pinID_ = -1;
+		}
 
 		//wall_->Draw();
 
-		// 全オブジェクトを順に描画（それぞれの viewWorld を設定）
+		// 全オブジェクトを順に描画
 		for (auto& obj : objects_)
 		{
 			if (!obj) continue;
@@ -589,12 +575,23 @@ void TutorialScene::Draw(void)
 
 			obj->Draw();
 		}
-
-		// アクティブプレイヤー関連のポスト処理（コメント化されていた処理を維持）
-		if (activePlayer_ == players_[i].player_->GetPlayerNo())
+		if(EffekseerEffect::GetInstance())
 		{
-			// ここに任意の描画（未使用）
+			EffekseerEffect::GetInstance()->Draw();
 		}
+	}
+
+	if (showHint_ && hintHandle_ != -1)
+	{
+		VECTOR screenPos = ConvWorldPosToScreenPos(hintWorldPos_);
+		int w = 0, h = 0;
+		GetGraphSize(hintHandle_, &w, &h);
+		// オブジェクト上に表示する（少し上にオフセット）
+		const int drawX1 = static_cast<int>(screenPos.x) - (w / 2);
+		const int drawY1 = static_cast<int>(screenPos.y) - h - 20;
+		const int drawX2 = drawX1 + w;
+		const int drawY2 = drawY1 + h;
+		DrawExtendGraph(drawX1, drawY1, drawX2, drawY2, hintHandle_, true);
 	}
 
 	// メイン画面に転送
@@ -613,15 +610,13 @@ void TutorialScene::Draw(void)
 		DrawBox(0, 0, halfWidth, screenHeight_, GetColor(0, 0, 0), TRUE);
 	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 
-	// ポストエフェクト転送
-	SetDrawScreen(postEffectScreen_);
+	// ポストエフェクトを廃止したため
+	SetDrawScreen(DX_SCREEN_BACK);
 	ClearDrawScreen();
 	DrawGraph(0, 0, mainScreen, FALSE);
 
-	// 最終表示
-	SetDrawScreen(DX_SCREEN_BACK);
-	ClearDrawScreen();
-	DrawGraph(0, 0, postEffectScreen_, FALSE);
+	DrawFormatString(10, 200, GetColor(255, 255, 255), "pattern progress: %d / %d, tries: %d",
+		static_cast<int>(buttonSP_), buttonPTarget_, buttonPCount_);
 
 #ifdef _DEBUG
 	// デバッグ表示
@@ -664,6 +659,12 @@ void TutorialScene::Draw(void)
 		y += 40;
 	}
 
+	// アンサーポジションのオブジェクトの座標を表示
+	DrawFormatString(10, 240, GetColor(255, 255, 255), "Answer Position: (%.1f, %.1f, %.1f)",
+		ANSWER_VECTOR_LENGTH[0].x,
+		ANSWER_VECTOR_LENGTH[0].y,
+		ANSWER_VECTOR_LENGTH[0].z);
+
 	stageManager_->DrawDebug();
 #endif // _DEBUG
 
@@ -678,7 +679,7 @@ void TutorialScene::DrawNamePlate(std::string str, VECTOR pos)
 	const int drawX = static_cast<int>(objectPos.x) - (strWidth / 2);
 
 	DrawFormatString(drawX, static_cast<int>(objectPos.y) - 120, 0xffff00, str.c_str());
-	DrawFormatString(static_cast<int>(objectPos.x), static_cast<int>(objectPos.y) - 100, 0xffff00, "　↓");
+	DrawFormatString(static_cast<int>(objectPos.x), static_cast<int>(objectPos.y) - 100, 0xffff00, "↓");
 }
 
 void TutorialScene::Release(void)
@@ -686,15 +687,216 @@ void TutorialScene::Release(void)
 	// オーディオマネージャーのインスタンスの削除
 	AudioManager::GetInstance()->DeleteInstance();
 
+	// 複製したモデルが残っていれば削除
+	if (pinID_ != -1)
+	{
+		MV1DeleteModel(pinID_);
+		pinID_ = -1;
+	}
+
 	// 全オブジェクト解放
 	for (auto& obj : objects_)
 	{
-		if (obj) { obj->Release(); delete obj; }
+		if (obj) { delete obj; }
 	}
 	objects_.clear();
 
+	// プレイヤー配列をクリア
 	players_.clear();
 
-	if (screenHandle1_ != -1) DeleteGraph(screenHandle1_);
-	if (screenHandle2_ != -1) DeleteGraph(screenHandle2_);
+	// スクリーンハンドルの削除
+	if (screenHandle1_ != -1) { DeleteGraph(screenHandle1_); screenHandle1_ = -1; }
+	if (screenHandle2_ != -1) { DeleteGraph(screenHandle2_); screenHandle2_ = -1; }
+
+	if (camera_)
+	{
+		delete camera_;
+		camera_ = nullptr;
+	}
 }
+
+void TutorialScene::Hint(void)
+{
+	const bool isEDown = InputManager::GetInstance()->IsTrgDown(KEY_INPUT_E)
+		|| InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::LEFT);
+
+	if (!isEDown) return;
+
+	// ヒントを閉じる
+	if (showHint_)
+	{
+		showHint_ = false;
+		hintHandle_ = -1;
+		return;
+	}
+
+	// ヒントの表示条件式にゃん
+	for (auto& obj : objects_)
+	{
+		if (!obj) continue;
+		if (obj->GetObjectType() != ObjectBase::OBJECT_TYPE::WBOX) continue;
+
+		// プレイヤーとの距離
+		bool isnear = false;
+		for (auto& p : players_)
+		{
+			const float dist = VSize(VSub(p.player_->GetTransform().pos, obj->GetTransform().pos));
+			if (dist < 60.0f)
+			{
+				isnear = true;
+				break;
+			}
+		}
+		if (!isnear) continue;
+
+		// ヒント表示
+		showHint_ = true;
+		hintWorldPos_ = obj->GetPos();
+		hintHandle_ = ResourceManager::GetInstance().Load(ResourceManager::SRC::HINTO).handleId_;
+		break;
+	}
+}
+
+void TutorialScene::TyutorialTEXT(void)
+{
+	// プレイヤー
+	const VECTOR p1StartPos = players_[0].player_->GetTransform().pos;
+
+	// ステップ1: 移動
+	tutorial_.AddStep(
+		"やあ！まずは移動してみよう！\nW/A/S/Dキー または パッドの左スティックで歩けるよ！\n少し動いたら次に進もう！",
+		[this, p1StartPos]() -> bool {
+			const VECTOR cur = players_[0].player_->GetTransform().pos;
+			const float moved = VSize(VSub(cur, p1StartPos));
+			return moved > moveStepe_;
+		},
+		nullptr,
+		ResourceManager::GetInstance().Load(ResourceManager::SRC::ENOGU1).handleId_
+	);
+
+	// ステップ2: 視点操作
+	tutorial_.AddStep(
+		"いいね！次は周りを見渡してみよう！\nマウス、矢印キー、または パッドの右スティックで視点を動かせるよ！\n視点を動かしたら次へ進もう！",
+		[this]() -> bool {
+			for (size_t i = 0; i < players_.size(); ++i)
+			{
+				if (tempCameraRot_.x != players_[i].camera_->GetAngles().x ||
+					tempCameraRot_.y != players_[i].camera_->GetAngles().y ||
+					tempCameraRot_.z != players_[i].camera_->GetAngles().z)
+				{
+					score_ += 0.1f;
+				}
+			}
+
+			tempCameraRot_ = players_[0].camera_->GetAngles();
+
+			return score_ >= 30.0f;
+		},
+		nullptr,
+		ResourceManager::GetInstance().Load(ResourceManager::SRC::ENOGU2).handleId_
+	);
+
+	// ステップ3: キャラ切替
+	tutorial_.AddStep(
+		"ここまで順調だね！次はプレイヤーを切り替えてみよう！\nTabキー または RTでプレイヤー2に切り替えられるよ！。\n切り替えられたら次へ進もう！",
+		[]() -> bool {
+			return InputManager::GetInstance()->IsTrgDown(KEY_INPUT_TAB)
+				|| InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::R_TRIGGER);
+		},
+		nullptr,
+		ResourceManager::GetInstance().Load(ResourceManager::SRC::ENOGU3).handleId_
+	);
+
+	tutorial_.AddStep(
+		"あれ？宝箱があるけど、この世界では開けられないみたい…。\n開ける方法がどこかにあるのかも！\n探してみよう！",
+		[this]() -> bool {
+			return showHint_;
+		},
+		nullptr,
+		ResourceManager::GetInstance().Load(ResourceManager::SRC::ENOGU4).handleId_
+	);
+
+	// ステップ4: ボタン操作
+	tutorial_.AddStep(
+		"あっ！ヒントを見つけたね！\nヒントに書いてあるボタンを押したら何か変わるかな。\n近づいて Fキー または パッドのBボタンで押してみよう！",
+		[this]() -> bool {
+			return  butcount_;
+		},
+		nullptr,
+		ResourceManager::GetInstance().Load(ResourceManager::SRC::ENOGU5).handleId_
+	);
+
+	// ステップ5: オブジェクトの操作
+	tutorial_.AddStep(
+		"やった！宝箱が開いたよ！\n中に樽を見つけたね。\n近づいて EキーまたはXで持ち上げてみよう！",
+		[this]() -> bool {
+			for (auto& obj : objects_)
+			{
+				if (!obj) continue;
+				for (auto& player : players_)
+				{
+					const float dist = VSize(VSub(player.player_->GetTransform().pos, obj->GetTransform().pos));
+					// 距離判定とキー入力を正しくグループ化して評価する
+					if (dist < 90.0f &&
+						(InputManager::GetInstance()->IsTrgDown(KEY_INPUT_E)
+							|| InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::LEFT)))
+					{
+						return true;
+					}
+				}
+			}
+			return false;
+		},
+		nullptr,
+		ResourceManager::GetInstance().Load(ResourceManager::SRC::ENOGU6).handleId_
+	);
+
+	// ステップ6: オブジェクトの設置
+	tutorial_.AddStep(
+		"いい感じ！樽を指定された場所に置いてみよう（EキーまたはXで置けるよ）！\n運んで配置できたら成功だよ！",
+		[this]() -> bool {
+			for (auto& obj : objects_)
+			{
+				if (!obj) continue;
+				if (obj->GetObjectType() != ObjectBase::OBJECT_TYPE::AKEG) continue;
+				if (obj->IsAnswerPosition())
+				{
+					// 位置に置かれた瞬間
+					if (!placedSEPlayed_)
+					{
+						if (AudioManager::GetInstance())
+						{
+							AudioManager::GetInstance()->LoadSceneSound(LoadScene::GAME);
+							AudioManager::GetInstance()->PlaySE(SoundID::SE_SUCCESS);
+						}
+						placedSEPlayed_ = true;
+					}
+					return true;
+				}
+			}
+			return false;
+		},
+		nullptr,
+		ResourceManager::GetInstance().Load(ResourceManager::SRC::ENOGU7).handleId_
+	);
+
+	// 最終ステップ: 確認して終了
+	tutorial_.AddStep(
+		"お疲れさま！これでチュートリアルは完了だよ！\n操作はもうバッチリ！あとは実際に遊びながら慣れていこう！\nZキー / Enterキー / Spaceキー で冒険を始めよう！",
+		[this]() -> bool {
+			// ここではトリガー判定
+			if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_Z)
+				|| InputManager::GetInstance()->IsTrgDown(KEY_INPUT_RETURN)
+				|| InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE)
+				|| InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::RIGHT))
+			{
+				isEndTutorial_ = true;
+				return true;
+			}
+			return false;
+		},
+		nullptr,
+		ResourceManager::GetInstance().Load(ResourceManager::SRC::ENOGU8).handleId_
+	);
+}
+

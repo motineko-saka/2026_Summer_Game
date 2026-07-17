@@ -98,19 +98,34 @@ void TitleScene::Update(void)
 	}
 
 	// 十字キー / パッドで選択移動
-	// 左に移動
+	// スティック閾値（ヒステリシス）
+	const float STICK_TRIGGER = 0.6f;
+	const float STICK_RESET = 0.3f;
+
+	// パッド状態取得
+	auto padState = InputManager::GetInstance()->GetJPadInputState(InputManager::JOYPAD_NO::PAD1);
+	auto stickDir = InputManager::GetInstance()->GetDirectionXZAKey(padState.AKeyLX, padState.AKeyLY);
+
+	// スティックのトリガー判定
+	bool stickLeftTrg = (std::abs(prevStickX_) < STICK_RESET) && (stickDir.x < -STICK_TRIGGER);
+	bool stickRightTrg = (std::abs(prevStickX_) < STICK_RESET) && (stickDir.x > STICK_TRIGGER);
+
+	// 左に移動（左キー・パッド左ボタン・スティック左）
 	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_LEFT)
-		|| InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::LEFT))
+		|| stickLeftTrg)
 	{
 		uiSelect_ = (std::min)(uiSelect_ + 1, 2);
 	}
 
-	// 右に移動
+	// 右に移動（右キー・パッド右ボタン・スティック右）
 	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_RIGHT)
-		|| InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::RIGHT))
+		|| stickRightTrg)
 	{
 		uiSelect_ = (std::max)(uiSelect_ - 1, 0);
 	}
+
+	// スティック状態を保存
+	prevStickX_ = stickDir.x;
 
 	// 決定
 	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE) || InputManager::GetInstance()->IsTrgDown(KEY_INPUT_RETURN)

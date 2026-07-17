@@ -32,7 +32,8 @@ void GameClearScene::LoadEnd(void)
 void GameClearScene::Update(void)
 {
 	// ƒV[ƒ“‘JˆÚ
-	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE))
+	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE) ||
+		InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::DOWN))
 	{
 		SceneManager::GetInstance()->ChangeScene(std::make_shared<TitleScene>());
 	}

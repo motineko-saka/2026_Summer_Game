@@ -35,7 +35,7 @@ void PressButton::ObjectUpdateProcess(void)
 		if (distance < BUTTON_TRIGGER_DISTANCE)
 		{
 			// “¥‚ñ‚¾Žž‚Ìˆ—
-			isPushButton_ = true;
+			isPressButton_ = true;
 			break;
 		}
 	}

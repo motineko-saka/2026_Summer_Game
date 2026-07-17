@@ -146,6 +146,8 @@ void ColliderCapsule::PushBackAlongNormal(const ColliderModel* colliderModel,
 		transform.pos =
 			GetPosPushBackAlongNormal(hitPoly, maxTryCnt, pushDistance);
 	}
+	printf("HitNum=%d\n", hits.HitNum);
+
 	// 検出した地面ポリゴン情報の後始末
 	MV1CollResultPolyDimTerminate(hits);
 

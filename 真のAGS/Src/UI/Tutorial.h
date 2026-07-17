@@ -47,7 +47,7 @@ private:
 
 	mutable std::vector<std::string> splitText_;
 
-	// Yu GothicUIを使）
+	// Yu GothicUI
 	int fontHandle_ = -1;
 	int fontSize_ = 20;        // フォントの高さ
 	int lineSpacing_ = 4;      // 行間ピクセル

@@ -1,32 +1,38 @@
 #include "../Common/Pixel/PixelShader2DHeader.hlsli"
- 
+
 // 定数バッファ：スロット4番目(b4と書く)
 cbuffer cbParam : register(b4)
 {
-    float4 g_color;
+	float4 g_color;
 }
- 
+
 float4 main(PS_INPUT PSInput) : SV_TARGET
 {
- 
+
 	// UV座標とテクスチャを参照して、最適な色を取得する
-    float4 srcCol = tex.Sample(texSampler, PSInput.uv);
-    if (srcCol.a < 0.01f)
-    {
+	float4 srcCol = tex.Sample(texSampler, PSInput.uv);
+	if (srcCol.a < 0.01f)
+	{
 		// 描画しない(アルファテスト)
-        discard;
-    }
-    float4 dstCol = srcCol;
-    
-    // モノクロ処理
-    float luminance = dot(srcCol.rgb, float3(0.0, 0.0, 1.0));
-    float3 gray = float3(luminance, luminance, luminance);
+		discard;
+	}
 
-    // g_color.rgb で色を付けられる。g_color.a はティント強度（0=グレー, 1=完全に g_color に乗算）
-    float3 tinted = gray * g_color.rgb;
-    float3 result = lerp(gray, tinted, saturate(g_color.a));
+	float4 dstCol = srcCol;
 
-    dstCol = float4(result, srcCol.a);
+	// ３色の平均モノトーン
+	float gray = (dstCol.r + dstCol.g + dstCol.b) / 3.0f;
+	dstCol.rgb = float3(gray, gray, gray);
+	dstCol.rgb *= g_color.rgb;
 
-    return dstCol;
+	/*
+	// セピア
+	float3 sepia = dstCol.rgb;
+	sepia.r = dot(dstCol.rgb, float3(0.393f, 0.769f, 0.189f));
+	sepia.g = dot(dstCol.rgb, float3(0.349f, 0.686f, 0.168f));
+	sepia.b = dot(dstCol.rgb, float3(0.272f, 0.534f, 0.131f));
+	dstCol.rgb = lerp(dstCol.rbg, sepia, 1.0f);
+	*/
+
+	return dstCol;
+
 }

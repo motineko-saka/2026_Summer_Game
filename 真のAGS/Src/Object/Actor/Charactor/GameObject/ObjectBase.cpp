@@ -14,7 +14,7 @@ ObjectBase::ObjectBase(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type)
 	CharactorBase(),
 	isAnswerPosition_(false),
 	isGrabbed_(false),
-	isPushButton_(false),
+	isPressButton_(false),
 	world_(world),
 	viewWorld_(world),
 	ansVec_(ansVec),
@@ -121,11 +121,6 @@ void ObjectBase::InitTransform(void)
 
 	transform_.quaRotLocal = Quaternion::Identity();
 
-	if(type_ == OBJECT_TYPE::CHEST || type_ == OBJECT_TYPE::OPENCHEST)
-	{
-		transform_.quaRotLocal = Quaternion::AngleAxis(AsoUtility::Deg2RadD(90.0f),
-			AsoUtility::AXIS_Y);
-	}
 	transform_.pos = { -1000.0f, 80.0f, -10.0f };
 
 	InitObjTrans();
@@ -177,6 +172,8 @@ void ObjectBase::InitAnimation(void)
 void ObjectBase::InitPost(void)
 {
 	if(type_ == OBJECT_TYPE::GEAR) isGrav = false;
+	handFrame_ = -1;
+	isButtomPushed_ = false;
 }
 
 void ObjectBase::UpdateProcess(void)
@@ -188,7 +185,7 @@ void ObjectBase::UpdateProcess(void)
 	}
 
 	isGrabbed_ = false; // デフォルトはつかまれていない
-	isPushButton_ = false; // デフォルトはボタンが踏まれていない
+	isPressButton_ = false; // デフォルトはボタンが踏まれていない
 
 	ObjectUpdateProcess();
 
@@ -204,11 +201,42 @@ void ObjectBase::UpdateProcess(void)
 		// ここに到達 = つかまれている
 		isGrabbed_ = true;
 
-		const VECTOR localPos = col->GetLocalPos();
-		const VECTOR worldPos = VAdd(follow->pos, follow->quaRot.PosAxis(localPos));
-		transform_.pos = worldPos;
-		transform_.quaRot = follow->quaRot;
-		pushPow_ = { 0.0f, 0.0f, 0.0f };
+		SetFlame(follow);
+
+		if (handFrame_ > 0)
+		{
+			MATRIX handMat = MV1GetFrameLocalWorldMatrix(follow->modelId, handFrame_);
+			VECTOR handPos =
+			{
+				handMat.m[3][0],
+				handMat.m[3][1],
+				handMat.m[3][2]
+			};
+
+			const VECTOR localPos = col->GetLocalPos();
+			VECTOR worldPos = VTransform(localPos, handMat);
+			transform_.pos = worldPos;
+			transform_.quaRot = follow->quaRot;
+			transform_.pos.z += 10.0f;
+			transform_.pos.x += 16.0f;
+			transform_.quaRotLocal = Quaternion::AngleAxis(AsoUtility::Deg2RadD(-90.0f),
+				AsoUtility::AXIS_Z);
+			pushPow_ = { 0.0f, 0.0f, 0.0f };
+		}
+		else
+		{
+			const VECTOR localPos = col->GetLocalPos();
+			const VECTOR worldPos = VAdd(follow->pos, follow->quaRot.PosAxis(localPos));
+			transform_.pos = worldPos;
+			transform_.quaRot = follow->quaRot;
+			pushPow_ = { 0.0f, 0.0f, 0.0f };
+		}
+
+		//const VECTOR localPos = col->GetLocalPos();
+		//const VECTOR worldPos = VAdd(follow->pos, follow->quaRot.PosAxis(localPos));
+		//transform_.pos = worldPos;
+		//transform_.quaRot = follow->quaRot;
+		//pushPow_ = { 0.0f, 0.0f, 0.0f };
 		break;
 	}
 
@@ -251,7 +279,7 @@ void ObjectBase::PressButton(void)
 		if (distance < BUTTON_TRIGGER_DISTANCE)
 		{
 			// 踏んだ時の処理
-			isPushButton_ = true;
+			isPressButton_ = true;
 			break;
 		}
 	}
