@@ -1,3 +1,4 @@
+#include <functional>
 #include "../../../../Manager/InputManager.h"
 #include "../../../../Manager/ResourceManager.h"
 #include "../../../../Utility/AsoUtility.h"
@@ -18,7 +19,7 @@ void Button::InitLoad(void)
 	isHoldable_ = true;
 }
 
-void Button::ObjectUpdateProcess(void)
+void Button::ObjectUpdateProcess()
 {
 	//VECTOR objectPos = transform_.pos;
 

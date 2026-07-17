@@ -3,6 +3,8 @@
   <ItemGroup>
     <FxCompile Include="Src\Shader\PostEffect\Monotone.hlsl" />
     <FxCompile Include="Src\Shader\PostEffect\Tutorial.hlsl" />
+    <FxCompile Include="Src\Shader\Vertex\GatePS.hlsl" />
+    <FxCompile Include="Src\Shader\Vertex\GateVS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Bomb.cpp" />

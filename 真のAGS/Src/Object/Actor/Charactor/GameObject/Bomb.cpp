@@ -21,5 +21,4 @@ void Bomb::InitObjCol(void)
 
 void Bomb::ObjectUpdateProcess(void)
 {
-
 }

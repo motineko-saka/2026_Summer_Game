@@ -16,5 +16,5 @@ private:
 	// ‰Šú‰»Œã‚ÌŒÂ•Êˆ—
 	void InitPost(void)override;
 
-	void ObjectUpdateProcess(void);
+	void ObjectUpdateProcess(void)override;
 };

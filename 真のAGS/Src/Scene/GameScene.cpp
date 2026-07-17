@@ -94,6 +94,22 @@ void GameScene::Init(void)
 	// オブジェクト作成（複数）
 	objects_.reserve(10);
 
+	//auto pushObject = [this](SceneBase::WORLD w, const VECTOR& ans, ObjectBase::OBJECT_TYPE type, const VECTOR& pos, const VECTOR& scl, bool placed = false) {
+	//	std::unique_ptr<ObjectBase> o = std::make_unique<ObjectBase>(w, ans, type);
+	//	o->Init();
+	//	o->SetPosition(pos);
+	//	o->SetScale(scl);
+	//	if (placed) o->SetPlaced(true);
+	//	objects_.push_back(std::move(o));
+	//	};
+
+	//// ボタンを左右両方に配置
+	//pushObject(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::BUTTON, buttonPos_, { 0.5f, 0.5f, 0.5f }, true);
+	//pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::ROCK, rockPos_, { 1.0f,1.0f,1.0f }, true);
+
+	//pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::KINOKO, { -500.0f, 0.0f, 0.0f }, { 8.0, 8.0, 8.0 }, false);
+	//pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::DEFAULT, { 1300.0f, -320.0f, 440.0f }, { 1.0f,1.0f,1.0f }, true);
+
 	objects_.push_back(std::make_unique<Button>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[3], ObjectBase::OBJECT_TYPE::BUTTON));
 	objects_.back()->Init();
 	objects_.back()->SetPosition(buttonPos_);
@@ -111,7 +127,7 @@ void GameScene::Init(void)
 
 	objects_.push_back(std::make_unique<Gate>(GameScene::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::DEFAULT));
 	objects_.back()->Init();
-	objects_.back()->SetPosition({ 1300.0f, -320.0f, 440.0f });
+	objects_.back()->SetPosition({ 1300.0f, -320.0f, 500.0f });
 	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
 
 
@@ -169,7 +185,7 @@ void GameScene::Init(void)
 		auto& obj = objects_[i];
 
 		const auto* objCaps = 
-			obj->GetOwnCollider(static_cast<int>(ObjectBase::COLLIDER_TYPE::MODEL));
+			obj->GetOwnCollider(static_cast<int>(ObjectBase::COLLIDER_TYPE::CAPSULE));
 
 		if (!objCaps) continue;
 
@@ -316,8 +332,11 @@ const void GameScene::ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*>& n
 
 		obj.SetButtomPushed(true);
 
-		objects_[2]->Release();
-		objects_.erase(objects_.begin() + 2);
+		objects_[0]->SetButtomPushed(true);
+		objects_[1]->SetButtomPushed(true);
+		objects_[2]->SetButtomPushed(true);
+		//objects_[2]->Release();
+		//objects_.erase(objects_.begin() + 2);
 		for (auto& player : players_)
 		{
 			player.player_->HitColliderErase(4);
@@ -473,8 +492,7 @@ void GameScene::Update(void)
 	{
 		if ((*it)->GetObjectType() == ObjectBase::OBJECT_TYPE::ROCK && !(*it)->GetIsRockExist())
 		{
-			(*it)->Release();  // 必要なら Release() を呼ぶ
-			it = objects_.erase(it);  // 削除して次のイテレータを取得
+			it = objects_.erase(it);
 			for (auto& player : players_)
 			{
 				player.player_->HitColliderErase(2);

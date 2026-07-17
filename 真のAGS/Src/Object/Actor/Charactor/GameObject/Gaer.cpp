@@ -31,4 +31,5 @@ void Gaer::ObjectUpdateProcess(void)
 
 	transform_.quaRotLocal = Quaternion::AngleAxis(AsoUtility::Deg2RadD(gearRot_),
 		AsoUtility::AXIS_Z);
+
 }

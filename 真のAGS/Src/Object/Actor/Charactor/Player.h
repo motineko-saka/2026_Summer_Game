@@ -133,7 +133,7 @@ private:
 	bool isGameScene_;
 
 	// オブジェクトとの衝突処理
-	void CollisionObjectModel(void);
+	void CollisionObject(void);
 
 	// 移動、ジャンプ処理
 	void ProcessMove(void);

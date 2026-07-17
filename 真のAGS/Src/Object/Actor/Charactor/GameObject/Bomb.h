@@ -18,5 +18,7 @@ private:
 
 	void ObjectUpdateProcess(void) override;
 
+	void SetFlame(const Transform* follow) override{ handFrame_ = MV1SearchFrame(follow->modelId, "mixamorig:LeftHand"); };
+
 	bool isButtomPushed_ = false;
 };

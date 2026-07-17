@@ -20,7 +20,7 @@ struct VertexInput
 {
     float3 pos : POSITION;              // 座標(ローカル空間)
     float3 norm : NORMAL;               // 法線(ローカル空間)
-    float4 diffuse : COLOR0;            // ディフューズカラー
+    float4 spc : COLOR0;                // ディフューズカラー
     float4 specular : COLOR1;           // スペキュラカラー
     float4 uv0 : TEXCOORD0;             // テクスチャ座標
     float4 uv1 : TEXCOORD1;             // サブテクスチャ座標
