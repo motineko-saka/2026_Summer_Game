@@ -6,6 +6,7 @@
 #include "../Manager/ResourceManager.h"
 #include "../Manager/StageManager.h"
 #include "../Manager/Resource.h"
+#include "../Utility/AsoUtility.h"
 #include "../Object/Actor/Stage/Stage.h"
 #include "../Object/Actor/SkyDome.h"
 #include "../Object/Actor/Charactor/Player.h"
@@ -15,7 +16,7 @@
 #include "../Object/Actor/Charactor/GameObject/PressButton.h"
 #include "../Object/Actor/Charactor/GameObject/Gaer.h"
 #include "../Object/Actor/Charactor/GameObject/Rock.h"
-#include "../Object/Actor/Charactor/GameObject/Bomb.h"
+#include "../Object/Actor/Charactor/GameObject/Axe.h"
 #include "../Object/Actor/Charactor/GameObject/Gate.h"
 #include "../Object/Actor/Wall.h"
 #include "../Object/LightPillar.h"
@@ -56,6 +57,7 @@ void GameScene::Init(void)
 	screenHandle2_ = MakeScreen(halfWidth, screenHeight_, true);
 
 	isPause_ = false;
+	isClear_ = false;
 
 	lightPillar_ = std::make_unique<LightPillar>();
 
@@ -110,25 +112,46 @@ void GameScene::Init(void)
 	//pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::KINOKO, { -500.0f, 0.0f, 0.0f }, { 8.0, 8.0, 8.0 }, false);
 	//pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::DEFAULT, { 1300.0f, -320.0f, 440.0f }, { 1.0f,1.0f,1.0f }, true);
 
-	objects_.push_back(std::make_unique<Button>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[3], ObjectBase::OBJECT_TYPE::BUTTON));
-	objects_.back()->Init();
-	objects_.back()->SetPosition(buttonPos_);
-	objects_.back()->SetScale({ 0.5, 0.5, 0.5 });
+	
+	PushObject<Button>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[3], ObjectBase::OBJECT_TYPE::BUTTON, buttonPos_, VScale(AsoUtility::VECTOR_ONE, 0.5f));
+	PushObject<Rock>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::ROCK, rockPos_, AsoUtility::VECTOR_ONE);
+	PushObject<Axe>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::AXE, { -500.0f, 0.0f, 0.0f }, VScale(AsoUtility::VECTOR_ONE, 8.0f));
+	PushObject<Gate>(GameScene::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::DEFAULT, { 1300.0f, -320.0f, 500.0f }, AsoUtility::VECTOR_ONE);
 
-	objects_.push_back(std::make_unique<Rock>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::ROCK));
-	objects_.back()->Init();
-	objects_.back()->SetPosition(rockPos_);
-	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
+	/*PushObject<Gaer>(GameScene::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::GEAR, 
+		{ -600.0f, 100.0f, 0.0f }, AsoUtility::VECTOR_ONE);*/
+	
+	//PushObject<Rock>(GameScene::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::DEFAULT, { 1300.0f, -320.0f, 500.0f }, AsoUtility::VECTOR_ONE);
 
-	objects_.push_back(std::make_unique<Bomb>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::KINOKO));
+	objects_.push_back(std::make_unique<Gaer>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::GEAR, *objects_[4]));
 	objects_.back()->Init();
-	objects_.back()->SetPosition({ -500.0f, 0.0f, 0.0f });
-	objects_.back()->SetScale({ 8.0, 8.0, 8.0 });
+	objects_.back()->SetPosition({ -600.0f, 100.0f, 0.0f });
+	objects_.back()->SetScale(AsoUtility::VECTOR_ONE);
 
-	objects_.push_back(std::make_unique<Gate>(GameScene::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::DEFAULT));
-	objects_.back()->Init();
-	objects_.back()->SetPosition({ 1300.0f, -320.0f, 500.0f });
-	objects_.back()->SetScale({ 1.0, 1.0, 1.0 });
+	//objects_.push_back(std::make_unique<Gaer>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::GEAR, objects_[4]));
+	//objects_.back()->Init();
+	//objects_.back()->SetPosition({ -650.0f, 110.0f, 0.0f });
+	//objects_.back()->SetScale(AsoUtility::VECTOR_ONE);
+	
+	//objects_.push_back(std::make_unique<Button>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[3], ObjectBase::OBJECT_TYPE::BUTTON));
+	//objects_.back()->Init();
+	//objects_.back()->SetPosition(buttonPos_);
+	//objects_.back()->SetScale(VScale(AsoUtility::VECTOR_ONE, 0.5f));
+
+	//objects_.push_back(std::make_unique<Rock>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::ROCK));
+	//objects_.back()->Init();
+	//objects_.back()->SetPosition(rockPos_);
+	//objects_.back()->SetScale(AsoUtility::VECTOR_ONE);
+
+	//objects_.push_back(std::make_unique<Axe>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::AXE));
+	//objects_.back()->Init();
+	//objects_.back()->SetPosition({ -500.0f, 0.0f, 0.0f });
+	//objects_.back()->SetScale(VScale(AsoUtility::VECTOR_ONE, 8.0f));
+
+	//objects_.push_back(std::make_unique<Gate>(GameScene::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::DEFAULT));
+	//objects_.back()->Init();
+	//objects_.back()->SetPosition({ 1300.0f, -320.0f, 500.0f });
+	//objects_.back()->SetScale(AsoUtility::VECTOR_ONE);
 
 
 #pragma region コライダ登録
@@ -383,7 +406,7 @@ void GameScene::Update(void)
 {
 	isPause_ = false;
 	// ポーズ画面を積む
-	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_ESCAPE))
+	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_ESCAPE) || InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::OPTION))
 	{
 		SceneManager::GetInstance()->PushScene(std::make_shared<PauseScene>());
 		isPause_ = true;
@@ -404,6 +427,12 @@ void GameScene::Update(void)
 	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_H))
 	{
 		ChangeScene(std::make_shared<GameOverScene>());
+		return;
+	}
+
+	if (isClear_)
+	{
+		ChangeScene(std::make_shared<GameClearScene>());
 		return;
 	}
 
@@ -433,37 +462,37 @@ void GameScene::Update(void)
 		bool hit = (distance1 < distanceMax);
 		if (hit)
 		{
-			ChangeScene(std::make_shared<GameClearScene>());
+			isClear_ = true;
 			return;
 		}
 	}
 
-	// 歯車距離処理（後で消す）
-	for (auto& obj : objects_)
-	{
-		if (obj == nullptr) continue;
+	//// 歯車距離処理（後で消す）
+	//for (auto& obj : objects_)
+	//{
+	//	if (obj == nullptr) continue;
 
-		// ギアタイプの場合は専用処理
-		if (obj->GetType() != ObjectBase::OBJECT_TYPE::GEAR)
-		{
-			continue;
-		}
+	//	// ギアタイプの場合は専用処理
+	//	if (obj->GetType() != ObjectBase::OBJECT_TYPE::GEAR)
+	//	{
+	//		continue;
+	//	}
 
-		auto& objectPos = obj->GetPos();
+	//	auto& objectPos = obj->GetPos();
 
-		for (auto& player : players_)
-		{
-			// ステージモデルのコライダーをプレイヤーに登録
-			VECTOR playerPos = player.player_->GetTransform().pos;
+	//	for (auto& player : players_)
+	//	{
+	//		// ステージモデルのコライダーをプレイヤーに登録
+	//		VECTOR playerPos = player.player_->GetTransform().pos;
 
-			float distance1 = VSize(VSub(playerPos, objectPos));
-			bool hit = (distance1 < 60.0f);
-			if (hit)
-			{
-				obj->SetIsRot(true);
-			}
-		}
-	}
+	//		float distance1 = VSize(VSub(playerPos, objectPos));
+	//		bool hit = (distance1 < 60.0f);
+	//		if (hit)
+	//		{
+	//			obj->SetIsRot(true);
+	//		}
+	//	}
+	//}
 
 	stageManager_->Update();
 	skyDome_->Update();
@@ -543,8 +572,8 @@ void GameScene::Update(void)
 
 	if (isAnswer)
 	{
-		
-		SceneManager::GetInstance()->ChangeScene(std::make_shared<GameClearScene>());
+		isClear_ = true;
+		return;
 	}
 }
 
@@ -603,10 +632,10 @@ void GameScene::Draw(void)
 			MV1DrawModel(pinID_);
 		}
 	
-		//for (auto& wall : walls_)
-		//{
-		//	wall->Draw();
-		//}
+		for (auto& wall : walls_)
+		{
+			wall->Draw();
+		}
 	
 		// 全オブジェクトを順に描画（それぞれの viewWorld を設定）
 		for (auto& obj : objects_)
@@ -757,7 +786,7 @@ void GameScene::Release(void)
 
 	objects_.clear();
 
-	DeleteGraph(pinID_);
+	MV1DeleteModel(pinID_);
 
 	//enemyManager_->Release();
 	//delete enemyManager_;

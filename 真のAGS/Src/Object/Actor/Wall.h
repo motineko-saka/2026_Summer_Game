@@ -1,5 +1,9 @@
 #pragma once
 #include "ActorBase.h"
+
+class ModelMaterial;
+class ModelRenderer;
+
 class Wall :
     public ActorBase
 {
@@ -45,4 +49,33 @@ private:
 	// 座標一時保存変数
 	VECTOR tempPos_;
 	bool isRot_ = false;
+
+	std::unique_ptr<ModelMaterial> vertexMaterial_;
+	std::unique_ptr<ModelRenderer> vertexRenderer_;
+
+	// 時間
+	float time_;
+
+	float dissolveTime_;
+
+	// シェーダ
+	int shader_;
+
+	// 定数バッファの確保サイズ(FLOAT4をいくつ作るか)
+	int constBufFloat4Size_;
+
+	// 定数バッファハンドル
+	int constBuf_;
+
+
+	// シェーダ
+	int shaderVS_;
+
+	// 定数バッファの確保サイズ(FLOAT4をいくつ作るか)
+	int constBufFloat4SizeVS_;
+
+	// 定数バッファハンドル
+	int constBufVS_;
+
+	const int CONSTANT_BUF_SLOT_BEGIN_VS = 1;
 };

@@ -6,7 +6,7 @@ class Gaer
 	: public ObjectBase
 {
 public:
-	Gaer(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type);
+	Gaer(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type, ObjectBase& object);
 	virtual ~Gaer() override = default;
 
 	bool isPushButtom(void) const { return isRot_; }
@@ -22,5 +22,7 @@ private:
 	void InitPost(void)override;
 
 	void ObjectUpdateProcess(void)override;
+
+	ObjectBase& object_;
 };
 

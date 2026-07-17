@@ -7,7 +7,7 @@
     <FxCompile Include="Src\Shader\Vertex\GateVS.hlsl" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Bomb.cpp" />
+    <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Axe.cpp" />
     <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Object.cpp" />
     <ClCompile Include="Src\Object\Actor\Charactor\GameObject\PressButton.cpp" />
     <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Gaer.cpp" />
@@ -65,7 +65,7 @@
     <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Gate.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Src\Object\Actor\Charactor\GameObject\Bomb.h" />
+    <ClInclude Include="Src\Object\Actor\Charactor\GameObject\Axe.h" />
     <ClInclude Include="Src\Object\Actor\Charactor\GameObject\Object.h" />
     <ClInclude Include="Src\Object\Actor\Charactor\GameObject\PressButton.h" />
     <ClInclude Include="Src\Object\Actor\Charactor\GameObject\Gaer.h" />

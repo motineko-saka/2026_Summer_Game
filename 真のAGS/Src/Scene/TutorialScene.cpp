@@ -820,7 +820,19 @@ void TutorialScene::TyutorialTEXT(void)
 	tutorial_.AddStep(
 		"あっ！ヒントを見つけたね！\nヒントに書いてあるボタンを押したら何か変わるかな。\n近づいて Fキー または パッドのBボタンで押してみよう！",
 		[this]() -> bool {
+<<<<<<< HEAD
 			return  butcount_;
+=======
+
+			for (auto& obj : objects_) {
+				if (obj && obj->GetObjectType() == ObjectBase::OBJECT_TYPE::BUTTON) {
+					std::vector<ObjectBase*> dummyNewObjects;
+					std::vector<int> dummyRemoveIndices;
+					ButtonProcess(*obj, dummyNewObjects, dummyRemoveIndices);
+				}
+			}
+			return false;
+>>>>>>> 4d3d9b682869d3ad1934ec972692c2c55abf55be
 		},
 		nullptr,
 		ResourceManager::GetInstance().Load(ResourceManager::SRC::ENOGU5).handleId_
