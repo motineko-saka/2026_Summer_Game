@@ -432,7 +432,7 @@ void Player::ProcessPickup(void)
 		}
 		else
 		{
-			const float PICKUP_DISTANCE = 180.0f;
+			const float PICKUP_DISTANCE = 90.0f;
 			const float pickDistSq = PICKUP_DISTANCE * PICKUP_DISTANCE;
 			const VECTOR plyPos = transform_.pos;
 

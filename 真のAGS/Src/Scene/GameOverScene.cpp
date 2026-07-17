@@ -40,7 +40,8 @@ void GameOverScene::LoadEnd(void)
 void GameOverScene::Update(void)
 {
 	// シーン遷移
-	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE))
+	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE) ||
+		InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::DOWN))
 	{
 		// ゲームオーバーシーンからタイトルシーンに遷移する際に、AudioManagerのインスタンスを削除してリセットする
 		AudioManager::GetInstance()->StopSE();

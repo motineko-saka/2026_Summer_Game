@@ -21,8 +21,6 @@
 #include "PauseScene.h"
 #include "TitleScene.h"
 #include "../Manager/EffekseerEffect.h"
-#include "../Renderer/PixelMaterial.h"
-#include "../Renderer/PixelRenderer.h"
 #include "../Audio/AudioManager.h"
 
 TutorialScene::TutorialScene(void)
@@ -106,11 +104,13 @@ void TutorialScene::Init(void)
 		};
 
 	// ボタンを左右両方に配置
-	pushObject(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::BUTTON, { -200.0f, 0.0f, 100.0f }, { 0.5f, 0.5f, 0.5f }, true);
-	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::BUTTON, { 200.0f, 0.0f, 100.0f }, { 0.5f, 0.5f, 0.5f }, true);
+	pushObject(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::BUTTON, { -700.0f, 0.0f, 100.0f }, { 0.5f, 0.5f, 0.5f }, true);
+	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::BUTTON, { 700.0f, 0.0f, 100.0f }, { 0.5f, 0.5f, 0.5f }, true);
+	buttonPressHistory_.clear();
 
 	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::AKEG, { 900.0f, -520.0f, 100.0f }, { 0.3f, 0.3f, 0.3f }, false);
-	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::CHEST, { 900.0f, -520.0f, 100.0f }, { 0.8f, 0.8f, 0.8f }, true);
+	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::CHEST, { 900.0f, -520.0f, 100.0f }, { 0.6f, 0.6f, 0.6f }, true);
+	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[2], ObjectBase::OBJECT_TYPE::WBOX, { 800.0f, -520.0f, 100.0f }, { 0.5f, 0.5f, 0.5f }, true);
 
 	CreateWall(*stageManager_);
 
@@ -130,17 +130,7 @@ void TutorialScene::Init(void)
 		//if (stageCollider == nullptr) DrawFormatString(100, 100, 0xffffff, "stageCollider is null\n");
 	}
 
-	// 踏むタイプのボタンのインデックスを収集
-	std::vector<size_t> pushButtonIndex;
-	for (size_t i = 0; i < objects_.size(); ++i)
-	{
-		if (objects_[i]->GetObjectType() == ObjectBase::OBJECT_TYPE::PRESS_BUTTON)
-		{
-			pushButtonIndex.push_back(i);
-		}
-	}
-
-	// 各オブジェクトの衝突コライダをプレイヤーに登録（重複チェック内包）
+	// 各オブジェクトの衝突コライダをプレイヤーに登録
 	for (size_t i = 0; i < objects_.size(); ++i)
 	{
 		auto* obj = objects_[i];
@@ -151,46 +141,12 @@ void TutorialScene::Init(void)
 		{
 			players_[p].player_->AddHitCollider(objCaps);
 		}
-
-		for (auto index : pushButtonIndex)
-		{
-			if (i != index)
-			{
-				objects_[index]->AddHitCollider(objCaps);
-			}
-		}
 	}
-
-	//for (auto& wall : walls_)
-	//{
-	//	const ColliderBase* wallCollider =
-	//		wall->GetOwnCollider(static_cast<int>(Stage::COLLIDER_TYPE::MODEL));
-
-	//	for (int i = 0; i < players_.size(); i++)
-	//	{
-	//		// ステージモデルのコライダーをプレイヤーに登録
-	//		players_[i].player_->AddHitCollider(wallCollider);
-	//	}
-	//}
-
-	// ポストエフェクト用スクリーン
-	postEffectScreen_ = MakeScreen(Application::SCREEN_SIZE_X, Application::SCREEN_SIZE_Y, true);
-
-	// ポストエフェクト用マテリアル／レンダラ
-	pixelMaterial_ = std::make_unique<PixelMaterial>("Monotone.cso", 1);
-	pixelMaterial_->AddConstBuf({ 1.0f, 1.0f, 1.0f, 1.0f });
-	pixelMaterial_->AddTextureBuf(SceneManager::GetInstance()->GetMainScreen());
-	pixelRenderer_ = std::make_unique<PixelRenderer>(*pixelMaterial_);
-	pixelRenderer_->MakeSquereVertex(Vector2(0, 0), Vector2(Application::SCREEN_SIZE_X, Application::SCREEN_SIZE_Y));
 
 	// プレイヤーのラインコライダをButtonに登録
 	for (auto& player : players_)
 	{
 		const ColliderBase* playerCollider = player.player_->GetOwnCollider(static_cast<int>(Player::COLLIDER_TYPE::LINE));
-		for (auto index : pushButtonIndex)
-		{
-			objects_[index]->AddHitCollider(playerCollider);
-		}
 	}
 
 	// 初期アクティブ状態（プレイヤー1）
@@ -267,7 +223,7 @@ void TutorialScene::CheckCollisions(void)
 				VECTOR pushDir = VSub(objectPos, playerPos);
 				pushDir.y = 0.0f;
 				pushDir = VNorm(pushDir);
-				(void)pushDir; // 現状は計算するのみ（既存コードの挙動を保持）
+				(void)pushDir; // 現状は計算するのみ
 			}
 		}
 	}
@@ -284,8 +240,6 @@ void TutorialScene::CheckCollisions(void)
 			{
 				if (objects_[idx])
 				{
-					// 重要: 削除前にそのオブジェクトが持つ全コライダを
-					// 他の Actor から登録解除してダングリングを防ぐ
 					const auto& ownCols = objects_[idx]->GetOwnColliders();
 					for (const auto& ct : ownCols)
 					{
@@ -305,9 +259,6 @@ void TutorialScene::CheckCollisions(void)
 							otherObj->RemoveHitCollider(col);
 						}
 					}
-
-					objects_[idx]->Release();
-					delete objects_[idx];
 				}
 				objects_.erase(objects_.begin() + idx);
 			}
@@ -320,58 +271,108 @@ const void TutorialScene::ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*
 {
 	const VECTOR objectPos = obj.GetTransform().pos;
 
-	bool isNearButton = false;
-	for (auto& player : players_)
+	// ボタンを押したか
+	bool isPush = InputManager::GetInstance()->IsTrgDown(KEY_INPUT_F);
+	bool isPadPush = InputManager::GetInstance()->IsPadBtnTrgDown(
+		InputManager::JOYPAD_NO::PAD1,
+		InputManager::JOYPAD_BTN::RIGHT);
+
+	// 入力がなければ終了
+	if (!isPush && !isPadPush)
 	{
-		const float distance = VSize(VSub(player.player_->GetTransform().pos, objectPos));
-		if (distance < 180.0f) { isNearButton = true; break; }
+		return;
 	}
 
-	// スペースでシーケンスチェック&&オブジェクト出現処理
-	if (isNearButton && (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_F) || InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::RIGHT)))
+	// 押したプレイヤー
+	int playerNo = 0;
+
+	if (isPadPush)
 	{
-		// ボタンの押下状態をセット
-		obj.SetButtomPushed(true);
-
-		// ボタンのカウント
-		buttonPCount_++;
-
-		// タイマーのリセット
-		buttonSRTime_ = 0.0f;
-
-		// 目標に達したら新規オブジェクト（OPENCHEST）を生成し、既存チェストを削除する
-		if (buttonPCount_ >= buttonPTarget_)
+		playerNo = 0;
+	}
+	else
+	{
+		if (activePlayer_ == Player::PLAYER_NO::PLAYER1)
 		{
-			newObjects.push_back(new ObjectBase(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::OPENCHEST));
+			playerNo = 0;
+		}
+		else
+		{
+			playerNo = 1;
+		}
+	}
 
-			for (size_t i = 0; i < objects_.size(); ++i)
+	// ボタンとの距離チェック
+	const float distance = VSize(VSub(
+		players_[playerNo].player_->GetTransform().pos,
+		objectPos));
+
+	if (distance >= 180.0f)
+	{
+		return;
+	}
+
+	// ボタンを押した
+	obj.SetButtomPushed(true);
+
+	SceneBase::WORLD pressed = obj.GetWorld();
+
+	if (buttonPTarget_ <= 0 ||
+		buttonPTarget_ != static_cast<int>(buttonRequiredPattern_.size()))
+	{
+		buttonPTarget_ = static_cast<int>(buttonRequiredPattern_.size());
+	}
+
+	if (buttonSP_ < buttonRequiredPattern_.size() &&
+		pressed == buttonRequiredPattern_[buttonSP_])
+	{
+		buttonSP_++;
+
+		if (buttonSP_ >= buttonPTarget_)
+		{
+			newObjects.push_back(new ObjectBase(
+				SceneBase::WORLD::LEFT,
+				ANSWER_VECTOR_LENGTH[1],
+				ObjectBase::OBJECT_TYPE::OPENCHEST));
+
+			for (size_t i = 0; i < objects_.size(); i++)
 			{
-				if (objects_[i] && objects_[i]->GetObjectType() == ObjectBase::OBJECT_TYPE::CHEST)
+				if (objects_[i] &&
+					objects_[i]->GetObjectType() == ObjectBase::OBJECT_TYPE::CHEST)
 				{
 					removeIndices.push_back(static_cast<int>(i));
 					break;
 				}
 			}
 
+			buttonSP_ = 0;
+			buttonPCount_ = 0;
 
-				// シーケンスをリセット
-				buttonSP_ = 0;
-				buttonSRTime_ = 0.0f;
-
-				// SE再生
-				if (AudioManager::GetInstance())
-				{
-					AudioManager::GetInstance()->PlaySE(SoundID::SE_SUCCESS);
-				}
+			if (AudioManager::GetInstance())
+			{
+				AudioManager::GetInstance()->LoadSceneSound(LoadScene::GAME);
+				AudioManager::GetInstance()->PlaySE(SoundID::SE_SUCCESS);
+			}
 		}
-
+	}
+	else
+	{
+		buttonSP_ = 0;
+		buttonPCount_++;
 	}
 }
-
 void TutorialScene::Update(void)
 {
 	// チュートリアル更新
 	tutorial_.Update();
+	//Hint();
+
+	// ヒント表示中はその他の更新を停止（ヒントは Hint() が開閉する）
+	if (showHint_)
+	{
+		// 更新処理をスキップ
+		return;
+	}
 
 	// チュートリアル完了でクリアへ遷移
 	if (isEndTutorial_)
@@ -440,17 +441,6 @@ void TutorialScene::Update(void)
 		if (obj) obj->Update();
 	}
 
-	if (buttonSP_ > 0)
-	{
-		buttonSRTime_ += SceneManager::GetInstance()->GetDeltaTime();
-		if (buttonSRTime_ > buttonSTimer_)
-		{
-			buttonSP_ = 0;
-			buttonSRTime_ = 0.0f;
-		}
-	}
-
-
 	AnswerChack();
 }
 
@@ -493,7 +483,7 @@ const void TutorialScene::MakeNewObject(std::vector<ObjectBase*>& newObjects)
 	{
 		newObj->Init();
 		newObj->SetPosition({ 900.0f, -520.0f, 100.0f });
-		newObj->SetScale({ 0.8f, 0.8f, 0.8f });
+		newObj->SetScale({ 0.6f, 0.6f, 0.6f });
 		newObj->SetPlaced(true);
 		for (const auto& stage : stageManager_->GetStage())
 		{
@@ -554,7 +544,7 @@ void TutorialScene::Draw(void)
 
 		//wall_->Draw();
 
-		// 全オブジェクトを順に描画（それぞれの viewWorld を設定）
+		// 全オブジェクトを順に描画
 		for (auto& obj : objects_)
 		{
 			if (!obj) continue;
@@ -567,12 +557,19 @@ void TutorialScene::Draw(void)
 
 			obj->Draw();
 		}
+	}
 
-		// アクティブプレイヤー関連のポスト処理（コメント化されていた処理を維持）
-		if (activePlayer_ == players_[i].player_->GetPlayerNo())
-		{
-			// ここに任意の描画（未使用）
-		}
+	if (showHint_ && hintHandle_ != -1)
+	{
+		VECTOR screenPos = ConvWorldPosToScreenPos(hintWorldPos_);
+		int w = 0, h = 0;
+		GetGraphSize(hintHandle_, &w, &h);
+		// オブジェクト上に表示する（少し上にオフセット）
+		const int drawX1 = static_cast<int>(screenPos.x) - (w / 2);
+		const int drawY1 = static_cast<int>(screenPos.y) - h - 20;
+		const int drawX2 = drawX1 + w;
+		const int drawY2 = drawY1 + h;
+		DrawExtendGraph(drawX1, drawY1, drawX2, drawY2, hintHandle_, true);
 	}
 
 	// メイン画面に転送
@@ -591,15 +588,13 @@ void TutorialScene::Draw(void)
 		DrawBox(0, 0, halfWidth, screenHeight_, GetColor(0, 0, 0), TRUE);
 	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 
-	// ポストエフェクト転送
-	SetDrawScreen(postEffectScreen_);
+	// ポストエフェクトを廃止したため
+	SetDrawScreen(DX_SCREEN_BACK);
 	ClearDrawScreen();
 	DrawGraph(0, 0, mainScreen, FALSE);
 
-	// 最終表示
-	SetDrawScreen(DX_SCREEN_BACK);
-	ClearDrawScreen();
-	DrawGraph(0, 0, postEffectScreen_, FALSE);
+	DrawFormatString(10, 200, GetColor(255, 255, 255), "pattern progress: %d / %d, tries: %d",
+		static_cast<int>(buttonSP_), buttonPTarget_, buttonPCount_);
 
 #ifdef _DEBUG
 	// デバッグ表示
@@ -642,6 +637,14 @@ void TutorialScene::Draw(void)
 		y += 40;
 	}
 
+
+
+	// アンサーポジションのオブジェクトの座標を表示
+	DrawFormatString(10, 240, GetColor(255, 255, 255), "Answer Position: (%.1f, %.1f, %.1f)",
+		ANSWER_VECTOR_LENGTH[0].x,
+		ANSWER_VECTOR_LENGTH[0].y,
+		ANSWER_VECTOR_LENGTH[0].z);
+
 	stageManager_->DrawDebug();
 #endif // _DEBUG
 
@@ -674,7 +677,7 @@ void TutorialScene::Release(void)
 	// 全オブジェクト解放
 	for (auto& obj : objects_)
 	{
-		if (obj) { obj->Release(); delete obj; }
+		if (obj) { delete obj; }
 	}
 	objects_.clear();
 
@@ -684,9 +687,6 @@ void TutorialScene::Release(void)
 	// スクリーンハンドルの削除
 	if (screenHandle1_ != -1) { DeleteGraph(screenHandle1_); screenHandle1_ = -1; }
 	if (screenHandle2_ != -1) { DeleteGraph(screenHandle2_); screenHandle2_ = -1; }
-
-	// ポストエフェクト
-	if (postEffectScreen_ != -1) { DeleteGraph(postEffectScreen_); postEffectScreen_ = -1; }
 
 	if (camera_)
 	{
@@ -738,7 +738,7 @@ void TutorialScene::TyutorialTEXT(void)
 	tutorial_.AddStep(
 		"ここまで順調だね！次はプレイヤーを切り替えてみよう！\nTabキー または RTでプレイヤー2に切り替えられるよ！。\n切り替えられたら次へ進もう！",
 		[]() -> bool {
-			return InputManager::GetInstance()->IsTrgDown(KEY_INPUT_TAB) 
+			return InputManager::GetInstance()->IsTrgDown(KEY_INPUT_TAB)
 				|| InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::R_TRIGGER);
 		},
 		nullptr,
@@ -746,10 +746,10 @@ void TutorialScene::TyutorialTEXT(void)
 	);
 
 	tutorial_.AddStep(
-		"あれ？宝箱があるけど、この世界では開けられないみたい…。\n開ける方法は向こう側の世界にあるのかも！\nもう一度プレイヤーを切り替えて確かめてみよう！",
-		[]() -> bool {
-			return InputManager::GetInstance()->IsTrgDown(KEY_INPUT_TAB) 
-				|| InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::R_TRIGGER);
+		"あれ？宝箱があるけど、この世界では開けられないみたい…。\n開ける方法がどこかにあるのかも！\n探してみよう！",
+		[this]() -> bool {
+			Hint();
+			return false;
 		},
 		nullptr,
 		ResourceManager::GetInstance().Load(ResourceManager::SRC::ENOGU4).handleId_
@@ -757,13 +757,16 @@ void TutorialScene::TyutorialTEXT(void)
 
 	// ステップ4: ボタン操作
 	tutorial_.AddStep(
-		"あっ！ボタンを見つけたね！\n押したら何か変わるかもしれないよ。\n近づいて Spaceキー または パッドのBボタンで押してみよう！", [this]() -> bool {
-			for (auto& obj : objects_)
-			{
-				if (!obj) continue;
-				if (obj->GetType() == ObjectBase::OBJECT_TYPE::BUTTON && obj->isPushButtom()) return true;
+		"あっ！ヒントを見つけたね！\nボタンを押したら何か変わるかな。\n近づいて Fキー または パッドのBボタンで押してみよう！",
+		[this]() -> bool {
+
+			for (auto& obj : objects_) {
+				if (obj && obj->GetObjectType() == ObjectBase::OBJECT_TYPE::BUTTON) {
+					std::vector<ObjectBase*> dummyNewObjects;
+					std::vector<int> dummyRemoveIndices;
+					ButtonProcess(*obj, dummyNewObjects, dummyRemoveIndices);
+				}
 			}
-			return false;
 		},
 		nullptr,
 		ResourceManager::GetInstance().Load(ResourceManager::SRC::ENOGU5).handleId_
@@ -809,6 +812,7 @@ void TutorialScene::TyutorialTEXT(void)
 					{
 						if (AudioManager::GetInstance())
 						{
+							AudioManager::GetInstance()->LoadSceneSound(LoadScene::GAME);
 							AudioManager::GetInstance()->PlaySE(SoundID::SE_SUCCESS);
 						}
 						placedSEPlayed_ = true;
@@ -840,4 +844,46 @@ void TutorialScene::TyutorialTEXT(void)
 		nullptr,
 		ResourceManager::GetInstance().Load(ResourceManager::SRC::ENOGU8).handleId_
 	);
+}
+
+void TutorialScene::Hint(void)
+{
+	const bool isEDown = InputManager::GetInstance()->IsTrgDown(KEY_INPUT_E)
+		|| InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::LEFT);
+
+	if (!isEDown) return;
+
+	// ヒントを閉じる
+	if (showHint_)
+	{
+		showHint_ = false;
+		hintHandle_ = -1;
+		return;
+	}
+
+	// ヒントの表示条件式にゃん
+	for (auto& obj : objects_)
+	{
+		if (!obj) continue;
+		if (obj->GetObjectType() != ObjectBase::OBJECT_TYPE::WBOX) continue;
+
+		// プレイヤーとの距離
+		bool isnear = false;
+		for (auto& p : players_)
+		{
+			const float dist = VSize(VSub(p.player_->GetTransform().pos, obj->GetTransform().pos));
+			if (dist < 90.0f)
+			{
+				isnear = true;
+				break;
+			}
+		}
+		if (!isnear) continue;
+
+		// ヒント表示
+		showHint_ = true;
+		hintWorldPos_ = obj->GetPos();
+		hintHandle_ = ResourceManager::GetInstance().Load(ResourceManager::SRC::HINTO).handleId_;
+		break;
+	}
 }
