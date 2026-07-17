@@ -34,6 +34,21 @@ void Stage::InitTransform(void)
 	transform_.pos = STAGE_DEFAULT_POS;
 	transform_.Update();
 
+	auto bridgeFrame_ = MV1SearchFrame(transform_.modelId, "Hovel_Red");
+
+	MATRIX handMat = MV1GetFrameLocalWorldMatrix(transform_.modelId, bridgeFrame_);
+	VECTOR handPos =
+	{
+		handMat.m[3][0],
+		handMat.m[3][1],
+		handMat.m[3][2]
+	};
+
+	VECTOR worldPos = VTransform(transform_.localPos, handMat);
+
+	transform_.quaRotLocal = Quaternion::AngleAxis(AsoUtility::Deg2RadD(-90.0f),
+		AsoUtility::AXIS_Z);
+
 	// ç≈è¨ç≈ëÂç¿ïWéÊìæ
 	Vector3 minPos = { FLT_MAX, FLT_MAX, FLT_MAX };
 	Vector3 maxPos = { -FLT_MAX, -FLT_MAX, -FLT_MAX };

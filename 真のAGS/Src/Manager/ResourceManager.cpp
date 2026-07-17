@@ -47,7 +47,7 @@ void ResourceManager::Init(void)
 	resourcesMap_.emplace(SRC::SPHERE_PLANET, res);
 
 	// プレイヤーモデル
-	res = new RES(RES_T::MODEL, PATH_MDL + "Player/Remy.mv1");
+	res = new RES(RES_T::MODEL, PATH_MDL + "Player/boy.mv1");
 	resourcesMap_.emplace(SRC::PLAYER, res);
 
 	// ステージモデル
@@ -57,7 +57,7 @@ void ResourceManager::Init(void)
 
 	// メインステージ
 	//res = new RES(RES_T::MODEL, PATH_MDL + "Stage/Stage.mv1");
-	res = new RES(RES_T::MODEL, PATH_MDL + "Stage/NomotoPark.mv1");
+	res = new RES(RES_T::MODEL, PATH_MDL + "Stage/nomotoarena.mv1");
 	resourcesMap_.emplace(SRC::MAIN_STAGE, res);
 
 	// スカイドーム

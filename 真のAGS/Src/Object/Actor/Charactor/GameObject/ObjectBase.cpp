@@ -97,7 +97,7 @@ void ObjectBase::InitLoad(void)
 	case OBJECT_TYPE::ROCK:
 		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::ROCK));
 		break;
-	case OBJECT_TYPE::KINOKO:
+	case OBJECT_TYPE::AXE:
 		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::AXE));
 		break;
 	case OBJECT_TYPE::CHEST:
@@ -222,8 +222,6 @@ void ObjectBase::UpdateProcess(void)
 			VECTOR worldPos = VTransform(localPos, handMat);
 			transform_.pos = worldPos;
 			transform_.quaRot = follow->quaRot;
-			transform_.pos.z += 10.0f;
-			transform_.pos.x += 16.0f;
 			transform_.quaRotLocal = Quaternion::AngleAxis(AsoUtility::Deg2RadD(-90.0f),
 				AsoUtility::AXIS_Z);
 			pushPow_ = { 0.0f, 0.0f, 0.0f };

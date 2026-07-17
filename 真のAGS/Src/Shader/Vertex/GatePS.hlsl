@@ -26,20 +26,26 @@ float4 main(PS_INPUT PSInput) : SV_TARGET0
 	// テクスチャーの色を取得
     color = diffuseMapTexture.Sample(diffuseMapSampler, float2(PSInput.uv.x, PSInput.uv.y - time));
     
-    float noise = Noise.Sample(diffuseMapSampler, PSInput.uv).r;
-
-    float width = 0.5f;
-
-    if (noise < time)
+    if (color.a < 0.01f)
     {
         discard;
     }
+    
+    //float noise = Noise.Sample(diffuseMapSampler, PSInput.uv).r;
 
-    float edge = 1.0 - smoothstep(time, time + width, noise);
+    //float width = 0.5f;
 
-    float3 edgeColor = float3(0, 0, 0);
+    //if (noise < time)
+    //{
+    //    discard;
+    //}
+    
 
-    color.rgb = lerp(color.rgb, edgeColor, edge);
+    //float edge = 1.0 - smoothstep(time, time + width, noise);
+
+    //float3 edgeColor = float3(0, 0, 0);
+
+    //color.rgb = lerp(color.rgb, edgeColor, edge);
 
     return color;
 }

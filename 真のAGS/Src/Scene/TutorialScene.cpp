@@ -767,6 +767,7 @@ void TutorialScene::TyutorialTEXT(void)
 					ButtonProcess(*obj, dummyNewObjects, dummyRemoveIndices);
 				}
 			}
+			return false;
 		},
 		nullptr,
 		ResourceManager::GetInstance().Load(ResourceManager::SRC::ENOGU5).handleId_
