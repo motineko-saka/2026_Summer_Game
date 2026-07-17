@@ -121,11 +121,6 @@ void ObjectBase::InitTransform(void)
 
 	transform_.quaRotLocal = Quaternion::Identity();
 
-	if(type_ == OBJECT_TYPE::CHEST || type_ == OBJECT_TYPE::OPENCHEST)
-	{
-		transform_.quaRotLocal = Quaternion::AngleAxis(AsoUtility::Deg2RadD(90.0f),
-			AsoUtility::AXIS_Y);
-	}
 	transform_.pos = { -1000.0f, 80.0f, -10.0f };
 
 	InitObjTrans();

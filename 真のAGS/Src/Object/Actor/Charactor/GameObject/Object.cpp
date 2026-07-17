@@ -38,14 +38,6 @@ void Object::InitLoad(void)
 
 void Object::InitObjTrans(void)
 {
-	if (type_ == OBJECT_TYPE::CHEST)
-	{
-		transform_.quaRotLocal = Quaternion::AngleAxis(AsoUtility::Deg2RadD(90.0f),
-			AsoUtility::AXIS_Y);
-
-		isHoldable_ = true;
-	}
-
 	if (type_ == OBJECT_TYPE::DEFAULT)
 	{
 		capsule_r = 60.0f;

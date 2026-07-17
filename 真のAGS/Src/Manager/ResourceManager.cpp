@@ -141,11 +141,11 @@ void ResourceManager::Init(void)
 	resourcesMap_.emplace(SRC::UI_EXIT, res);
 
 	// •ó” 
-	res = new RES(RES_T::MODEL, PATH_MDL + "Object/Box.mv1");
+	res = new RES(RES_T::MODEL, PATH_MDL + "Object/Chest.mv1");
 	resourcesMap_.emplace(SRC::Chest, res);
 
 	// ŠJ‚¢‚½•ó” 
-	res = new RES(RES_T::MODEL, PATH_MDL + "Object/OpenBox.mv1");
+	res = new RES(RES_T::MODEL, PATH_MDL + "Object/ChestOpen.mv1");
 	resourcesMap_.emplace(SRC::OPENCHEST, res);
 
 	// ŠG‚Ì‹ï
@@ -189,7 +189,7 @@ void ResourceManager::Init(void)
 	resourcesMap_.emplace(SRC::GAME_OVER, res);
 
 	// ƒqƒ“ƒg
-	res = new RES(RES_T::IMG, PATH_IMG + "enogu/Hinto2.png");
+	res = new RES(RES_T::IMG, PATH_IMG + "enogu/Hinto.png");
 	resourcesMap_.emplace(SRC::HINTO, res);
 }
 

@@ -104,12 +104,12 @@ void TutorialScene::Init(void)
 		};
 
 	// ボタンを左右両方に配置
-	pushObject(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::BUTTON, { -700.0f, 0.0f, 100.0f }, { 0.5f, 0.5f, 0.5f }, true);
-	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::BUTTON, { 700.0f, 0.0f, 100.0f }, { 0.5f, 0.5f, 0.5f }, true);
+	pushObject(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::BUTTON, { -700.0f, -520.0f, 100.0f }, { 0.5f, 0.5f, 0.5f }, true);
+	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::BUTTON, { 900.0f, -520.0f, 100.0f }, { 0.5f, 0.5f, 0.5f }, true);
 	buttonPressHistory_.clear();
 
-	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::AKEG, { 900.0f, -520.0f, 100.0f }, { 0.3f, 0.3f, 0.3f }, false);
-	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::CHEST, { 900.0f, -520.0f, 100.0f }, { 0.6f, 0.6f, 0.6f }, true);
+	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::AKEG, { 900.0f, -520.0f, 300.0f }, { 0.3f, 0.3f, 0.3f }, true);
+	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::CHEST, { 900.0f, -520.0f, 300.0f }, { 0.6f, 0.6f, 0.6f }, true);
 	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[2], ObjectBase::OBJECT_TYPE::WBOX, { 800.0f, -520.0f, 100.0f }, { 0.5f, 0.5f, 0.5f }, true);
 
 	CreateWall(*stageManager_);
@@ -175,7 +175,7 @@ void TutorialScene::Init(void)
 
 void TutorialScene::TutorialInit(void)
 {
-	// チュートリアル開始（ステップ登録）
+	// チュートリアル開始
 	tutorial_.Init();
 	tutorial_.ClearSteps();
 
@@ -211,20 +211,6 @@ void TutorialScene::CheckCollisions(void)
 		{
 			ButtonProcess(*obj, newObjects, removeIndices);
 			continue;
-		}
-
-		for (auto& player : players_)
-		{
-			const VECTOR playerPos = player.player_->GetTransform().pos;
-			const float distance = VSize(VSub(playerPos, objectPos));
-			if (distance < 180.0f)
-			{
-				player.isPlayerHitObject_ = true;
-				VECTOR pushDir = VSub(objectPos, playerPos);
-				pushDir.y = 0.0f;
-				pushDir = VNorm(pushDir);
-				(void)pushDir; // 現状は計算するのみ
-			}
 		}
 	}
 
@@ -335,6 +321,16 @@ const void TutorialScene::ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*
 				ANSWER_VECTOR_LENGTH[1],
 				ObjectBase::OBJECT_TYPE::OPENCHEST));
 
+			// AKEGオブジェクトのSetPlacedをfalseにする
+			for (auto* ao : objects_)
+			{
+				if (ao && ao->GetObjectType() == ObjectBase::OBJECT_TYPE::AKEG)
+				{
+					ao->SetPlaced(false);
+					break;
+				}
+			}
+
 			for (size_t i = 0; i < objects_.size(); i++)
 			{
 				if (objects_[i] &&
@@ -353,6 +349,8 @@ const void TutorialScene::ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*
 				AudioManager::GetInstance()->LoadSceneSound(LoadScene::GAME);
 				AudioManager::GetInstance()->PlaySE(SoundID::SE_SUCCESS);
 			}
+			butcount_ = true;
+
 		}
 	}
 	else
@@ -361,13 +359,14 @@ const void TutorialScene::ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*
 		buttonPCount_++;
 	}
 }
+
 void TutorialScene::Update(void)
 {
 	// チュートリアル更新
 	tutorial_.Update();
-	//Hint();
+	Hint();
 
-	// ヒント表示中はその他の更新を停止（ヒントは Hint() が開閉する）
+	// ヒント表示中は更新を停止
 	if (showHint_)
 	{
 		// 更新処理をスキップ
@@ -468,12 +467,10 @@ void TutorialScene::AnswerChack(void)
 	if (isAnswer && isEndTutorial_)
 	{
 		endTimer_ += SceneManager::GetInstance()->GetDeltaTime();
-		// SceneManager::GetInstance()->ChangeScene(std::make_shared<GameClearScene>());
 	}
 
 	if (endTimer_ > END_TIME)
 	{
-		// END 動作があればここへ
 	}
 }
 
@@ -482,7 +479,7 @@ const void TutorialScene::MakeNewObject(std::vector<ObjectBase*>& newObjects)
 	for (auto& newObj : newObjects)
 	{
 		newObj->Init();
-		newObj->SetPosition({ 900.0f, -520.0f, 100.0f });
+		newObj->SetPosition({ 900.0f, -520.0f, 300.0f });
 		newObj->SetScale({ 0.6f, 0.6f, 0.6f });
 		newObj->SetPlaced(true);
 		for (const auto& stage : stageManager_->GetStage())
@@ -695,6 +692,48 @@ void TutorialScene::Release(void)
 	}
 }
 
+void TutorialScene::Hint(void)
+{
+	const bool isEDown = InputManager::GetInstance()->IsTrgDown(KEY_INPUT_E)
+		|| InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::LEFT);
+
+	if (!isEDown) return;
+
+	// ヒントを閉じる
+	if (showHint_)
+	{
+		showHint_ = false;
+		hintHandle_ = -1;
+		return;
+	}
+
+	// ヒントの表示条件式にゃん
+	for (auto& obj : objects_)
+	{
+		if (!obj) continue;
+		if (obj->GetObjectType() != ObjectBase::OBJECT_TYPE::WBOX) continue;
+
+		// プレイヤーとの距離
+		bool isnear = false;
+		for (auto& p : players_)
+		{
+			const float dist = VSize(VSub(p.player_->GetTransform().pos, obj->GetTransform().pos));
+			if (dist < 60.0f)
+			{
+				isnear = true;
+				break;
+			}
+		}
+		if (!isnear) continue;
+
+		// ヒント表示
+		showHint_ = true;
+		hintWorldPos_ = obj->GetPos();
+		hintHandle_ = ResourceManager::GetInstance().Load(ResourceManager::SRC::HINTO).handleId_;
+		break;
+	}
+}
+
 void TutorialScene::TyutorialTEXT(void)
 {
 	// プレイヤー
@@ -748,8 +787,7 @@ void TutorialScene::TyutorialTEXT(void)
 	tutorial_.AddStep(
 		"あれ？宝箱があるけど、この世界では開けられないみたい…。\n開ける方法がどこかにあるのかも！\n探してみよう！",
 		[this]() -> bool {
-			Hint();
-			return false;
+			return showHint_;
 		},
 		nullptr,
 		ResourceManager::GetInstance().Load(ResourceManager::SRC::ENOGU4).handleId_
@@ -757,16 +795,9 @@ void TutorialScene::TyutorialTEXT(void)
 
 	// ステップ4: ボタン操作
 	tutorial_.AddStep(
-		"あっ！ヒントを見つけたね！\nボタンを押したら何か変わるかな。\n近づいて Fキー または パッドのBボタンで押してみよう！",
+		"あっ！ヒントを見つけたね！\nヒントに書いてあるボタンを押したら何か変わるかな。\n近づいて Fキー または パッドのBボタンで押してみよう！",
 		[this]() -> bool {
-
-			for (auto& obj : objects_) {
-				if (obj && obj->GetObjectType() == ObjectBase::OBJECT_TYPE::BUTTON) {
-					std::vector<ObjectBase*> dummyNewObjects;
-					std::vector<int> dummyRemoveIndices;
-					ButtonProcess(*obj, dummyNewObjects, dummyRemoveIndices);
-				}
-			}
+			return  butcount_;
 		},
 		nullptr,
 		ResourceManager::GetInstance().Load(ResourceManager::SRC::ENOGU5).handleId_
@@ -783,7 +814,7 @@ void TutorialScene::TyutorialTEXT(void)
 				{
 					const float dist = VSize(VSub(player.player_->GetTransform().pos, obj->GetTransform().pos));
 					// 距離判定とキー入力を正しくグループ化して評価する
-					if (dist < 180.0f &&
+					if (dist < 90.0f &&
 						(InputManager::GetInstance()->IsTrgDown(KEY_INPUT_E)
 							|| InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::LEFT)))
 					{
@@ -821,7 +852,7 @@ void TutorialScene::TyutorialTEXT(void)
 				}
 			}
 			return false;
-		},
+		},0..
 		nullptr,
 		ResourceManager::GetInstance().Load(ResourceManager::SRC::ENOGU7).handleId_
 	);
@@ -846,44 +877,3 @@ void TutorialScene::TyutorialTEXT(void)
 	);
 }
 
-void TutorialScene::Hint(void)
-{
-	const bool isEDown = InputManager::GetInstance()->IsTrgDown(KEY_INPUT_E)
-		|| InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::LEFT);
-
-	if (!isEDown) return;
-
-	// ヒントを閉じる
-	if (showHint_)
-	{
-		showHint_ = false;
-		hintHandle_ = -1;
-		return;
-	}
-
-	// ヒントの表示条件式にゃん
-	for (auto& obj : objects_)
-	{
-		if (!obj) continue;
-		if (obj->GetObjectType() != ObjectBase::OBJECT_TYPE::WBOX) continue;
-
-		// プレイヤーとの距離
-		bool isnear = false;
-		for (auto& p : players_)
-		{
-			const float dist = VSize(VSub(p.player_->GetTransform().pos, obj->GetTransform().pos));
-			if (dist < 90.0f)
-			{
-				isnear = true;
-				break;
-			}
-		}
-		if (!isnear) continue;
-
-		// ヒント表示
-		showHint_ = true;
-		hintWorldPos_ = obj->GetPos();
-		hintHandle_ = ResourceManager::GetInstance().Load(ResourceManager::SRC::HINTO).handleId_;
-		break;
-	}
-}
