@@ -130,17 +130,7 @@ void TutorialScene::Init(void)
 		//if (stageCollider == nullptr) DrawFormatString(100, 100, 0xffffff, "stageCollider is null\n");
 	}
 
-	// 踏むタイプのボタンのインデックスを収集
-	std::vector<size_t> pushButtonIndex;
-	for (size_t i = 0; i < objects_.size(); ++i)
-	{
-		if (objects_[i]->GetObjectType() == ObjectBase::OBJECT_TYPE::PRESS_BUTTON)
-		{
-			pushButtonIndex.push_back(i);
-		}
-	}
-
-	// 各オブジェクトの衝突コライダをプレイヤーに登録（重複チェック内包）
+	// 各オブジェクトの衝突コライダをプレイヤーに登録
 	for (size_t i = 0; i < objects_.size(); ++i)
 	{
 		auto* obj = objects_[i];
@@ -151,24 +141,12 @@ void TutorialScene::Init(void)
 		{
 			players_[p].player_->AddHitCollider(objCaps);
 		}
-
-		for (auto index : pushButtonIndex)
-		{
-			if (i != index)
-			{
-				objects_[index]->AddHitCollider(objCaps);
-			}
-		}
 	}
 
 	// プレイヤーのラインコライダをButtonに登録
 	for (auto& player : players_)
 	{
 		const ColliderBase* playerCollider = player.player_->GetOwnCollider(static_cast<int>(Player::COLLIDER_TYPE::LINE));
-		for (auto index : pushButtonIndex)
-		{
-			objects_[index]->AddHitCollider(playerCollider);
-		}
 	}
 
 	// 初期アクティブ状態（プレイヤー1）
@@ -387,7 +365,7 @@ void TutorialScene::Update(void)
 {
 	// チュートリアル更新
 	tutorial_.Update();
-	Hint();
+	//Hint();
 
 	// ヒント表示中はその他の更新を停止（ヒントは Hint() が開閉する）
 	if (showHint_)
@@ -768,10 +746,10 @@ void TutorialScene::TyutorialTEXT(void)
 	);
 
 	tutorial_.AddStep(
-		"あれ？宝箱があるけど、この世界では開けられないみたい…。\n開ける方法は向こう側の世界にあるのかも！\nもう一度プレイヤーを切り替えて確かめてみよう！",
-		[]() -> bool {
-			return InputManager::GetInstance()->IsTrgDown(KEY_INPUT_TAB)
-				|| InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::R_TRIGGER);
+		"あれ？宝箱があるけど、この世界では開けられないみたい…。\n開ける方法がどこかにあるのかも！\n探してみよう！",
+		[this]() -> bool {
+			Hint();
+			return false;
 		},
 		nullptr,
 		ResourceManager::GetInstance().Load(ResourceManager::SRC::ENOGU4).handleId_
@@ -779,13 +757,16 @@ void TutorialScene::TyutorialTEXT(void)
 
 	// ステップ4: ボタン操作
 	tutorial_.AddStep(
-		"あっ！ボタンを見つけたね！\n押したら何か変わるかもしれないよ。\n近づいて Spaceキー または パッドのBボタンで押してみよう！", [this]() -> bool {
-			for (auto& obj : objects_)
-			{
-				if (!obj) continue;
-				if (obj->GetType() == ObjectBase::OBJECT_TYPE::BUTTON && obj->isPushButtom()) return true;
+		"あっ！ヒントを見つけたね！\nボタンを押したら何か変わるかな。\n近づいて Fキー または パッドのBボタンで押してみよう！",
+		[this]() -> bool {
+
+			for (auto& obj : objects_) {
+				if (obj && obj->GetObjectType() == ObjectBase::OBJECT_TYPE::BUTTON) {
+					std::vector<ObjectBase*> dummyNewObjects;
+					std::vector<int> dummyRemoveIndices;
+					ButtonProcess(*obj, dummyNewObjects, dummyRemoveIndices);
+				}
 			}
-			return false;
 		},
 		nullptr,
 		ResourceManager::GetInstance().Load(ResourceManager::SRC::ENOGU5).handleId_

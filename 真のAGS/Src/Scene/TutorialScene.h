@@ -118,7 +118,7 @@ private:
 
 	// チュートリアル
 	//--------------------------------------------
-	Tutorial tutorial_; // 追加
+	Tutorial tutorial_; 
 	int moveStepe_ = 650; // 移動する距離
 	bool isEndTutorial_ = false;
 	VECTOR tempCameraRot_ = { 0,0,0 };
@@ -127,17 +127,17 @@ private:
 	bool placedSEPlayed_ = false;
 
 	// ボタンの正解パターン（右, 左, 左, 右, 左）
-	std::vector<SceneBase::WORLD> buttonRequiredPattern_{ SceneBase::WORLD::RIGHT, SceneBase::WORLD::LEFT, SceneBase::WORLD::LEFT, SceneBase::WORLD::RIGHT, SceneBase::WORLD::LEFT };
+	std::vector<SceneBase::WORLD> buttonRequiredPattern_{ SceneBase::WORLD::RIGHT, SceneBase::WORLD::LEFT, SceneBase::WORLD::LEFT, SceneBase::WORLD::LEFT, SceneBase::WORLD::RIGHT };
 
 	std::vector<SceneBase::WORLD> buttonPressHistory_;
-	int buttonPTarget_ = 1;
+	int buttonPTarget_ = 5;
 	int buttonPCount_ = 0;
 	// 現在進行
 	size_t buttonSP_ = 0;
 
 	// ヒント関連
-	bool showHint_ = false;                       // ヒントを表示中
-	VECTOR hintWorldPos_ = { 0.0f, 0.0f, 0.0f };   // ヒントを表示するワールド座標
+	bool showHint_ = false;                       // ヒント表示中
+	VECTOR hintWorldPos_ = { 0.0f, 0.0f, 0.0f };   // 表示するワールド座標
 	int hintHandle_ = -1;                         // 画像ハンドル
 
 };
