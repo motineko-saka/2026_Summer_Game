@@ -171,6 +171,12 @@ void TutorialScene::Init(void)
 		AudioManager::GetInstance()->LoadSceneSound(LoadScene::GAME_TUTORIAL);
 		AudioManager::GetInstance()->PlayBGM(SoundID::BGM_TUTORIAL);
 	}
+
+	EffekseerEffect::CreateInstance();
+	if (EffekseerEffect::GetInstance())
+	{
+		EffekseerEffect::GetInstance()->Init();
+	}
 }
 
 void TutorialScene::TutorialInit(void)
@@ -314,12 +320,20 @@ const void TutorialScene::ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*
 	{
 		buttonSP_++;
 
-		if (buttonSP_ >= buttonPTarget_)
+		if (buttonSP_ == buttonPTarget_)
 		{
 			newObjects.push_back(new ObjectBase(
 				SceneBase::WORLD::LEFT,
 				ANSWER_VECTOR_LENGTH[1],
 				ObjectBase::OBJECT_TYPE::OPENCHEST));
+
+			printfDx("Play Effect\n");
+			// エフェクトを再生
+			const VECTOR effectPos = { 900.0f, -520.0f, 300.0f };
+			if (EffekseerEffect::GetInstance())
+			{
+				EffekseerEffect::GetInstance()->PlayTutorialEffect(effectPos, 0.0f);
+			}
 
 			// AKEGオブジェクトのSetPlacedをfalseにする
 			for (auto* ao : objects_)
@@ -364,6 +378,13 @@ void TutorialScene::Update(void)
 {
 	// チュートリアル更新
 	tutorial_.Update();
+
+	// Effekseer更新
+	if (EffekseerEffect::GetInstance())
+	{
+		EffekseerEffect::GetInstance()->Update();
+	}
+
 	Hint();
 
 	// ヒント表示中は更新を停止
@@ -554,6 +575,10 @@ void TutorialScene::Draw(void)
 
 			obj->Draw();
 		}
+		if(EffekseerEffect::GetInstance())
+		{
+			EffekseerEffect::GetInstance()->Draw();
+		}
 	}
 
 	if (showHint_ && hintHandle_ != -1)
@@ -633,8 +658,6 @@ void TutorialScene::Draw(void)
 			object->IsAnswerPosition());
 		y += 40;
 	}
-
-
 
 	// アンサーポジションのオブジェクトの座標を表示
 	DrawFormatString(10, 240, GetColor(255, 255, 255), "Answer Position: (%.1f, %.1f, %.1f)",
@@ -852,7 +875,7 @@ void TutorialScene::TyutorialTEXT(void)
 				}
 			}
 			return false;
-		},0..
+		},
 		nullptr,
 		ResourceManager::GetInstance().Load(ResourceManager::SRC::ENOGU7).handleId_
 	);

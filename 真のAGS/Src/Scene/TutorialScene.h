@@ -127,7 +127,7 @@ private:
 	bool placedSEPlayed_ = false;
 
 	// ボタンの正解パターン（右, 左, 左, 右, 左）
-	std::vector<SceneBase::WORLD> buttonRequiredPattern_{ SceneBase::WORLD::RIGHT, SceneBase::WORLD::LEFT, SceneBase::WORLD::LEFT, SceneBase::WORLD::RIGHT, SceneBase::WORLD::RIGHT };
+	std::vector<SceneBase::WORLD> buttonRequiredPattern_{ SceneBase::WORLD::RIGHT, SceneBase::WORLD::RIGHT, SceneBase::WORLD::RIGHT, SceneBase::WORLD::RIGHT, SceneBase::WORLD::RIGHT };
 
 	std::vector<SceneBase::WORLD> buttonPressHistory_;
 	int buttonPTarget_ = 5;

@@ -76,7 +76,7 @@ void EffekseerEffect::Init(void)
     }
 
     tutorialEffectId_ = LoadEffekseerEffect(
-		(Application::PATH_EFFECT + "Blast.efkefc").c_str());
+		(Application::PATH_EFFECT + "nomotoaren.efkefc").c_str());
 
     if (tutorialEffectId_ == -1) {
 		MessageBoxA(NULL, "エフェクトの読み込みに失敗しました。パスやファイルを確認してください。", "エラー", MB_OK);
@@ -85,7 +85,7 @@ void EffekseerEffect::Init(void)
 
 void EffekseerEffect::Update(void)
 {
-   
+	UpdateEffekseer3D();
 }
 
 void EffekseerEffect::Draw(void)
@@ -100,7 +100,7 @@ void EffekseerEffect::Release(void)
 
 void EffekseerEffect::Delete(void)
 {
-    DeleteEffekseerEffect(playFinisyuHandle);
+    DeleteEffekseerEffect(playTutorialHandle);
 }
 
 void EffekseerEffect::PlayTutorialEffect(const VECTOR& pos, float rotY)
@@ -148,7 +148,7 @@ void EffekseerEffect::PlayComboEffect(const VECTOR& pos, float rotY)
 
     SetScalePlayingEffekseer3DEffect(
         playFinisyuHandle,
-        50.0f, 50.0f, 50.0f
+        5.0f, 5.0f, 5.0f
     );
 
     SetSpeedPlayingEffekseer3DEffect(

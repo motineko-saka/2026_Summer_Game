@@ -145,9 +145,9 @@ void Application::Run(void)
 		SceneManager::GetInstance()->Draw();
 
 		// Effekseer ‚Ì•`‰æiScene ‚Ì•`‰æŒã‚ÉŒÄ‚Ôj
-		if (EffekseerEffect::GetInstance()) {
-			EffekseerEffect::GetInstance()->Draw();
-		}
+		//if (EffekseerEffect::GetInstance()) {
+		//	EffekseerEffect::GetInstance()->Draw();
+		//}
 
 #ifdef _DEBUG
 		// •½‹ÏFPS•`‰æ
