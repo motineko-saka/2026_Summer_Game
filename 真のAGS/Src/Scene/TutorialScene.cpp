@@ -20,6 +20,7 @@
 #include "GameScene.h"
 #include "PauseScene.h"
 #include "TitleScene.h"
+#include "SceneTransition.h"
 #include "../Manager/EffekseerEffect.h"
 #include "../Audio/AudioManager.h"
 
@@ -34,11 +35,12 @@ TutorialScene::TutorialScene(void)
 	pinID_(-1),
 	SceneBase()
 {
+	sceneTransition_ = std::make_unique<SceneTransition>();
 }
 
 TutorialScene::~TutorialScene(void)
 {
-	// Release();
+	Release();
 }
 
 void TutorialScene::Init(void)
@@ -71,6 +73,7 @@ void TutorialScene::Init(void)
 
 		players_[i].camera_->SetFollow(&players_[i].player_->GetTransform());
 		players_[i].camera_->ChangeMode(Camera::MODE::FOLLOW);
+		players_[i].camera_->Update();
 
 		players_[i].isPlayerHitObject_ = false;
 	}
@@ -147,6 +150,7 @@ void TutorialScene::Init(void)
 	for (auto& player : players_)
 	{
 		const ColliderBase* playerCollider = player.player_->GetOwnCollider(static_cast<int>(Player::COLLIDER_TYPE::LINE));
+		(void)playerCollider;
 	}
 
 	// 初期アクティブ状態（プレイヤー1）
@@ -163,20 +167,24 @@ void TutorialScene::Init(void)
 
 	TutorialInit();
 
-	// オーディオマネージャーのインスタンスの生成
-	AudioManager::GetInstance()->CreateInstance();
-	// シーンのサウンドを読み込み、BGM を再生
-	if (AudioManager::GetInstance())
+	// オーディオマネージャーはアプリ側で管理している想定（Create/Delete は Application 側で行う）
+	// シーンのサウンドを読み込み、BGM を再生（必要なサウンドは事前ロードしておく）
+	if (auto am = AudioManager::GetInstance())
 	{
-		AudioManager::GetInstance()->LoadSceneSound(LoadScene::GAME_TUTORIAL);
-		AudioManager::GetInstance()->PlayBGM(SoundID::BGM_TUTORIAL);
+		am->LoadSceneSound(LoadScene::GAME_TUTORIAL);
+		am->LoadSceneSound(LoadScene::GAME);
+		am->PlayBGM(SoundID::BGM_TUTORIAL);
 	}
 
-	EffekseerEffect::CreateInstance();
-	if (EffekseerEffect::GetInstance())
-	{
-		EffekseerEffect::GetInstance()->Init();
-	}
+	// EffekseerEffect もアプリ側で生成済みの想定。初期化だけ行う。
+	//if (EffekseerEffect::GetInstance())
+	//{
+	//	EffekseerEffect::GetInstance()->Init();
+	//}
+
+	// デバック
+	ResourceManager::GetInstance().DebugDump();
+	OutputDebugStringA("TutorialScene::Init complete\n");
 }
 
 void TutorialScene::TutorialInit(void)
@@ -193,6 +201,21 @@ void TutorialScene::TutorialInit(void)
 
 void TutorialScene::Load(void)
 {
+	auto& rm = ResourceManager::GetInstance();
+	rm.Load(ResourceManager::SRC::ENOGU1);
+	rm.Load(ResourceManager::SRC::ENOGU2);
+	rm.Load(ResourceManager::SRC::ENOGU3);
+	rm.Load(ResourceManager::SRC::ENOGU4);
+	rm.Load(ResourceManager::SRC::ENOGU5);
+	rm.Load(ResourceManager::SRC::ENOGU6);
+	rm.Load(ResourceManager::SRC::ENOGU7);
+	rm.Load(ResourceManager::SRC::ENOGU8);
+	rm.Load(ResourceManager::SRC::HINTO);
+
+	rm.Load(ResourceManager::SRC::BARREL);
+	rm.Load(ResourceManager::SRC::Chest);
+	rm.Load(ResourceManager::SRC::OPENCHEST);
+	rm.Load(ResourceManager::SRC::BUTTON);
 }
 
 void TutorialScene::LoadEnd(void)
@@ -207,8 +230,10 @@ void TutorialScene::CheckCollisions(void)
 	std::vector<ObjectBase*> newObjects;  // 新規オブジェクト用
 	std::vector<int> removeIndices;       // 削除インデックス
 
-	for (auto& obj : objects_)
+	// オブジェクト走査をインデックスベースに変更
+	for (size_t i = 0; i < objects_.size(); ++i)
 	{
+		auto* obj = objects_[i];
 		if (!obj) continue;
 		const VECTOR objectPos = obj->GetTransform().pos;
 
@@ -217,6 +242,73 @@ void TutorialScene::CheckCollisions(void)
 		{
 			ButtonProcess(*obj, newObjects, removeIndices);
 			continue;
+		}
+
+		// OPENCHESTを生成する処理
+		if (obj->GetType() == ObjectBase::OBJECT_TYPE::CHEST)
+		{
+			// ボタンの正解が成立していなければチェストは開けない
+			if (!butcount_) continue;
+
+			const bool isE = InputManager::GetInstance()->IsTrgDown(KEY_INPUT_E);
+			const bool isPadLeft = InputManager::GetInstance()->IsPadBtnTrgDown(
+				InputManager::JOYPAD_NO::PAD1,
+				InputManager::JOYPAD_BTN::LEFT);
+
+			// 入力が無ければ次へ
+			if (!isE && !isPadLeft) continue;
+
+			// どちらかのプレイヤーが近いか確認
+			bool isNearPlayer = false;
+			for (auto& p : players_)
+			{
+				const float dist = VSize(VSub(p.player_->GetTransform().pos, objectPos));
+				if (dist < INTERACT_DISTANCE)
+				{
+					isNearPlayer = true;
+					break;
+				}
+			}
+			if (!isNearPlayer) continue;
+
+			// OPENCHESTを生成
+			newObjects.push_back(new ObjectBase(
+				SceneBase::WORLD::LEFT,
+				ANSWER_VECTOR_LENGTH[1],
+				ObjectBase::OBJECT_TYPE::OPENCHEST));
+
+			// エフェクト
+			const VECTOR effectPos = { 900.0f, -520.0f, 300.0f };
+			if (EffekseerEffect::GetInstance())
+			{
+				EffekseerEffect::GetInstance()->PlayTutorialEffect(effectPos, 0.0f);
+			}
+
+			// AKEG を再度操作可能にする
+			for (auto* ao : objects_)
+			{
+				if (ao && ao->GetObjectType() == ObjectBase::OBJECT_TYPE::AKEG)
+				{
+					ao->SetPlaced(false);
+					break;
+				}
+			}
+
+			// CHESTを削除対象
+			removeIndices.push_back(static_cast<int>(i));
+
+			// 生成後はフラグをリセット
+			butcount_ = false;
+
+			// ボタン関連の進行リセット
+			buttonSP_ = 0;
+			buttonPCount_ = 0;
+
+			if (auto am = AudioManager::GetInstance())
+			{
+				am->PlaySE(SoundID::SE_SUCCESS);
+			}
+			TbutonCount_ = true;
 		}
 	}
 
@@ -230,6 +322,7 @@ void TutorialScene::CheckCollisions(void)
 		{
 			if (idx >= 0 && idx < static_cast<int>(objects_.size()))
 			{
+				// オブジェクトを先に破棄してから vector から削除する
 				if (objects_[idx])
 				{
 					const auto& ownCols = objects_[idx]->GetOwnColliders();
@@ -251,7 +344,12 @@ void TutorialScene::CheckCollisions(void)
 							otherObj->RemoveHitCollider(col);
 						}
 					}
+
+					// オブジェクト自身を delete（メモリ解放）
+					delete objects_[idx];
 				}
+
+				// vector から削除
 				objects_.erase(objects_.begin() + idx);
 			}
 		}
@@ -270,101 +368,40 @@ const void TutorialScene::ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*
 		InputManager::JOYPAD_BTN::RIGHT);
 
 	// 入力がなければ終了
-	if (!isPush && !isPadPush)
-	{
-		return;
-	}
+	if (!isPush && !isPadPush) return;
 
-	// 押したプレイヤー
-	int playerNo = 0;
-
-	if (isPadPush)
-	{
-		playerNo = 0;
-	}
-	else
-	{
-		if (activePlayer_ == Player::PLAYER_NO::PLAYER1)
-		{
-			playerNo = 0;
-		}
-		else
-		{
-			playerNo = 1;
-		}
-	}
+	// 押したプレイヤー（パッドは常にプレイヤー1扱い）
+	int playerNo = (isPadPush || activePlayer_ == Player::PLAYER_NO::PLAYER1) ? 0 : 1;
 
 	// ボタンとの距離チェック
-	const float distance = VSize(VSub(
-		players_[playerNo].player_->GetTransform().pos,
-		objectPos));
-
-	if (distance >= 180.0f)
-	{
-		return;
-	}
+	const float distance = VSize(VSub(players_[playerNo].player_->GetTransform().pos, objectPos));
+	if (distance >= 180.0f) return;
 
 	// ボタンを押した
 	obj.SetButtomPushed(true);
 
 	SceneBase::WORLD pressed = obj.GetWorld();
 
-	if (buttonPTarget_ <= 0 ||
-		buttonPTarget_ != static_cast<int>(buttonRequiredPattern_.size()))
-	{
+	if (buttonPTarget_ <= 0 || buttonPTarget_ != static_cast<int>(buttonRequiredPattern_.size()))
 		buttonPTarget_ = static_cast<int>(buttonRequiredPattern_.size());
-	}
 
-	if (buttonSP_ < buttonRequiredPattern_.size() &&
-		pressed == buttonRequiredPattern_[buttonSP_])
+	if (buttonSP_ < buttonRequiredPattern_.size() && pressed == buttonRequiredPattern_[buttonSP_])
 	{
 		buttonSP_++;
-
 		if (buttonSP_ == buttonPTarget_)
 		{
-			newObjects.push_back(new ObjectBase(
-				SceneBase::WORLD::LEFT,
-				ANSWER_VECTOR_LENGTH[1],
-				ObjectBase::OBJECT_TYPE::OPENCHEST));
-
-			printfDx("Play Effect\n");
-			// エフェクトを再生
-			const VECTOR effectPos = { 900.0f, -520.0f, 300.0f };
-			if (EffekseerEffect::GetInstance())
-			{
-				EffekseerEffect::GetInstance()->PlayTutorialEffect(effectPos, 0.0f);
-			}
-
-			// AKEGオブジェクトのSetPlacedをfalseにする
-			for (auto* ao : objects_)
-			{
-				if (ao && ao->GetObjectType() == ObjectBase::OBJECT_TYPE::AKEG)
-				{
-					ao->SetPlaced(false);
-					break;
-				}
-			}
-
-			for (size_t i = 0; i < objects_.size(); i++)
-			{
-				if (objects_[i] &&
-					objects_[i]->GetObjectType() == ObjectBase::OBJECT_TYPE::CHEST)
-				{
-					removeIndices.push_back(static_cast<int>(i));
-					break;
-				}
-			}
-
+			// 正解は記録するが、ここでは OPENCHEST を生成しない（チェスト近接で E 押下時に生成）
 			buttonSP_ = 0;
 			buttonPCount_ = 0;
 
-			if (AudioManager::GetInstance())
-			{
-				AudioManager::GetInstance()->LoadSceneSound(LoadScene::GAME);
-				AudioManager::GetInstance()->PlaySE(SoundID::SE_SUCCESS);
-			}
+			// 正解フラグ
 			butcount_ = true;
 
+			// 成功音のみ再生
+			if (auto am = AudioManager::GetInstance())
+			{
+				am->PlaySE(SoundID::SE_SUCCESS);
+			}
 		}
 	}
 	else
@@ -397,21 +434,27 @@ void TutorialScene::Update(void)
 	// チュートリアル完了でクリアへ遷移
 	if (isEndTutorial_)
 	{
-		// 先にオーディオを停止／削除してからシーン切替
-		if (AudioManager::GetInstance())
-		{
-			AudioManager::GetInstance()->StopBGM();
-			AudioManager::GetInstance()->DeleteSceneSound(LoadScene::GAME_TUTORIAL);
-		}
+		isEndTutorial_ = false;
 
-		SceneManager::GetInstance()->ChangeScene(std::make_shared<TitleScene>());
+		// 先にオーディオを停止／削除してからシーン切替
+		if (auto am = AudioManager::GetInstance())
+		{
+			am->StopBGM();
+			am->DeleteSceneSound(LoadScene::GAME_TUTORIAL);
+		}
+		SceneManager::GetInstance()->ChangeSceneTransition(
+			std::make_shared<GameScene>());
+
 		return;
 	}
 
 	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_P))
 	{
-		AudioManager::GetInstance()->StopBGM();
-		AudioManager::GetInstance()->DeleteSceneSound(LoadScene::GAME_TUTORIAL);
+		if (auto am = AudioManager::GetInstance())
+		{
+			am->StopBGM();
+			am->DeleteSceneSound(LoadScene::GAME_TUTORIAL);
+		}
 
 		SceneManager::GetInstance()->ChangeScene(std::make_shared<TitleScene>());
 		return;
@@ -499,10 +542,14 @@ const void TutorialScene::MakeNewObject(std::vector<ObjectBase*>& newObjects)
 {
 	for (auto& newObj : newObjects)
 	{
+		if (!newObj) continue;
+
 		newObj->Init();
 		newObj->SetPosition({ 900.0f, -520.0f, 300.0f });
 		newObj->SetScale({ 0.6f, 0.6f, 0.6f });
 		newObj->SetPlaced(true);
+
+		// ステージコライダを追加
 		for (const auto& stage : stageManager_->GetStage())
 		{
 			const ColliderBase* stageCollider = stage->GetOwnCollider(static_cast<int>(Stage::COLLIDER_TYPE::MODEL));
@@ -510,8 +557,14 @@ const void TutorialScene::MakeNewObject(std::vector<ObjectBase*>& newObjects)
 		}
 
 		const ColliderBase* objCaps = newObj->GetOwnCollider(static_cast<int>(ObjectBase::COLLIDER_TYPE::CAPSULE));
-		if (!objCaps) return;
+		if (!objCaps)
+		{
+			// コライダが無ければこのオブジェクトは使えないため確実に破棄して続行（リーク防止）
+			delete newObj;
+			continue;
+		}
 
+		// プレイヤーにコライダ登録
 		for (auto& player : players_) player.player_->AddHitCollider(objCaps);
 
 		objects_.push_back(newObj);
@@ -560,8 +613,6 @@ void TutorialScene::Draw(void)
 			pinID_ = -1;
 		}
 
-		//wall_->Draw();
-
 		// 全オブジェクトを順に描画
 		for (auto& obj : objects_)
 		{
@@ -575,10 +626,62 @@ void TutorialScene::Draw(void)
 
 			obj->Draw();
 		}
-		if(EffekseerEffect::GetInstance())
+
+		// インタラクト文字表示
+		for (auto& obj : objects_)
 		{
-			EffekseerEffect::GetInstance()->Draw();
+			if (!obj) continue;
+			// 既に掴んでいる物は表示しない
+			if (obj->IsGrabbed()) continue;
+			if (CheckCameraViewClip(obj->GetPos())) continue;
+
+			// 対象とするオブジェクト種類
+			const auto t = obj->GetObjectType();
+			if (t != ObjectBase::OBJECT_TYPE::AKEG &&
+				t != ObjectBase::OBJECT_TYPE::CHEST &&
+				t != ObjectBase::OBJECT_TYPE::WBOX &&
+				t != ObjectBase::OBJECT_TYPE::BUTTON)
+				continue;
+
+			// プレイヤーとの距離
+			const float dist = VSize(VSub(players_[i].player_->GetTransform().pos, obj->GetTransform().pos));
+			if (dist > INTERACT_DISTANCE) continue;
+
+			// オブジェクト種類
+			std::string label;
+			switch (obj->GetObjectType())
+			{
+			case ObjectBase::OBJECT_TYPE::AKEG:
+				label = "Eで持つ";
+				break;
+			case ObjectBase::OBJECT_TYPE::BUTTON:
+				label = "Fで押す";
+				break;
+			case ObjectBase::OBJECT_TYPE::CHEST:
+				label = "Eで開ける";
+				break;
+			case ObjectBase::OBJECT_TYPE::WBOX:
+				label = "Eで開く、閉じる";
+				break;
+			default:
+				break;
+			}
+
+			// ワールド座標をスクリーンへ変換して描画
+			VECTOR screenPos = ConvWorldPosToScreenPos(obj->GetPos());
+			const int textW = GetDrawStringWidth(label.c_str(), static_cast<int>(label.length()));
+			const int drawX = static_cast<int>(screenPos.x) - (textW / 2);
+			const int drawY = static_cast<int>(screenPos.y) - 80; // 表示オフセット調整
+
+			// 背景ボックス（半透明黒）
+			const int pad = 6;
+			SetDrawBlendMode(DX_BLENDMODE_ALPHA, 200);
+			DrawBox(drawX - pad, drawY - pad, drawX + textW + pad, drawY + 18 + pad, GetColor(0, 0, 0), TRUE);
+			DrawFormatString(drawX, drawY, GetColor(255, 255, 255), label.c_str());
+			SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 		}
+
+		if (EffekseerEffect::GetInstance()) EffekseerEffect::GetInstance()->Draw();
 	}
 
 	if (showHint_ && hintHandle_ != -1)
@@ -586,7 +689,7 @@ void TutorialScene::Draw(void)
 		VECTOR screenPos = ConvWorldPosToScreenPos(hintWorldPos_);
 		int w = 0, h = 0;
 		GetGraphSize(hintHandle_, &w, &h);
-		// オブジェクト上に表示する（少し上にオフセット）
+		// オブジェクト上に表示する
 		const int drawX1 = static_cast<int>(screenPos.x) - (w / 2);
 		const int drawY1 = static_cast<int>(screenPos.y) - h - 20;
 		const int drawX2 = drawX1 + w;
@@ -684,8 +787,9 @@ void TutorialScene::DrawNamePlate(std::string str, VECTOR pos)
 
 void TutorialScene::Release(void)
 {
-	// オーディオマネージャーのインスタンスの削除
-	AudioManager::GetInstance()->DeleteInstance();
+	// デバック
+	OutputDebugStringA("TutorialScene::Release start\n");
+	ResourceManager::GetInstance().DebugDump();
 
 	// 複製したモデルが残っていれば削除
 	if (pinID_ != -1)
@@ -820,7 +924,7 @@ void TutorialScene::TyutorialTEXT(void)
 	tutorial_.AddStep(
 		"あっ！ヒントを見つけたね！\nヒントに書いてあるボタンを押したら何か変わるかな。\n近づいて Fキー または パッドのBボタンで押してみよう！",
 		[this]() -> bool {
-			return  butcount_;
+			return  TbutonCount_;
 		},
 		nullptr,
 		ResourceManager::GetInstance().Load(ResourceManager::SRC::ENOGU5).handleId_
@@ -864,10 +968,9 @@ void TutorialScene::TyutorialTEXT(void)
 					// 位置に置かれた瞬間
 					if (!placedSEPlayed_)
 					{
-						if (AudioManager::GetInstance())
+						if (auto am = AudioManager::GetInstance())
 						{
-							AudioManager::GetInstance()->LoadSceneSound(LoadScene::GAME);
-							AudioManager::GetInstance()->PlaySE(SoundID::SE_SUCCESS);
+							am->PlaySE(SoundID::SE_SUCCESS);
 						}
 						placedSEPlayed_ = true;
 					}
@@ -899,4 +1002,3 @@ void TutorialScene::TyutorialTEXT(void)
 		ResourceManager::GetInstance().Load(ResourceManager::SRC::ENOGU8).handleId_
 	);
 }
-

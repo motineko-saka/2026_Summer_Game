@@ -73,7 +73,7 @@ public:
 
 	// リソースの複製ロード(モデル用)
 	int LoadModelDuplicate(SRC src);
-
+	void DebugDump() const;
 private:
 
 	// 静的インスタンス

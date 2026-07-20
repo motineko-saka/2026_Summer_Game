@@ -211,37 +211,49 @@ void Player::ProcessMove(void)
 
 	movePow_ = AsoUtility::VECTOR_ZERO;
 
-	// ゲームパッドが接続されているかで処理を分ける
-	if (GetJoypadNum() == 0)
+	// キーボード
+	if (InputManager::GetInstance()->IsNew(KEY_INPUT_W))
 	{
-		// WASD で移動処理
-		if (InputManager::GetInstance()->IsNew(KEY_INPUT_W)) { dir = AsoUtility::DIR_F; }
-		if (InputManager::GetInstance()->IsNew(KEY_INPUT_A)) { dir = AsoUtility::DIR_L; }
-		if (InputManager::GetInstance()->IsNew(KEY_INPUT_S)) { dir = AsoUtility::DIR_B; }
-		if (InputManager::GetInstance()->IsNew(KEY_INPUT_D)) { dir = AsoUtility::DIR_R; }
-
-		if (InputManager::GetInstance()->IsNew(KEY_INPUT_W) && InputManager::GetInstance()->IsNew(KEY_INPUT_A)) { dir = AsoUtility::DIR_FL; }
-		if (InputManager::GetInstance()->IsNew(KEY_INPUT_W) && InputManager::GetInstance()->IsNew(KEY_INPUT_D)) { dir = AsoUtility::DIR_FR; }
-		if (InputManager::GetInstance()->IsNew(KEY_INPUT_S) && InputManager::GetInstance()->IsNew(KEY_INPUT_A)) { dir = AsoUtility::DIR_BL; }
-		if (InputManager::GetInstance()->IsNew(KEY_INPUT_S) && InputManager::GetInstance()->IsNew(KEY_INPUT_D)) { dir = AsoUtility::DIR_BR; }
-
-	//if (InputManager::GetInstance()->IsNew(KEY_INPUT_LSHIFT)) { isDash = true; }
+		dir = VAdd(dir, AsoUtility::DIR_F);
 	}
-	else
-	{
-		// 接続しているゲームパッド1の情報取得（既存の構成に合わせる）
-		InputManager::JOYPAD_IN_STATE padState =
-			InputManager::GetInstance()->GetJPadInputState(InputManager::JOYPAD_NO::PAD1);
 
-		// アナログキーの入力値を正規化して取得
-		dir = InputManager::GetInstance()->GetDirectionXZAKey(padState.AKeyLX, padState.AKeyLY);
+	if (InputManager::GetInstance()->IsNew(KEY_INPUT_S))
+	{
+		dir = VAdd(dir, AsoUtility::DIR_B);
+	}
+
+	if (InputManager::GetInstance()->IsNew(KEY_INPUT_A))
+	{
+		dir = VAdd(dir, AsoUtility::DIR_L);
+	}
+
+	if (InputManager::GetInstance()->IsNew(KEY_INPUT_D))
+	{
+		dir = VAdd(dir, AsoUtility::DIR_R);
+	}
+
+	// 接続しているゲームパッド1の情報取得
+	InputManager::JOYPAD_IN_STATE padState =
+		InputManager::GetInstance()->GetJPadInputState(InputManager::JOYPAD_NO::PAD1);
+
+	// アナログキーの入力値を正規化して取得
+	VECTOR padDir =
+		InputManager::GetInstance()->GetDirectionXZAKey(
+			padState.AKeyLX,
+			padState.AKeyLY);
+
+	dir = VAdd(dir, padDir);
+
+	if (!AsoUtility::EqualsVZero(dir))
+	{
+		dir = VNorm(dir);
+	}
 
 		//if (InputManager::GetInstance()->IsPadBtnNew(InputManager::JOYPAD_NO::PAD1,
 		//	InputManager::JOYPAD_BTN::R_TRIGGER))
 		//{
 		//	isDash = true;
 		//}
-	}
 
 	if (!AsoUtility::EqualsVZero(dir))
 	{

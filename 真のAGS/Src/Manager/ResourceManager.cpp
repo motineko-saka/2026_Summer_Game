@@ -2,6 +2,8 @@
 #include "../Application.h"
 #include "Resource.h"
 #include "ResourceManager.h"
+#include <sstream>
+#include <Windows.h>
 
 ResourceManager* ResourceManager::instance_ = nullptr;
 
@@ -241,6 +243,29 @@ int ResourceManager::LoadModelDuplicate(SRC src)
 
 ResourceManager::ResourceManager(void)
 {
+}
+
+// デバッグ用のリソースマネージャの状態を出力する
+void ResourceManager::DebugDump() const
+{
+	std::ostringstream oss;
+	oss << "ResourceManager Dump: resourcesMap_=" << resourcesMap_.size()
+		<< " loadedMap_=" << loadedMap_.size() << "\n";
+
+	for (const auto& p : resourcesMap_)
+	{
+		const auto src = static_cast<int>(p.first);
+		const Resource* r = p.second;
+		oss << " SRC=" << src
+			<< " path=" << r->path_
+			<< " type=" << static_cast<int>(r->type_)
+			<< " handle=" << r->handleId_
+			<< " dupCount=" << r->duplicateModelIds_.size()
+			<< "\n";
+	}
+
+	std::string s = oss.str();
+	OutputDebugStringA(s.c_str());
 }
 
 Resource& ResourceManager::_Load(SRC src)

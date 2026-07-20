@@ -48,6 +48,9 @@ public:
 
 private:
 
+	// カメラ
+	Camera* camera_;
+
 	// プレイヤーの数
 	static constexpr int PLAYER_NUM = 2;
 

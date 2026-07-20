@@ -61,21 +61,29 @@ void GameScene::Init(void)
 
 	players_.resize(PLAYER_NUM);
 
-	for (int i = 0; i < players_.size(); i++)
+	// グローバルカメラ
+	camera_ = new Camera();
+	camera_->Init();
+
+	// プレイヤー＆カメラ生成
+	for (size_t i = 0; i < players_.size(); ++i)
 	{
 		players_[i].camera_ = std::make_unique<Camera>();
 		players_[i].camera_->Init();
 
-		// プレイヤー番号を設定
 		Player::PLAYER_NO pno = (i == 0) ? Player::PLAYER_NO::PLAYER1 : Player::PLAYER_NO::PLAYER2;
-		players_[i].player_ = std::make_unique<Player>(pno, *players_[i].camera_, true);
+		players_[i].player_ = std::make_unique<Player>(pno, *players_[i].camera_);
 		players_[i].player_->Init();
 
 		players_[i].camera_->SetFollow(&players_[i].player_->GetTransform());
 		players_[i].camera_->ChangeMode(Camera::MODE::FOLLOW);
+		players_[i].camera_->Update();
 
 		players_[i].isPlayerHitObject_ = false;
 	}
+
+	players_[0].camera_->SetMouseCenter(screenWidth_ / 4, screenHeight_ / 2);
+	players_[1].camera_->SetMouseCenter(screenWidth_ * 3 / 4, screenHeight_ / 2);
 
 	// ステージ
 	stageManager_ = std::make_unique<StageManager>(SceneManager::SCENE::MAIN);

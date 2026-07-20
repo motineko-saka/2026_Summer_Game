@@ -8,6 +8,7 @@
 #include "../Scene/TutorialScene.h"
 #include "../Scene/GameScene.h"
 #include "../Manager/Camera.h"
+#include "../Scene/SceneTransition.h"
 
 SceneManager* SceneManager::instance_ = nullptr;
 
@@ -44,6 +45,8 @@ void SceneManager::Init(void)
 
 	// デルタタイム
 	preTime_ = std::chrono::system_clock::now();
+
+	sceneTransition_ = std::make_unique<SceneTransition>();
 }
 
 
@@ -58,6 +61,28 @@ void SceneManager::Update(void)
 	// シーンがなければ終了
 	if (scenes_.empty())
 		return;
+
+	if (isTransition_)
+	{
+		sceneTransition_->Update();
+
+		if (!sceneTransition_->IsPlay())
+		{
+			if (sceneTransition_->GetState() == SceneTransition::STATE::CLOSE)
+			{
+				// シーン変更
+				ChangeScene(nextScene_);
+
+				// 開く演出
+				sceneTransition_->Open();
+			}
+			else if (sceneTransition_->GetState() == SceneTransition::STATE::OPEN)
+			{
+				isTransition_ = false;
+			}
+		}
+		return;
+	}
 
 	// ロード中
 	if (Loading::GetInstance()->IsLoading())
@@ -104,6 +129,11 @@ void SceneManager::Draw(void)
 		}
 	}
 	
+	if (isTransition_)
+	{
+		sceneTransition_->Draw();
+	}
+
 	//// 背面スクリーンにメインスクリーンを描画
 	//SetDrawScreen(DX_SCREEN_BACK);
 	//DrawGraph(0, 0, mainScreen_, true);
@@ -188,4 +218,16 @@ void SceneManager::ResetDeltaTime(void)
 {
 	deltaTime_ = 0.016f;
 	preTime_ = std::chrono::system_clock::now();
+}
+
+void SceneManager::ChangeSceneTransition(std::shared_ptr<SceneBase> scene)
+{
+	if (isTransition_)
+		return;
+
+	nextScene_ = scene;
+
+	isTransition_ = true;
+
+	sceneTransition_->Start();
 }

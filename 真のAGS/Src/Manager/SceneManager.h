@@ -6,6 +6,7 @@
 
 class SceneBase;
 class Fader;
+class SceneTransition;
 
 class SceneManager
 {
@@ -71,10 +72,18 @@ public:
 
 	int GetMainScreen(void) const;
 
+	void ChangeSceneTransition(std::shared_ptr<SceneBase> scene);
+
 private:
 
 	// 静的インスタンス
 	static SceneManager* instance_;
+
+	std::unique_ptr<SceneTransition> sceneTransition_;
+
+	std::shared_ptr<SceneBase> nextScene_;
+
+	bool isTransition_ = false;
 
 	//Drawの関係上Backを最新のシーンとする
 	//基本的には要素は一つだけだがポーズシーンなどが積み重なる形

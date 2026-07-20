@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Src\Scene\SceneTransition.cpp" />
     <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Gate.cpp" />
     <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Bomb.cpp" />
     <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Object.cpp" />
@@ -77,6 +78,7 @@
     <ClCompile Include="Src\UI\Tutorial.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Src\Scene\SceneTransition.h" />
     <ClInclude Include="Src\Object\Actor\Charactor\GameObject\Gate.h" />
     <ClInclude Include="Src\Object\Actor\Charactor\GameObject\Bomb.h" />
     <ClInclude Include="Src\Object\Actor\Charactor\GameObject\Object.h" />

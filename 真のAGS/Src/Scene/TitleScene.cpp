@@ -62,10 +62,10 @@ void TitleScene::LoadEnd(void)
 void TitleScene::Update(void)
 {
 	// ƒ|[ƒY‰æ–Ê‚É‘JˆÚ
-	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_ESCAPE))
-	{
-		SceneManager::GetInstance()->PushScene(std::make_shared<PauseScene>());
-	}
+	//if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_ESCAPE))
+	//{
+	//	SceneManager::GetInstance()->PushScene(std::make_shared<PauseScene>());
+	//}
 
 	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_Q))
 	{
@@ -133,17 +133,19 @@ void TitleScene::Update(void)
 	{
 		switch (uiSelect_)
 		{
-		case 0: // Start
-			SceneManager::GetInstance()->ChangeScene(std::make_shared<GameScene>());
-			break;
-		case 1: // Tutorial
-			SceneManager::GetInstance()->ChangeScene(std::make_shared<TutorialScene>());
-			break;
-		case 2: // Exit
+		case 0:
+			SceneManager::GetInstance()->ChangeSceneTransition(
+				std::make_shared<GameScene>());
+			return;
+
+		case 1:
+			SceneManager::GetInstance()->ChangeSceneTransition(
+				std::make_shared<TutorialScene>());
+			return;
+
+		case 2:
 			PostQuitMessage(0);
-			break;
-		default:
-			break;
+			return;
 		}
 	}
 }
