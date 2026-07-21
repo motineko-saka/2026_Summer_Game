@@ -13,6 +13,7 @@ SceneTransition::SceneTransition()
 SceneTransition::~SceneTransition()
 {
 }
+
 void SceneTransition::Start()
 {
     timer_ = 0;

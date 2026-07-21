@@ -104,7 +104,7 @@ void TutorialScene::Init(void)
 		o->SetScale(scl);
 		if (placed) o->SetPlaced(true);
 		objects_.push_back(o);
-		};
+	};
 
 	// ボタンを左右両方に配置
 	pushObject(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::BUTTON, { -700.0f, -520.0f, 100.0f }, { 0.5f, 0.5f, 0.5f }, true);
@@ -130,7 +130,6 @@ void TutorialScene::Init(void)
 		{
 			obj->AddHitCollider(stageCollider);
 		}
-		//if (stageCollider == nullptr) DrawFormatString(100, 100, 0xffffff, "stageCollider is null\n");
 	}
 
 	// 各オブジェクトの衝突コライダをプレイヤーに登録
@@ -167,21 +166,14 @@ void TutorialScene::Init(void)
 
 	TutorialInit();
 
-	// オーディオマネージャーはアプリ側で管理している想定（Create/Delete は Application 側で行う）
-	// シーンのサウンドを読み込み、BGM を再生（必要なサウンドは事前ロードしておく）
+	// オーディオマネージャーはアプリ側で管理している想定
+	// シーンのサウンドを読み込み、BGM を再生
 	if (auto am = AudioManager::GetInstance())
 	{
 		am->LoadSceneSound(LoadScene::GAME_TUTORIAL);
 		am->LoadSceneSound(LoadScene::GAME);
 		am->PlayBGM(SoundID::BGM_TUTORIAL);
 	}
-
-	// EffekseerEffect もアプリ側で生成済みの想定。初期化だけ行う。
-	//if (EffekseerEffect::GetInstance())
-	//{
-	//	EffekseerEffect::GetInstance()->Init();
-	//}
-
 	// デバック
 	ResourceManager::GetInstance().DebugDump();
 	OutputDebugStringA("TutorialScene::Init complete\n");
@@ -390,7 +382,7 @@ const void TutorialScene::ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*
 		buttonSP_++;
 		if (buttonSP_ == buttonPTarget_)
 		{
-			// 正解は記録するが、ここでは OPENCHEST を生成しない（チェスト近接で E 押下時に生成）
+			// 正解を記録
 			buttonSP_ = 0;
 			buttonPCount_ = 0;
 
@@ -531,10 +523,6 @@ void TutorialScene::AnswerChack(void)
 	if (isAnswer && isEndTutorial_)
 	{
 		endTimer_ += SceneManager::GetInstance()->GetDeltaTime();
-	}
-
-	if (endTimer_ > END_TIME)
-	{
 	}
 }
 
