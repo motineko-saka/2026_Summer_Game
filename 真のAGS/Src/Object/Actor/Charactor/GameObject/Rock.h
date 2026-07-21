@@ -6,7 +6,11 @@ class Rock : public ObjectBase
 public:
 	Rock(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type);
 
+	bool GetIsRockExist(void) { return isRockExist_; }
+
 private:
+
+	void Draw() override;
 	// リソースロード
 	void InitLoad(void)override;
 
@@ -17,4 +21,6 @@ private:
 	void InitPost(void)override;
 
 	void ObjectUpdateProcess(void)override;
+
+	bool isRockExist_ = true;
 };

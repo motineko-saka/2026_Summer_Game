@@ -58,6 +58,7 @@ void GameScene::Init(void)
 
 	isPause_ = false;
 	isClear_ = false;
+	isBreak_ = false;
 
 	lightPillar_ = std::make_unique<LightPillar>();
 
@@ -123,10 +124,14 @@ void GameScene::Init(void)
 	
 	//PushObject<Rock>(GameScene::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::DEFAULT, { 1300.0f, -320.0f, 500.0f }, AsoUtility::VECTOR_ONE);
 
-	objects_.push_back(std::make_unique<Gaer>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::GEAR, *objects_[4]));
+	objects_.push_back(std::make_unique<Gaer>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::GEAR));
 	objects_.back()->Init();
-	objects_.back()->SetPosition({ -600.0f, 100.0f, 0.0f });
+	objects_.back()->SetPosition({ -600.0f, -620.0f, 0.0f });
 	objects_.back()->SetScale(AsoUtility::VECTOR_ONE);
+
+	PushObject<Object>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::GEAR_OBJECT, 
+		{ -600.0f, -620.0f, 0.0f }, AsoUtility::VECTOR_ONE);
+
 
 	//objects_.push_back(std::make_unique<Gaer>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::GEAR, objects_[4]));
 	//objects_.back()->Init();
@@ -152,6 +157,29 @@ void GameScene::Init(void)
 	//objects_.back()->Init();
 	//objects_.back()->SetPosition({ 1300.0f, -320.0f, 500.0f });
 	//objects_.back()->SetScale(AsoUtility::VECTOR_ONE);
+
+	for (const auto& obj : objects_)
+	{
+		if (obj->GetType() != ObjectBase::OBJECT_TYPE::GEAR) continue;
+
+		 Gaer* gaer = dynamic_cast<Gaer*>(obj.get());
+
+		if (gaer == nullptr)
+			continue;
+
+		int gaerObjectNumber = -1;
+
+		for (int i = 0; i < objects_.size(); i++)
+		{
+			if (objects_[i]->GetObjectType() == ObjectBase::OBJECT_TYPE::GEAR_OBJECT)
+			{
+				gaerObjectNumber = i;
+				break;
+			}
+		}
+
+		gaer->AddObject(objects_[gaerObjectNumber].get());
+	}
 
 
 #pragma region コライダ登録
@@ -517,20 +545,25 @@ void GameScene::Update(void)
 		if (obj) obj->Update();
 	}
 
-	// 削除対象のオブジェクトを配列から削除
-	for (auto it = objects_.begin(); it != objects_.end(); )
+	if(!isBreak_)
 	{
-		if ((*it)->GetObjectType() == ObjectBase::OBJECT_TYPE::ROCK && !(*it)->GetIsRockExist())
+		for (const auto& obj : objects_)
 		{
-			it = objects_.erase(it);
-			for (auto& player : players_)
+			if (obj->GetType() != ObjectBase::OBJECT_TYPE::ROCK) continue;
+
+			Rock* rock = dynamic_cast<Rock*>(obj.get());
+
+			if (rock == nullptr)
+				continue;
+
+			if (!rock->GetIsRockExist())
 			{
-				player.player_->HitColliderErase(2);
+				for (auto& player : players_)
+				{
+					player.player_->HitColliderErase(2);
+					isBreak_ = true;
+				}
 			}
-		}
-		else
-		{
-			++it;
 		}
 	}
 

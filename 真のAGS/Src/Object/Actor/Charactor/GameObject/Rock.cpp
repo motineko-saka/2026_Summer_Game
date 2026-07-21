@@ -12,6 +12,14 @@ Rock::Rock(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type)
 {
 }
 
+void Rock::Draw()
+{
+	if(isRockExist_)
+	{
+		ActorBase::Draw();
+	}
+}
+
 void Rock::InitLoad(void)
 {
 	transform_.SetModel(ResourceManager::GetInstance().LoadModelDuplicate(ResourceManager::SRC::ROCK));

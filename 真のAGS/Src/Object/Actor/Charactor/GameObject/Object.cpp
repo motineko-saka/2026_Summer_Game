@@ -22,6 +22,9 @@ void Object::InitLoad(void)
 	case OBJECT_TYPE::AKEG:
 		transform_.SetModel(ResourceManager::GetInstance().LoadModelDuplicate(ResourceManager::SRC::BARREL));
 		break;
+	case OBJECT_TYPE::GEAR_OBJECT:
+		transform_.SetModel(ResourceManager::GetInstance().LoadModelDuplicate(ResourceManager::SRC::CUBE));
+		break;
 	case OBJECT_TYPE::SCENE_PROP:
 		transform_.SetModel(ResourceManager::GetInstance().LoadModelDuplicate(ResourceManager::SRC::WALL));
 		break;

@@ -17,6 +17,7 @@ public:
 		BUTTON,
 		PRESS_BUTTON,
 		GEAR,
+		GEAR_OBJECT,
 		ROCK,
 		AXE,
 		CHEST,
@@ -79,16 +80,12 @@ public:
 
 	void SetIsRot(bool is) { isRot_ = is; }
 
-	bool GetIsRockExist(void) { return isRockExist_; }
-
 protected:
 	// 衝突判定用カプセルの半径
 	float capsule_r = 30.0f;
 
 	// 答えにおいて正誤判定をするオブジェクトかどうか
 	bool isAnswerObject_ = true;
-
-	bool isRockExist_ = true;
 
 	// PUSH_BUTTON が踏まれているか
 	bool isPressButton_ = false;
