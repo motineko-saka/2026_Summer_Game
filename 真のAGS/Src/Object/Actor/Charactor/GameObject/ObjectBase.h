@@ -18,7 +18,7 @@ public:
 		PRESS_BUTTON,
 		GEAR,
 		ROCK,
-		KINOKO,
+		AXE,
 		CHEST,
 		OPENCHEST,
 	};

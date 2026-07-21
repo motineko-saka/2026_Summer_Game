@@ -19,7 +19,7 @@ void Gate::Draw()
 	//vertexMaterial_->SetConstBufPS(0, { dir.x, dir.y, dir.z, dissolveTime_ });
 
 	auto cameraPos = GetCameraPosition();
-	//vertexMaterial_->SetConstBufPS(1, { cameraPos.x, cameraPos.y, cameraPos.z, time_ });
+	vertexMaterial_->SetConstBufPS(1, { cameraPos.x, cameraPos.y, cameraPos.z, time_ });
 	//vertexMaterial_->SetConstBufPS(1, { cameraPos.x, cameraPos.y, cameraPos.z, 0 });
 
 	vertexRenderer_->Draw();
@@ -43,6 +43,8 @@ void Gate::InitLoad(void)
 
 	vertexMaterial_->AddConstBufPS({ 1.0f, 1.0f, 1.0f, 1.0f });
 	vertexMaterial_->AddConstBufPS({ 0.0f, 0.0f, 0.0f, 1.0f });
+
+	vertexMaterial_->SetTextureAddress(ModelMaterial::TEXADDRESS::WRAP);
 
 	vertexRenderer_ = std::make_unique<ModelRenderer>(transform_.modelId, *vertexMaterial_);
 }

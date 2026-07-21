@@ -2,6 +2,7 @@
 #include "SceneBase.h"
 #include "../Object/Common/Transform.h"
 #include "../Object/Actor/Charactor/Player.h"
+#include "../Object/Actor/Charactor/GameObject/ObjectBase.h"
 #include <vector>
 #include <memory>
 class StageManager;
@@ -87,6 +88,9 @@ private:
 
 	bool isPause_ = false;
 
+	int stageProgress_ = 0;
+	bool isClear_ = false;
+
 	VECTOR buttonPos_ = { -770.0f, -300.0f, 760.0f };
 	VECTOR rockPos_ =	{ -660.0f, -320.0f, 630.0f };
 	VECTOR endPos_ =	{ 1364.0f, -300.0f, 620.0f };
@@ -106,6 +110,16 @@ private:
 
 	// ゲームシーンでのシーンチェンジのまとめ
 	void ChangeScene(const std::shared_ptr<SceneBase>& scene) const;
+
+	template<class objectClass>
+	void PushObject(SceneBase::WORLD w, const VECTOR& ans, ObjectBase::OBJECT_TYPE type, const VECTOR& pos, const VECTOR& scl)
+	{
+		std::unique_ptr<objectClass> o = std::make_unique<objectClass>(w, ans, type);
+		o->Init();
+		o->SetPosition(pos);
+		o->SetScale(scl);
+		objects_.push_back(std::move(o));
+	}
 
 	// シャドウマップ用のハンドル
 	int shadowMapHandle_;

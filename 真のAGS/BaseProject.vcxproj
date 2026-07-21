@@ -21,7 +21,7 @@
   <ItemGroup>
     <ClCompile Include="Src\Scene\SceneTransition.cpp" />
     <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Gate.cpp" />
-    <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Bomb.cpp" />
+    <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Axe.cpp" />
     <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Object.cpp" />
     <ClCompile Include="Src\Object\Actor\Charactor\GameObject\PressButton.cpp" />
     <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Gaer.cpp" />
@@ -79,7 +79,7 @@
   <ItemGroup>
     <ClInclude Include="Src\Scene\SceneTransition.h" />
     <ClInclude Include="Src\Object\Actor\Charactor\GameObject\Gate.h" />
-    <ClInclude Include="Src\Object\Actor\Charactor\GameObject\Bomb.h" />
+    <ClInclude Include="Src\Object\Actor\Charactor\GameObject\Axe.h" />
     <ClInclude Include="Src\Object\Actor\Charactor\GameObject\Object.h" />
     <ClInclude Include="Src\Object\Actor\Charactor\GameObject\PressButton.h" />
     <ClInclude Include="Src\Object\Actor\Charactor\GameObject\Gaer.h" />
