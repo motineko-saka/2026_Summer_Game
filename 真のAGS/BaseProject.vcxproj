@@ -67,6 +67,8 @@
     <ClCompile Include="Src\Scene\SceneBase.cpp" />
     <ClCompile Include="Src\Scene\TitleScene.cpp" />
     <ClCompile Include="Src\Audio\SoundTable.cpp" />
+    <ClCompile Include="Src\Text\TextManager.cpp" />
+    <ClCompile Include="Src\Text\TextRenderer.cpp" />
     <ClCompile Include="Src\Utility\AsoUtility.cpp" />
     <ClCompile Include="Src\Utility\MatrixUtility.cpp" />
     <ClCompile Include="Src\Object\Actor\Stage\Stage.cpp" />
@@ -125,6 +127,8 @@
     <ClInclude Include="Src\Scene\SceneBase.h" />
     <ClInclude Include="Src\Scene\TitleScene.h" />
     <ClInclude Include="Src\Audio\SoundTable.h" />
+    <ClInclude Include="Src\Text\TextManager.h" />
+    <ClInclude Include="Src\Text\TextRenderer.h" />
     <ClInclude Include="Src\Utility\AsoUtility.h" />
     <ClInclude Include="Src\Utility\MatrixUtility.h" />
     <ClInclude Include="Src\Object\Actor\Stage\Stage.h" />

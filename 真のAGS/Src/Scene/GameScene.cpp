@@ -123,10 +123,10 @@ void GameScene::Init(void)
 	
 	//PushObject<Rock>(GameScene::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::DEFAULT, { 1300.0f, -320.0f, 500.0f }, AsoUtility::VECTOR_ONE);
 
-	objects_.push_back(std::make_unique<Gaer>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::GEAR, *objects_[4]));
-	objects_.back()->Init();
-	objects_.back()->SetPosition({ -600.0f, 100.0f, 0.0f });
-	objects_.back()->SetScale(AsoUtility::VECTOR_ONE);
+	//objects_.push_back(std::make_unique<Gaer>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::GEAR, *objects_[4]));
+	//objects_.back()->Init();
+	//objects_.back()->SetPosition({ -600.0f, 100.0f, 0.0f });
+	//objects_.back()->SetScale(AsoUtility::VECTOR_ONE);
 
 	//objects_.push_back(std::make_unique<Gaer>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::GEAR, objects_[4]));
 	//objects_.back()->Init();
