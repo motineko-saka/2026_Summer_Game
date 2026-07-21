@@ -124,9 +124,7 @@ void Resource::Release(void)
 
 		DeleteEffekseerEffect(handleId_);
 		break;
-
 	}
-
 }
 
 void Resource::CopyHandle(int* imgs) const

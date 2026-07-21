@@ -44,6 +44,7 @@ GameScene::GameScene(void)
 
 GameScene::~GameScene(void)
 {
+	Release();
 }
 
 void GameScene::Init(void)
@@ -131,10 +132,10 @@ void GameScene::Init(void)
 	
 	//PushObject<Rock>(GameScene::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::DEFAULT, { 1300.0f, -320.0f, 500.0f }, AsoUtility::VECTOR_ONE);
 
-	objects_.push_back(std::make_unique<Gaer>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::GEAR, *objects_[4]));
-	objects_.back()->Init();
-	objects_.back()->SetPosition({ -600.0f, 100.0f, 0.0f });
-	objects_.back()->SetScale(AsoUtility::VECTOR_ONE);
+	//objects_.push_back(std::make_unique<Gaer>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::GEAR, *objects_[4]));
+	//objects_.back()->Init();
+	//objects_.back()->SetPosition({ -600.0f, 100.0f, 0.0f });
+	//objects_.back()->SetScale(AsoUtility::VECTOR_ONE);
 
 	//objects_.push_back(std::make_unique<Gaer>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::GEAR, objects_[4]));
 	//objects_.back()->Init();
@@ -789,25 +790,53 @@ void GameScene::ChangeScene(const std::shared_ptr<SceneBase>& scene) const
 
 void GameScene::Release(void)
 {
-	// オーディオマネージャーのインスタンスの削除
-	AudioManager::GetInstance()->DeleteInstance();
+	// オーディオマネージャーのインスタンスの削除（存在チェック）
+	if (AudioManager::GetInstance())
+	{
+		AudioManager::GetInstance()->DeleteInstance();
+	}
 
+	// オブジェクトの破棄（unique_ptr がリソースを解放）
 	objects_.clear();
 
-	MV1DeleteModel(pinID_);
+	// ピンモデルを安全に削除
+	if (pinID_ != -1)
+	{
+		MV1DeleteModel(pinID_);
+		pinID_ = -1;
+	}
 
-	//enemyManager_->Release();
-	//delete enemyManager_;
+	// シャドウマップを安全に削除
+	if (shadowMapHandle_ != -1)
+	{
+		DeleteShadowMap(shadowMapHandle_);
+		shadowMapHandle_ = -1;
+	}
+
+	// グローバル camera_ は raw pointer -> delete して nullptr に
+	if (camera_ != nullptr)
+	{
+		delete camera_;
+		camera_ = nullptr;
+	}
 
 	players_.clear();
 
-	// スクリーンハンドルの削除
+	// walls, skyDome, stageManager, lightPillar のリセット
+	walls_.clear();
+	if (skyDome_) skyDome_.reset();
+	if (stageManager_) stageManager_.reset();
+	if (lightPillar_) lightPillar_.reset();
+
+	// スクリーンハンドル削除
 	if (screenHandle1_ != -1)
 	{
 		DeleteGraph(screenHandle1_);
+		screenHandle1_ = -1;
 	}
 	if (screenHandle2_ != -1)
 	{
 		DeleteGraph(screenHandle2_);
+		screenHandle2_ = -1;
 	}
 }
