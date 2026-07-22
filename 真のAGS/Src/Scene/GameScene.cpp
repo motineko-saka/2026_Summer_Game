@@ -274,6 +274,16 @@ void GameScene::Init(void)
 		AudioManager::GetInstance()->LoadSceneSound(LoadScene::GAME);
 		AudioManager::GetInstance()->PlayBGM(SoundID::BGM_GAME);
 	}
+
+	//TextManager::CreateInstance();
+	//if (TextManager::GetInstance())
+	//{
+	//	TextManager::GetInstance()->Init();
+	//}
+	//textRenderer_ = std::make_unique<TextRenderer>();
+	//textRenderer_->Init(24, screenWidth_, novelBoxHeight_);
+	//textRenderer_->SetOrigin(0, screenHeight_ - novelBoxHeight_);
+	//textRenderer_->ClearScreen();
 }
 
 void GameScene::Load(void)
@@ -575,6 +585,26 @@ void GameScene::Update(void)
 		isClear_ = true;
 		return;
 	}
+
+	// 任意の入力処理箇所に挿入
+	//if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_N))
+	//{
+	//	isNovelActive_ = !isNovelActive_;
+	//	if (isNovelActive_)
+	//	{
+	//		// ノベル開始時は TextManager と描画位置をリセット
+	//		if (TextManager::GetInstance())
+	//		{
+	//			TextManager::GetInstance()->Reset();
+	//		}
+	//		if (textRenderer_)
+	//		{
+	//			textRenderer_->ResetPosition();
+	//			textRenderer_->ClearScreen();
+	//		}
+	//	}
+	//}
+
 }
 
 void GameScene::Draw(void)
@@ -593,7 +623,7 @@ void GameScene::Draw(void)
 	ShadowMap_DrawEnd();
 
 	SetUseShadowMap(0, shadowMapHandle_);
-
+	
 
 
 	int halfWidth = screenWidth_ / 2;
@@ -746,6 +776,21 @@ void GameScene::Draw(void)
 	
 #endif // _DEBUG
 #pragma endregion
+
+	// バックバッファ描画のあと（SetDrawScreen(DX_SCREEN_BACK); 直後か合成処理後に挿入）
+	//if (isNovelActive_)
+	//{
+	//	// 半透明背景ボックス
+	//	SetDrawBlendMode(DX_BLENDMODE_ALPHA, 200);
+	//	DrawBox(0, screenHeight_ - novelBoxHeight_, screenWidth_, screenHeight_, GetColor(0, 0, 0), TRUE);
+	//	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+	//	// テキスト描画を1ステップ進める
+	//	if (TextManager::GetInstance() && textRenderer_)
+	//	{
+	//		textRenderer_->RenderStep(*TextManager::GetInstance());
+	//	}
+	//}
 }
 
 void GameScene::DrawNamePlate(std::string str, VECTOR pos)
@@ -802,4 +847,7 @@ void GameScene::Release(void)
 	{
 		DeleteGraph(screenHandle2_);
 	}
+
+	//textRenderer_.reset();
+	//TextManager::DeleteInstance();
 }

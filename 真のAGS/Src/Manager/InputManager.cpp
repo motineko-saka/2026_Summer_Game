@@ -40,6 +40,7 @@ void InputManager::Init(void)
 	Add(KEY_INPUT_X);
 	Add(KEY_INPUT_P);
 	Add(KEY_INPUT_H);
+	Add(KEY_INPUT_N);
 
 	Add(KEY_INPUT_ESCAPE);
 	Add(KEY_INPUT_TAB);

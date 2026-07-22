@@ -23,6 +23,9 @@ public:
 	// 文字送り速度（ミリ秒）
 	void SetDelayMs(int ms);
 
+	// 描画オフセット（枠の左上）
+	void SetOrigin(int x, int y);
+
 private:
 	// 行折り返し・スクロール処理（内部 Kaigyou）
 	void NewLineIfNeeded();
@@ -35,4 +38,17 @@ private:
 	int drawXChars_;
 	int drawYLines_;
 	int delayMs_;
+
+	// 描画起点
+	int originX_;
+	int originY_;
+
+	// 枠内の描画を保持するオフスクリーン
+	int textGraph_;
+
+	// 時間管理（非ブロッキングで1文字ずつ進めるため）
+	unsigned int lastAdvanceTimeMs_;
+
+	// 'B' 命令のための待機フラグ（入力を待つ）
+	bool waitingForInput_;
 };

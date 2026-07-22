@@ -3,6 +3,8 @@
 #include "../Object/Common/Transform.h"
 #include "../Object/Actor/Charactor/Player.h"
 #include "../Object/Actor/Charactor/GameObject/ObjectBase.h"
+#include "../Text/TextManager.h"
+#include "../Text/TextRenderer.h"
 #include <vector>
 #include <memory>
 class StageManager;
@@ -121,5 +123,7 @@ private:
 	// シャドウマップ用のハンドル
 	int shadowMapHandle_;
 
-
+	std::unique_ptr<TextRenderer> textRenderer_;
+	bool isNovelActive_ = false;
+	int novelBoxHeight_ = 160; // ボックス高さ（ピクセル）
 };
