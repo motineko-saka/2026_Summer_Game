@@ -9,7 +9,7 @@ public:
 	Gaer(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type);
 	virtual ~Gaer() override = default;
 
-	bool isPushButtom(void) const { return isRot_; }
+	bool IsRot(void) const { return isRot_; }
 
 	void AddObject(ObjectBase* object);
 private:

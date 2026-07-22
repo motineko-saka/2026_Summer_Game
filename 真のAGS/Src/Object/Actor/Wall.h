@@ -18,7 +18,7 @@ public:
 		VIEW_RANGE,
 	};
 
-    Wall(VECTOR pos, bool isRot = false);
+    Wall(VECTOR pos, bool isRot = false, bool isHalf = false);
     ~Wall(void) override;
 
 	void Update(void)override;
@@ -45,10 +45,12 @@ private:
 	static constexpr VECTOR STAGE_DEFAULT_POS = { 0.0f, 0.0f, 0.0f };
 
 	static constexpr VECTOR STAGE_DEFAULT_SCALE = { 1.0f,1000.0f,1000.0f };
+	static constexpr VECTOR STAGE_HARF_SCALE = { 1.0f,1000.0f,50.0f };
 
 	// ç¿ïWàÍéûï€ë∂ïœêî
 	VECTOR tempPos_;
 	bool isRot_ = false;
+	bool isHalf_ = false;
 
 	std::unique_ptr<ModelMaterial> vertexMaterial_;
 	std::unique_ptr<ModelRenderer> vertexRenderer_;

@@ -59,6 +59,7 @@ void GameScene::Init(void)
 	isPause_ = false;
 	isClear_ = false;
 	isBreak_ = false;
+	isRot_ = false;
 
 	lightPillar_ = std::make_unique<LightPillar>();
 
@@ -88,7 +89,7 @@ void GameScene::Init(void)
 	skyDome_ = std::make_unique<SkyDome>(players_[0].player_->GetTransform());
 	skyDome_->Init();
 
-	CreateWall(*stageManager_);
+	CreateWallGame(*stageManager_);
 
 	// エネミー管理
 	//enemyManager_ = new EnemyManager(player1_);
@@ -380,7 +381,7 @@ const void GameScene::ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*>& n
 		(InputManager::GetInstance()->IsTrgDown(KEY_INPUT_F) || InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::RIGHT)))
 	{
 		// ボタンが押されたときの処理（例：ゲームクリア、ドアが開くなど）
-
+		walls_.pop_back();
 		obj.SetButtomPushed(true);
 
 		objects_[0]->SetButtomPushed(true);
@@ -440,7 +441,8 @@ void GameScene::Update(void)
 		isPause_ = true;
 	}
 
-	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_P)) 
+#ifdef _DEBUG
+	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_P))
 	{
 		ChangeScene(std::make_shared<TitleScene>());
 		return;
@@ -458,6 +460,14 @@ void GameScene::Update(void)
 		return;
 	}
 
+	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_8))
+	{
+		walls_.pop_back();
+	}
+#endif // _DEBUG
+
+	
+
 	// プレイヤー選択切替（TAB か 右クリック)
 	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_TAB) ||
 		InputManager::GetInstance()->IsTrgMouseRight() ||
@@ -471,11 +481,6 @@ void GameScene::Update(void)
 		}
 		activePlayer_ = (activePlayer_ == Player::PLAYER_NO::PLAYER1) ?
 			Player::PLAYER_NO::PLAYER2 : Player::PLAYER_NO::PLAYER1;
-	}
-
-	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_8))
-	{
-		walls_.pop_back();
 	}
 
 	// クリア
@@ -515,6 +520,22 @@ void GameScene::Update(void)
 	for (auto& obj : objects_)
 	{
 		if (obj) obj->Update();
+
+		if(!isRot_)
+		{
+			if (obj->GetType() != ObjectBase::OBJECT_TYPE::GEAR) continue;
+
+			Gaer* gear = dynamic_cast<Gaer*>(obj.get());
+
+			if (gear == nullptr)
+				continue;
+
+			if (gear->IsRot())
+			{
+				walls_.pop_back();
+				isRot_ = true;
+			}
+		}
 	}
 
 	if(!isBreak_)
@@ -637,10 +658,10 @@ void GameScene::Draw(void)
 			MV1DrawModel(pinID_);
 		}
 	
-		//for (auto& wall : walls_)
-		//{
-		//	wall->Draw();
-		//}
+		for (auto& wall : walls_)
+		{
+			wall->Draw();
+		}
 	
 		// 全オブジェクトを順に描画（それぞれの viewWorld を設定）
 		for (auto& obj : objects_)
@@ -682,15 +703,21 @@ void GameScene::Draw(void)
 
 #ifdef _DEBUG
 
-	for (int i = 0; i < players_.size(); i++)
-	{
-		int w = halfWidth * i;
-		DrawFormatString(halfWidth, 0, GetColor(255, 255, 255), "P%d角度:(%.1f, %.1f, %.1f)",
-			i + 1,
-			players_[i].player_->GetTransform().quaRot.ToEuler().x,
-			players_[i].player_->GetTransform().quaRot.ToEuler().y,
-			players_[i].player_->GetTransform().quaRot.ToEuler().z);
-	}
+	//for (int i = 0; i < players_.size(); i++)
+	//{
+	//	int w = halfWidth * i;
+	//	DrawFormatString(halfWidth, 0, GetColor(255, 255, 255), "P%d角度:(%.1f, %.1f, %.1f)",
+	//		i + 1,
+	//		players_[i].player_->GetTransform().quaRot.ToEuler().x,
+	//		players_[i].player_->GetTransform().quaRot.ToEuler().y,
+	//		players_[i].player_->GetTransform().quaRot.ToEuler().z);
+	//}
+
+	int w = halfWidth;
+	DrawFormatString(halfWidth, 0, GetColor(255, 255, 255), "P1角度:(%.1f, %.1f, %.1f)",
+		players_[0].player_->GetTransform().pos.x,
+		players_[0].player_->GetTransform().pos.y,
+		players_[0].player_->GetTransform().pos.z);
 
 	for (auto& player : players_)
 	{

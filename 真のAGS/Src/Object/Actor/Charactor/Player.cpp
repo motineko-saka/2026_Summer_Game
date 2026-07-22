@@ -110,7 +110,13 @@ void Player::InitTransform(void)
 	transform_.quaRotLocal = Quaternion::Identity();
 	transform_.quaRotLocal = Quaternion::Euler(PLAYER_DEFAULT_ROT_LOCAL);
 
-	transform_.pos = (playerNo_ == PLAYER_NO::PLAYER1) ? TUTORIAL_PLAYER_ONE_DEFAULT_POS : TUTORIAL_PLAYER_TWO_DEFAULT_POS;
+	transform_.pos = isGameScene_ ?
+		((playerNo_ == PLAYER_NO::PLAYER1) ?
+			PLAYER_ONE__DEFAULT_POS : PLAYER_TWO__DEFAULT_POS)
+		:
+		((playerNo_ == PLAYER_NO::PLAYER1) ?
+			TUTORIAL_PLAYER_ONE_DEFAULT_POS : TUTORIAL_PLAYER_TWO_DEFAULT_POS);
+
 	transform_.Update();
 }
 
