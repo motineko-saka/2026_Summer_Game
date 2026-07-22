@@ -327,13 +327,13 @@ void TutorialScene::CheckCollisions(void)
 		{
 			if (idx >= 0 && idx < static_cast<int>(objects_.size()))
 			{
-				// オブジェクトを先に破棄してから vector から削除する
+				// オブジェクト
 				if (objects_[idx])
 				{
 					const auto& ownCols = objects_[idx]->GetOwnColliders();
 					for (const auto& ct : ownCols)
 					{
-						const ColliderBase* col = ct.second;
+						const ColliderBase* col = ct.second.get();
 						if (!col) continue;
 
 						// プレイヤーから解除
@@ -349,7 +349,6 @@ void TutorialScene::CheckCollisions(void)
 							otherObj->RemoveHitCollider(col);
 						}
 					}
-
 					// オブジェクト自身を delete（メモリ解放）
 					delete objects_[idx];
 				}

@@ -10,6 +10,7 @@
 #include "../../Collider/ColliderModel.h"
 #include "../../../Audio/AudioManager.h"
 #include "Player.h"
+#include <memory>
 
 Player::Player(void)
 	:
@@ -117,22 +118,27 @@ void Player::InitTransform(void)
 void Player::InitCollider(void)
 {
 	// モデルのコライダ
-	ColliderModel* colModel =
-		new ColliderModel(ColliderBase::TAG::PLAYER, &transform_);
-	ownColliders_.emplace(static_cast<int>(COLLIDER_TYPE::MODEL), colModel);
+	{
+		auto colModelUP = std::make_unique<ColliderModel>(ColliderBase::TAG::PLAYER, &transform_);
+		ownColliders_.emplace(static_cast<int>(COLLIDER_TYPE::MODEL), std::move(colModelUP));
+	}
 
 	// 主に地面との衝突で使用する線分コライダ
-	ColliderLine* colLine = new ColliderLine(
-		ColliderBase::TAG::PLAYER, &transform_,
-		COL_LINE_START_LOCAL_POS, COL_LINE_END_LOCAL_POS);
-	ownColliders_.emplace(static_cast<int>(COLLIDER_TYPE::LINE), colLine);
+	{
+		auto colLineUP = std::make_unique<ColliderLine>(
+			ColliderBase::TAG::PLAYER, &transform_,
+			COL_LINE_START_LOCAL_POS, COL_LINE_END_LOCAL_POS);
+		ownColliders_.emplace(static_cast<int>(COLLIDER_TYPE::LINE), std::move(colLineUP));
+	}
 
 	// 主に壁や木などの衝突で仕様するカプセルコライダ
-	ColliderCapsule* colCapsule = new ColliderCapsule(
-		ColliderBase::TAG::PLAYER, &transform_,
-		COL_CAPSULE_TOP_LOCAL_POS, COL_CAPSULE_DOWN_LOCAL_POS,
-		COL_CAPSULE_RADIUS);
-	ownColliders_.emplace(static_cast<int>(COLLIDER_TYPE::CAPSULE), colCapsule);
+	{
+		auto colCapsuleUP = std::make_unique<ColliderCapsule>(
+			ColliderBase::TAG::PLAYER, &transform_,
+			COL_CAPSULE_TOP_LOCAL_POS, COL_CAPSULE_DOWN_LOCAL_POS,
+			COL_CAPSULE_RADIUS);
+		ownColliders_.emplace(static_cast<int>(COLLIDER_TYPE::CAPSULE), std::move(colCapsuleUP));
+	}
 }
 
 void Player::InitAnimation(void)
@@ -181,7 +187,7 @@ void Player::UpdateProcess(void)
 	// 掴む/放す処理
 	ProcessPickup();
 
-	if(isGameScene_)
+	if (isGameScene_)
 	{
 		// オブジェクトとの衝突処理
 		CollisionObject();
@@ -249,11 +255,11 @@ void Player::ProcessMove(void)
 		dir = VNorm(dir);
 	}
 
-		//if (InputManager::GetInstance()->IsPadBtnNew(InputManager::JOYPAD_NO::PAD1,
-		//	InputManager::JOYPAD_BTN::R_TRIGGER))
-		//{
-		//	isDash = true;
-		//}
+	//if (InputManager::GetInstance()->IsPadBtnNew(InputManager::JOYPAD_NO::PAD1,
+	//	InputManager::JOYPAD_BTN::R_TRIGGER))
+	//{
+	//	isDash = true;
+	//}
 
 	if (!AsoUtility::EqualsVZero(dir))
 	{
@@ -366,10 +372,13 @@ void Player::ProcessAnimPos(void)
 		// ジャンプ中は線分座標を伸ばす
 		if (ownColliders_.count(static_cast<int>(COLLIDER_TYPE::LINE)) != 0)
 		{
+			// 修正: unique_ptr 保持なら .get() で生ポインタを取得して dynamic_cast する
 			ColliderLine* colLine = dynamic_cast<ColliderLine*>(
-				ownColliders_.at(static_cast<int>(COLLIDER_TYPE::LINE)));
-			colLine->SetLocalPosStart(COL_LINE_JUMP_START_LOCAL_POS);
-			colLine->SetLocalPosEnd(COL_LINE_JUMP_END_LOCAL_POS);
+				ownColliders_.at(static_cast<int>(COLLIDER_TYPE::LINE)).get());
+			if (colLine) {
+				colLine->SetLocalPosStart(COL_LINE_JUMP_START_LOCAL_POS);
+				colLine->SetLocalPosEnd(COL_LINE_JUMP_END_LOCAL_POS);
+			}
 		}
 	}
 	else
@@ -378,9 +387,11 @@ void Player::ProcessAnimPos(void)
 		if (ownColliders_.count(static_cast<int>(COLLIDER_TYPE::LINE)) != 0)
 		{
 			ColliderLine* colLine = dynamic_cast<ColliderLine*>(
-				ownColliders_.at(static_cast<int>(COLLIDER_TYPE::LINE)));
-			colLine->SetLocalPosStart(COL_LINE_START_LOCAL_POS);
-			colLine->SetLocalPosEnd(COL_LINE_END_LOCAL_POS);
+				ownColliders_.at(static_cast<int>(COLLIDER_TYPE::LINE)).get());
+			if (colLine) {
+				colLine->SetLocalPosStart(COL_LINE_START_LOCAL_POS);
+				colLine->SetLocalPosEnd(COL_LINE_END_LOCAL_POS);
+			}
 		}
 	}
 }
@@ -394,9 +405,11 @@ void Player::ProcessAnimCapsule(void)
 		if (ownColliders_.count(static_cast<int>(COLLIDER_TYPE::CAPSULE)) != 0)
 		{
 			ColliderCapsule* colCapsule = dynamic_cast<ColliderCapsule*>(
-				ownColliders_.at(static_cast<int>(COLLIDER_TYPE::CAPSULE)));
-			colCapsule->SetLocalPosTop(COL_CAPSULE_TOP_JUMP_LOCAL_POS);
-			colCapsule->SetLocalPosDown(COL_CAPSULE_DOWN_JUMP_LOCAL_POS);
+				ownColliders_.at(static_cast<int>(COLLIDER_TYPE::CAPSULE)).get());
+			if (colCapsule) {
+				colCapsule->SetLocalPosTop(COL_CAPSULE_TOP_JUMP_LOCAL_POS);
+				colCapsule->SetLocalPosDown(COL_CAPSULE_DOWN_JUMP_LOCAL_POS);
+			}
 		}
 	}
 	else
@@ -405,9 +418,11 @@ void Player::ProcessAnimCapsule(void)
 		if (ownColliders_.count(static_cast<int>(COLLIDER_TYPE::CAPSULE)) != 0)
 		{
 			ColliderCapsule* colCapsule = dynamic_cast<ColliderCapsule*>(
-				ownColliders_.at(static_cast<int>(COLLIDER_TYPE::CAPSULE)));
-			colCapsule->SetLocalPosTop(COL_CAPSULE_TOP_LOCAL_POS);
-			colCapsule->SetLocalPosDown(COL_CAPSULE_DOWN_LOCAL_POS);
+				ownColliders_.at(static_cast<int>(COLLIDER_TYPE::CAPSULE)).get());
+			if (colCapsule) {
+				colCapsule->SetLocalPosTop(COL_CAPSULE_TOP_LOCAL_POS);
+				colCapsule->SetLocalPosDown(COL_CAPSULE_DOWN_LOCAL_POS);
+			}
 		}
 	}
 }
@@ -506,7 +521,7 @@ void Player::CollisionObject(void)
 	if (ownColliders_.count(capsuleType) == 0) return;
 
 	ColliderCapsule* playerCapsule =
-		dynamic_cast<ColliderCapsule*>(ownColliders_.at(capsuleType));
+		dynamic_cast<ColliderCapsule*>(ownColliders_.at(capsuleType).get());
 	if (playerCapsule == nullptr) return;
 
 	// 衝突しているコライダをチェック

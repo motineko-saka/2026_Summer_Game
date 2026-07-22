@@ -8,6 +8,7 @@
 #include "../../../Collider/ColliderCapsule.h"
 #include "../../../Collider/ColliderModel.h"
 #include "../../../../Manager/InputManager.h"
+#include <memory>
 
 ObjectBase::ObjectBase(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type)
 	:
@@ -51,7 +52,7 @@ void ObjectBase::SetPlaced(bool placed)
 	// 所有するコライダ全ての掴めるフラグを更新する
 	for (auto& ct : ownColliders_)
 	{
-		ColliderBase* col = ct.second;
+		ColliderBase* col = ct.second.get();
 		if (!col) continue;
 
 		// 設置済なら掴めなくする、未設置なら掴めるようにする
@@ -137,30 +138,32 @@ void ObjectBase::InitCollider(void)
 	// 各継承先のtag_を変更
 	InitObjCol();
 
-	// モデルのコライダ
-	ColliderModel* colModel =
-		new ColliderModel(tag_, &transform_);
-	ownColliders_.emplace(static_cast<int>(COLLIDER_TYPE::MODEL), colModel);
+	// モデルのコライダ（unique_ptr を作って move）
+	auto colModelUP = std::make_unique<ColliderModel>(tag_, &transform_);
+	ColliderModel* colModelPtr = colModelUP.get();
+	ownColliders_.emplace(static_cast<int>(COLLIDER_TYPE::MODEL), std::move(colModelUP));
 
 	// 主に地面との衝突で使用する線分コライダ
-	ColliderLine* colLine = new ColliderLine(
+	auto colLineUP = std::make_unique<ColliderLine>(
 		ColliderBase::TAG::OBJECT, &transform_,
 		COL_LINE_START_LOCAL_POS, COL_LINE_END_LOCAL_POS);
-	ownColliders_.emplace(static_cast<int>(COLLIDER_TYPE::LINE), colLine);
+	ColliderLine* colLinePtr = colLineUP.get();
+	ownColliders_.emplace(static_cast<int>(COLLIDER_TYPE::LINE), std::move(colLineUP));
 
 	// 主に壁や木などの衝突で仕様するカプセルコライダ
-	ColliderCapsule* colCapsule = new ColliderCapsule(
+	auto colCapsuleUP = std::make_unique<ColliderCapsule>(
 		tag_, &transform_,
 		COL_CAPSULE_TOP_LOCAL_POS, COL_CAPSULE_DOWN_LOCAL_POS,
 		capsule_r);
-	ownColliders_.emplace(static_cast<int>(COLLIDER_TYPE::CAPSULE), colCapsule);
+	ColliderCapsule* colCapsulePtr = colCapsuleUP.get();
+	ownColliders_.emplace(static_cast<int>(COLLIDER_TYPE::CAPSULE), std::move(colCapsuleUP));
 
 	// 持てなくする
 	if (isHoldable_)
 	{
-		if (colLine) colLine->SetGrabbable(false);
-		if (colCapsule) colCapsule->SetGrabbable(false);
-		if (colModel) colModel->SetGrabbable(false);
+		if (colLinePtr) colLinePtr->SetGrabbable(false);
+		if (colCapsulePtr) colCapsulePtr->SetGrabbable(false);
+		if (colModelPtr) colModelPtr->SetGrabbable(false);
 	}
 }
 
@@ -171,7 +174,7 @@ void ObjectBase::InitAnimation(void)
 
 void ObjectBase::InitPost(void)
 {
-	if(type_ == OBJECT_TYPE::GEAR) isGrav = false;
+	if (type_ == OBJECT_TYPE::GEAR) isGrav = false;
 	handFrame_ = -1;
 	isButtomPushed_ = false;
 }
@@ -192,7 +195,7 @@ void ObjectBase::UpdateProcess(void)
 	// 掴まれているコライダがあれば transform をそれに同期する
 	for (const auto& ct : ownColliders_)
 	{
-		ColliderBase* col = ct.second;
+		ColliderBase* col = ct.second.get();
 		if (col == nullptr) continue;
 
 		const Transform* follow = col->GetFollow();
@@ -229,12 +232,6 @@ void ObjectBase::UpdateProcess(void)
 			transform_.quaRot = follow->quaRot;
 			pushPow_ = { 0.0f, 0.0f, 0.0f };
 		}
-
-		//const VECTOR localPos = col->GetLocalPos();
-		//const VECTOR worldPos = VAdd(follow->pos, follow->quaRot.PosAxis(localPos));
-		//transform_.pos = worldPos;
-		//transform_.quaRot = follow->quaRot;
-		//pushPow_ = { 0.0f, 0.0f, 0.0f };
 		break;
 	}
 
@@ -272,7 +269,7 @@ void ObjectBase::PressButton(void)
 
 		// 3D距離を計算
 		float distance = VSize(diff);
-		const float BUTTON_TRIGGER_DISTANCE = 100.0f; // 適切な値に調整
+		const float BUTTON_TRIGGER_DISTANCE = 100.0f;
 
 		if (distance < BUTTON_TRIGGER_DISTANCE)
 		{

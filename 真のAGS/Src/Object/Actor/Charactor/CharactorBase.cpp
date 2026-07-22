@@ -143,8 +143,9 @@ void CharactorBase::CollisionCapsule(void)
 	int capsuleType = static_cast<int>(COLLIDER_TYPE::CAPSULE);
 	if (ownColliders_.count(capsuleType) == 0) return;
 
+	// 修正: unique_ptr 保持なら .get() で生ポインタを取得して dynamic_cast する
 	ColliderCapsule* colliderCapsule =
-		dynamic_cast<ColliderCapsule*>(ownColliders_.at(capsuleType));
+		dynamic_cast<ColliderCapsule*>(ownColliders_.at(capsuleType).get());
 	if (colliderCapsule == nullptr) return;
 
 	for (const auto& hitCol : hitColliders_)
@@ -155,7 +156,7 @@ void CharactorBase::CollisionCapsule(void)
 		if (colliderModel == nullptr) continue;
 
 		// プレイヤーの押し戻し
-		colliderCapsule->PushBackAlongNormal(colliderModel, transform_, CNT_TRY_COLLISION, 
+		colliderCapsule->PushBackAlongNormal(colliderModel, transform_, CNT_TRY_COLLISION,
 			COLLISION_BACK_DIS, true, false, false);
 	}
 }
@@ -168,15 +169,11 @@ void CharactorBase::CollisionGravity(void)
 	// 線分コライダが無ければ処理を抜ける
 	if (ownColliders_.count(lineType) == 0) return;
 
-	// 線分コライダ情報
+	// 修正: unique_ptr 保持なら .get() で生ポインタを取得して dynamic_cast する
 	ColliderLine* colliderLine_ =
-		dynamic_cast<ColliderLine*>(ownColliders_.at(lineType));
+		dynamic_cast<ColliderLine*>(ownColliders_.at(lineType).get());
 
 	if (colliderLine_ == nullptr) return;
-
-	// 線分の始点と終点を取得
-	/*VECTOR s = colliderLine_->GetPosStart();
-	VECTOR e = colliderLine_->GetPosEnd();*/
 
 	// 登録されている衝突物を全てチェック
 	for (const auto& hitCol : hitColliders_)
