@@ -1,8 +1,8 @@
-#include "../../../Utility/AsoUtility.h"
 #include "../../../Manager/ResourceManager.h"
 #include "../../../Manager/Resource.h"
 #include "../../../Manager/SceneManager.h"
 #include "../../Collider/ColliderModel.h"
+#include "../../../Utility/AsoUtility.h"
 #include "Stage.h"
 
 Stage::Stage(int modelID)
@@ -15,7 +15,7 @@ Stage::Stage(int modelID)
 
 void Stage::InitLoad(void)
 {
-	//transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::TUTORIAL_STAGE));
+
 }
 
 void Stage::InitTransform(void)
@@ -99,4 +99,7 @@ void Stage::InitAnimation(void)
 void Stage::InitPost(void)
 {
 	stageType_ = STAGE_TYPE::MAIN_STAGE;
+
+	const float brightenScale = 1.3f; 
+	MV1SetDifColorScale(transform_.modelId, COLOR_F(brightenScale, brightenScale, brightenScale, 1.0f));
 }

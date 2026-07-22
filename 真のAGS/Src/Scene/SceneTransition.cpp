@@ -12,6 +12,12 @@ SceneTransition::SceneTransition()
 
 SceneTransition::~SceneTransition()
 {
+    // 再生停止と状態リセット
+    isPlaying_ = false;
+    state_ = STATE::NONE;
+    timer_ = 0;
+    // pieces_ の容量も確実に解放
+    std::vector<Piece>().swap(pieces_);
 }
 
 void SceneTransition::Start()

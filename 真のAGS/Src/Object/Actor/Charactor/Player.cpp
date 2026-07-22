@@ -321,18 +321,10 @@ void Player::ProcessJump(void)
 	bool isHitKeyNew = false;
 	bool isHitKey = false;
 
-	if (playerNo_ == PLAYER_NO::PLAYER1)
-	{
-		isHitKeyNew = InputManager::GetInstance()->IsNew(KEY_INPUT_SPACE)
-			|| InputManager::GetInstance()->IsPadBtnNew(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::DOWN);
-		isHitKey = InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE)
-			|| InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::DOWN);
-	}
-	//else if (playerNo_ == PLAYER_NO::PLAYER2)
-	//{
-	//	isHitKeyNew = InputManager::GetInstance()->IsNew(KEY_INPUT_RETURN); // Enterキー
-	//	isHitKey = InputManager::GetInstance()->IsTrgDown(KEY_INPUT_RETURN);
-	//}
+	isHitKeyNew = InputManager::GetInstance()->IsNew(KEY_INPUT_SPACE)
+		|| InputManager::GetInstance()->IsPadBtnNew(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::DOWN);
+	isHitKey = InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE)
+		|| InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::DOWN);
 
 	// 溜めジャンプ処理
 	if (isHitKeyNew)
@@ -505,50 +497,7 @@ void Player::DropHeldObject(void)
 void Player::DrawDebug(void)
 {
 	int offsetX = (playerNo_ == PLAYER_NO::PLAYER2) ? 400 : 15;
-	//DrawFormatString(offsetX, 20, 0x000000, "%f,%f,%f", transform_.pos.x, transform_.pos.y, transform_.pos.z);
-
-	// 持っているか表示
-	//if (IsHolding())
-	//{
-	//	DrawFormatString(offsetX, 40, 0x000000, "Holding: YES");
-	//}
-	//else
-	//{
-	//	DrawFormatString(offsetX, 40, 0x000000, "Holding: NO");
-	//}
-
 }
-
-//void Player::CollisionObject(void)
-//{
-//	// プレイヤーのカプセルコライダを取得
-//	int capsuleType = static_cast<int>(COLLIDER_TYPE::CAPSULE);
-//	if (ownColliders_.count(capsuleType) == 0) return;
-//
-//	ColliderCapsule* playerCapsule =
-//		dynamic_cast<ColliderCapsule*>(ownColliders_.at(capsuleType));
-//	if (playerCapsule == nullptr) return;
-//
-//	// 衝突しているコライダをチェック
-//	for (const auto& hitCol : hitColliders_)
-//	{
-//		if (hitCol == nullptr) continue;
-//
-//		// オブジェクトのモデルコライダのみ対象
-//		if (hitCol->GetTag() != ColliderBase::TAG::OBJECT &&
-//			hitCol->GetTag() != ColliderBase::TAG::KINOKO) continue;
-//
-//		if (hitCol->GetShape() != ColliderBase::SHAPE::MODEL) continue;
-//
-//		const ColliderModel* objModel =
-//			dynamic_cast<const ColliderModel*>(hitCol);
-//		if (objModel == nullptr) continue;
-//
-//		// プレイヤーのカプセルをモデルに対して押し戻す
-//		playerCapsule->PushBackAlongNormal(objModel, transform_,
-//			CNT_TRY_COLLISION, COLLISION_BACK_DIS, false, false, false);
-//	}
-//}
 
 void Player::CollisionObject(void)
 {

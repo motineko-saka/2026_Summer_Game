@@ -94,6 +94,8 @@ void TutorialScene::Init(void)
 	skyDome_ = std::make_unique<SkyDome>(players_[0].player_->GetTransform());
 	skyDome_->Init();
 
+	CreateWall(*stageManager_);
+
 	// オブジェクト作成
 	objects_.reserve(3);
 
@@ -115,7 +117,6 @@ void TutorialScene::Init(void)
 	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::CHEST, { 900.0f, -520.0f, 300.0f }, { 0.6f, 0.6f, 0.6f }, true);
 	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[2], ObjectBase::OBJECT_TYPE::WBOX, { 800.0f, -520.0f, 100.0f }, { 0.5f, 0.5f, 0.5f }, true);
 
-	CreateWall(*stageManager_);
 
 	// ステージのコライダをプレイヤー／カメラ／オブジェクトに登録
 	for (const auto& stage : stageManager_->GetStage())
@@ -150,6 +151,18 @@ void TutorialScene::Init(void)
 	{
 		const ColliderBase* playerCollider = player.player_->GetOwnCollider(static_cast<int>(Player::COLLIDER_TYPE::LINE));
 		(void)playerCollider;
+	}
+
+	for (auto& wall : walls_)
+	{
+		const ColliderBase* wallCollider =
+			wall->GetOwnCollider(static_cast<int>(Stage::COLLIDER_TYPE::MODEL));
+
+		for (int i = 0; i < players_.size(); i++)
+		{
+			// 壁モデルのコライダーをプレイヤーに登録
+			players_[i].player_->AddHitCollider(wallCollider);
+		}
 	}
 
 	// 初期アクティブ状態（プレイヤー1）
@@ -353,21 +366,30 @@ const void TutorialScene::ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*
 {
 	const VECTOR objectPos = obj.GetTransform().pos;
 
-	// ボタンを押したか
-	bool isPush = InputManager::GetInstance()->IsTrgDown(KEY_INPUT_F);
-	bool isPadPush = InputManager::GetInstance()->IsPadBtnTrgDown(
+	// キー／パッド入力を判定（パッドは単一：PAD1 を想定）
+	const bool isKeyPush = InputManager::GetInstance()->IsTrgDown(KEY_INPUT_F);
+	const bool isPadPush = InputManager::GetInstance()->IsPadBtnTrgDown(
 		InputManager::JOYPAD_NO::PAD1,
 		InputManager::JOYPAD_BTN::RIGHT);
 
 	// 入力がなければ終了
-	if (!isPush && !isPadPush) return;
+	if (!isKeyPush && !isPadPush)
+	{
+		return;
+	}
 
-	// 押したプレイヤー（パッドは常にプレイヤー1扱い）
-	int playerNo = (isPadPush || activePlayer_ == Player::PLAYER_NO::PLAYER1) ? 0 : 1;
+	// 押したプレイヤーは「現在アクティブなプレイヤー」を基準にする
+	int playerNo = (activePlayer_ == Player::PLAYER_NO::PLAYER1) ? 0 : 1;
 
-	// ボタンとの距離チェック
-	const float distance = VSize(VSub(players_[playerNo].player_->GetTransform().pos, objectPos));
-	if (distance >= 180.0f) return;
+	// ボタンとの距離チェック（アクティブプレイヤー基準）
+	const float distance = VSize(VSub(
+		players_[playerNo].player_->GetTransform().pos,
+		objectPos));
+
+	if (distance >= 180.0f)
+	{
+		return;
+	}
 
 	// ボタンを押した
 	obj.SetButtomPushed(true);
@@ -599,6 +621,10 @@ void TutorialScene::Draw(void)
 		{
 			MV1DeleteModel(pinID_);
 			pinID_ = -1;
+		}
+		for (auto& wall : walls_)
+		{
+			wall->Draw();
 		}
 
 		// 全オブジェクトを順に描画

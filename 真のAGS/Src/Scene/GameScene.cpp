@@ -603,8 +603,6 @@ void GameScene::Draw(void)
 
 	SetUseShadowMap(0, shadowMapHandle_);
 
-
-
 	int halfWidth = screenWidth_ / 2;
 
 	for (int i = 0; i < players_.size(); i++)
@@ -784,7 +782,7 @@ void GameScene::ChangeScene(const std::shared_ptr<SceneBase>& scene) const
 		AudioManager::GetInstance()->DeleteSceneSound(LoadScene::GAME);
 	}
 
-	DeleteShadowMap(shadowMapHandle_);
+	//DeleteShadowMap(shadowMapHandle_);
 	SceneManager::GetInstance()->ChangeScene(scene);
 }
 

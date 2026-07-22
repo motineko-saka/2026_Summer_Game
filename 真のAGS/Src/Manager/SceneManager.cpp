@@ -149,6 +149,19 @@ void SceneManager::Release(void)
 	}
 	scenes_.clear();
 
+	// SceneTransition の解放
+	if (sceneTransition_)
+	{
+		sceneTransition_.reset();
+	}
+
+	// mainScreen_ の解放
+	if (mainScreen_ != -1)
+	{
+		DeleteGraph(mainScreen_);
+		mainScreen_ = -1;
+	}
+
 	// ロード画面の削除
 	Loading::GetInstance()->Release();
 	Loading::GetInstance()->DeleteInstance();
@@ -160,12 +173,20 @@ void SceneManager::ChangeScene(std::shared_ptr<SceneBase> scene)
 	// シーンが空か？
 	if (scenes_.empty())
 	{
-		//空なので新しく入れる
+		// 空なので新しく入れる
 		scenes_.push_back(scene);
 	}
 	else
 	{
-		//末尾のものを新しい物に入れ替える
+		// もしポーズなどのオーバーレイが積まれているならそれを取り除く（1つ分）
+		// これにより「ポーズ画面が置き換わる」問題を防ぎ、下にある実際のゲームシーンを切替できます。
+		if (scenes_.size() > 1)
+		{
+			// 最後に積まれている overlay を削除（shared_ptr の参照が切れれば破棄される）
+			scenes_.pop_back();
+		}
+
+		// 末尾のものを新しい物に入れ替える
 		scenes_.back() = scene;
 	}
 
