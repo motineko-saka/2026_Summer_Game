@@ -42,12 +42,21 @@ void SceneBase::CreateWall(StageManager& stageM)
         if (isWallCreate) continue;
 
         auto& bb = stage->GetBoundingBox();
+		const auto& stageCutPos = stage->GetStageCutPos();
 
         float centerX = (bb.minPos.x + bb.maxPos.x) * 0.5f;
         float centerZ = (bb.minPos.z + bb.maxPos.z) * 0.5f;
 
         // 真ん中
         walls_.push_back(std::make_unique<Wall>(VECTOR(centerX, 0, centerZ)));
+
+       // ２分割
+        for (int i = 0; i < 2; i++)
+        {
+            walls_.push_back(std::make_unique<Wall>(stageCutPos[i], true));
+        }
+       //walls_.push_back(std::make_unique<Wall>(VECTOR(stageCutPos, 0, bb.minPos.z), true));
+       //walls_.push_back(std::make_unique<Wall>(VECTOR(centerX, 0, bb.maxPos.z), true));
 
         //// 奥手前（Z固定、Xはステージ中央）
         //walls_.push_back(std::make_unique<Wall>(VECTOR(centerX, 0, bb.minPos.z), true));

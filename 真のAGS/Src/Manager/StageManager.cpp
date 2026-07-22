@@ -62,7 +62,9 @@ void StageManager::Draw(void)
 	for (const auto& stage : stages_)
 	{
 		stage->Draw();
+		stage->DrawDebug();
 	}
+
 }
 
 void StageManager::DrawDebug(void)

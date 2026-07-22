@@ -70,8 +70,11 @@ protected:
 
 private:
 
-	static constexpr VECTOR PLAYER_ONE__DEFAULT_POS = { -1000.0f, 0.0f, 0.0f };
+	static constexpr VECTOR PLAYER_ONE__DEFAULT_POS = { -1000.0f, 0.0f, 1000.0f };
 	static constexpr VECTOR PLAYER_TWO__DEFAULT_POS = { 1000.0f, 0.0f, 0.0f };
+
+	static constexpr VECTOR TUTORIAL_PLAYER_ONE_DEFAULT_POS = { -1000.0f, 0.0f, 0.0f };
+	static constexpr VECTOR TUTORIAL_PLAYER_TWO_DEFAULT_POS = { 1000.0f, 0.0f, 0.0f };
 
 	static constexpr VECTOR PLAYER_DEFAULT_SCALE = { 0.5f, 0.5f, 0.5f };
 

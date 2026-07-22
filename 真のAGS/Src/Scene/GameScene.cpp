@@ -446,7 +446,7 @@ void GameScene::Update(void)
 		return;
 	}
 
-	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_Q))
+	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_Q) || isClear_)
 	{
 		ChangeScene(std::make_shared<GameClearScene>());
 		return;
@@ -455,12 +455,6 @@ void GameScene::Update(void)
 	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_H))
 	{
 		ChangeScene(std::make_shared<GameOverScene>());
-		return;
-	}
-
-	if (isClear_)
-	{
-		ChangeScene(std::make_shared<GameClearScene>());
 		return;
 	}
 
@@ -479,6 +473,11 @@ void GameScene::Update(void)
 			Player::PLAYER_NO::PLAYER2 : Player::PLAYER_NO::PLAYER1;
 	}
 
+	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_8))
+	{
+		walls_.pop_back();
+	}
+
 	// クリア
 	for (const auto& player : players_)
 	{
@@ -494,33 +493,6 @@ void GameScene::Update(void)
 			return;
 		}
 	}
-
-	//// 歯車距離処理（後で消す）
-	//for (auto& obj : objects_)
-	//{
-	//	if (obj == nullptr) continue;
-
-	//	// ギアタイプの場合は専用処理
-	//	if (obj->GetType() != ObjectBase::OBJECT_TYPE::GEAR)
-	//	{
-	//		continue;
-	//	}
-
-	//	auto& objectPos = obj->GetPos();
-
-	//	for (auto& player : players_)
-	//	{
-	//		// ステージモデルのコライダーをプレイヤーに登録
-	//		VECTOR playerPos = player.player_->GetTransform().pos;
-
-	//		float distance1 = VSize(VSub(playerPos, objectPos));
-	//		bool hit = (distance1 < 60.0f);
-	//		if (hit)
-	//		{
-	//			obj->SetIsRot(true);
-	//		}
-	//	}
-	//}
 
 	stageManager_->Update();
 	skyDome_->Update();
@@ -665,10 +637,10 @@ void GameScene::Draw(void)
 			MV1DrawModel(pinID_);
 		}
 	
-		for (auto& wall : walls_)
-		{
-			wall->Draw();
-		}
+		//for (auto& wall : walls_)
+		//{
+		//	wall->Draw();
+		//}
 	
 		// 全オブジェクトを順に描画（それぞれの viewWorld を設定）
 		for (auto& obj : objects_)

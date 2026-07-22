@@ -29,7 +29,7 @@ void Object::InitLoad(void)
 		transform_.SetModel(ResourceManager::GetInstance().LoadModelDuplicate(ResourceManager::SRC::WALL));
 		break;
 	case OBJECT_TYPE::DEFAULT:
-		transform_.SetModel(ResourceManager::GetInstance().LoadModelDuplicate(ResourceManager::SRC::GATE));
+		transform_.SetModel(ResourceManager::GetInstance().LoadModelDuplicate(ResourceManager::SRC::CUBE));
 		break;
 	case OBJECT_TYPE::CHEST:
 		transform_.SetModel(ResourceManager::GetInstance().LoadModelDuplicate(ResourceManager::SRC::Chest));

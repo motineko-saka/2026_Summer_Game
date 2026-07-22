@@ -88,3 +88,10 @@ void StageBase::InitAnimation(void)
 void StageBase::InitPost(void)
 {
 }
+
+void StageBase::DrawDebug(void)
+{
+	printf("%f %f\n", bb_.minPos.z, bb_.maxPos.z);
+	printf("%f\n", stageCutPos_[0].z);
+	printf("%f\n", stageCutPos_[1].z);
+}
