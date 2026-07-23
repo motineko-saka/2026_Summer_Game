@@ -67,6 +67,8 @@
     <ClCompile Include="Src\Scene\TutorialScene.cpp" />
     <ClCompile Include="Src\UI\Tutorial.cpp" />
     <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Gate.cpp" />
+    <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Panel.cpp" />
+    <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Board.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Src\Object\Actor\Charactor\GameObject\Axe.h" />
@@ -125,6 +127,8 @@
     <ClInclude Include="Src\Scene\TutorialScene.h" />
     <ClInclude Include="Src\UI\Tutorial.h" />
     <ClInclude Include="Src\Object\Actor\Charactor\GameObject\Gate.h" />
+    <ClInclude Include="Src\Object\Actor\Charactor\GameObject\Panel.h" />
+    <ClInclude Include="Src\Object\Actor\Charactor\GameObject\Board.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Data\Shader\Monotone.cso" />

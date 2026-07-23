@@ -18,6 +18,8 @@
 #include "../Object/Actor/Charactor/GameObject/Rock.h"
 #include "../Object/Actor/Charactor/GameObject/Axe.h"
 #include "../Object/Actor/Charactor/GameObject/Gate.h"
+#include "../Object/Actor/Charactor/GameObject/Panel.h"
+#include "../Object/Actor/Charactor/GameObject/Board.h"
 #include "../Object/Actor/Wall.h"
 #include "../Object/LightPillar.h"
 #include "../Object/Collider/ColliderBase.h"
@@ -181,6 +183,8 @@ void GameScene::Init(void)
 
 		gaer->AddObject(objects_[gaerObjectNumber].get());
 	}
+	// Board と Panel の初期化
+	InitializeBoardAndPanels();
 
 
 #pragma region コライダ登録
@@ -253,6 +257,38 @@ void GameScene::Init(void)
 			{
 				objects_[index]->AddHitCollider(objCaps);
 			}
+		}
+	}
+
+	//for (int i = 0; i < panels_.size(); i++)
+	//{
+	//	auto& panel = panels_[i];
+
+	//	const auto* panelCaps =
+	//		panel->GetOwnCollider(static_cast<int>(ObjectBase::COLLIDER_TYPE::CAPSULE));
+
+	//	if (!panelCaps) continue;
+
+	//	for (auto& player : players_)
+	//	{
+	//		// ステージモデルのコライダーをプレイヤーに登録
+	//		player.player_->AddHitCollider(panelCaps);
+	//	}
+	//}
+
+	for (int i = 0; i < players_.size(); i++)
+	{
+		auto& player = players_[i];
+
+		const auto* playerCaps =
+			player.player_->GetOwnCollider(static_cast<int>(ObjectBase::COLLIDER_TYPE::CAPSULE));
+
+		if (!playerCaps) continue;
+
+		for (auto& panel : panels_)
+		{
+			// ステージモデルのコライダーをプレイヤーに登録
+			panel->AddHitCollider(playerCaps);
 		}
 	}
 
@@ -434,8 +470,9 @@ const void GameScene::MakeNewObject(std::vector<ObjectBase*>& newObjects)
 void GameScene::Update(void)
 {
 	isPause_ = false;
-	// ポーズ画面を積む
-	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_ESCAPE) || InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::OPTION))
+
+	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_ESCAPE) || 
+		InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::OPTION))
 	{
 		SceneManager::GetInstance()->PushScene(std::make_shared<PauseScene>());
 		isPause_ = true;
@@ -464,11 +501,8 @@ void GameScene::Update(void)
 	{
 		walls_.pop_back();
 	}
-#endif // _DEBUG
+#endif
 
-	
-
-	// プレイヤー選択切替（TAB か 右クリック)
 	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_TAB) ||
 		InputManager::GetInstance()->IsTrgMouseRight() ||
 		InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::R_TRIGGER))
@@ -483,16 +517,18 @@ void GameScene::Update(void)
 			Player::PLAYER_NO::PLAYER2 : Player::PLAYER_NO::PLAYER1;
 	}
 
-	// クリア
+	// クリア判定
+	if (board_ && board_->CheckClear())
+	{
+		isClear_ = true;
+		return;
+	}
+
 	for (const auto& player : players_)
 	{
-		// ステージモデルのコライダーをプレイヤーに登録
 		const auto& playerPos = player.player_->GetTransform().pos;
-
-		float distance1 = VSize(VSub(playerPos, endPos_));
-		float distanceMax = 100.0f;
-		bool hit = (distance1 < distanceMax);
-		if (hit)
+		float distance = VSize(VSub(playerPos, endPos_));
+		if (distance < 100.0f)
 		{
 			isClear_ = true;
 			return;
@@ -501,126 +537,63 @@ void GameScene::Update(void)
 
 	stageManager_->Update();
 	skyDome_->Update();
+
 	for (int i = 0; i < players_.size(); i++)
 	{
 		players_[i].player_->Update();
 		players_[i].camera_->Update();
 	}
 
-	//enemyManager_->Update();
-	// プレイヤー1用のカメラ設定
-
-	//wall_->Update();
 	lightPillar_->Update();
 
-	// 衝突判定チェック(Objectの更新前に実行)
+	if (board_)
+	{
+		board_->Update();
+	}
+
+	for (auto& panel : panels_)
+	{
+		if (panel)
+		{
+			panel->Update();
+		}
+	}
+
+	// 既存のコード...
 	CheckCollisions();
 
-	// 全オブジェクトの更新
 	for (auto& obj : objects_)
 	{
 		if (obj) obj->Update();
-
-		if(!isRot_)
-		{
-			if (obj->GetType() != ObjectBase::OBJECT_TYPE::GEAR) continue;
-
-			Gaer* gear = dynamic_cast<Gaer*>(obj.get());
-
-			if (gear == nullptr)
-				continue;
-
-			if (gear->IsRot())
-			{
-				walls_.pop_back();
-				isRot_ = true;
-			}
-		}
 	}
 
-	if(!isBreak_)
-	{
-		for (const auto& obj : objects_)
-		{
-			if (obj->GetType() != ObjectBase::OBJECT_TYPE::ROCK) continue;
-
-			Rock* rock = dynamic_cast<Rock*>(obj.get());
-
-			if (rock == nullptr)
-				continue;
-
-			if (!rock->GetIsRockExist())
-			{
-				for (auto& player : players_)
-				{
-					player.player_->HitColliderErase(2);
-					isBreak_ = true;
-				}
-			}
-		}
-	}
-
-	// 踏む
-	for (auto& obj : objects_)
-	{
-		if (obj && obj->GetType() == ObjectBase::OBJECT_TYPE::PRESS_BUTTON)
-		{
-			if (obj->IsPushButtonPressed())
-			{
-				// ボタンが踏まれたときの処理
-				obj->PushButton();
-			}
-		}
-	}
-
-	for (int i = 0; i < objects_.size(); i++)
-	{
-		auto& obj = objects_[i];
-		if (obj->IsGrabbed())
-		{
-			DrawSphere3D(ANSWER_VECTOR_LENGTH[i], 20.0f, 180, 0xffffff, 0xffffff, true);
-			
-		}
-	}
-	DrawSphere3D(ANSWER_VECTOR_LENGTH[0], 80.0f, 16, GetColor(255, 0, 0), GetColor(0, 0, 0), FALSE);
-	//DrawSphere3D(ANSWER_VECTOR_LENGTH[1], 20.0f, 180, 0xffffff, 0xffffff, true);
-
-	// 答えの場所に全てのオブジェクトがあるか判定
-	bool isAnswer = true;
-
-	for (auto& obj : objects_)
-	{
-		if (!obj->IsAnswerPosition())
-		{
-			isAnswer = false;
-		}
-	}
-
-	if (isAnswer)
-	{
-		isClear_ = true;
-		return;
-	}
 }
 
 void GameScene::Draw(void)
 {
 	ShadowMap_DrawSetup(shadowMapHandle_);
 
-	// 影を落とすモデルだけ描く
 	players_[0].player_->Draw();
 	players_[1].player_->Draw();
 	stageManager_->Draw();
+
 	for (auto& obj : objects_)
 	{
 		obj->Draw();
 	}
 
+	// Panel の描画
+	for (auto& panel : panels_)
+	{
+		if (panel)
+		{
+			panel->Draw();
+		}
+	}
+
 	ShadowMap_DrawEnd();
 
 	SetUseShadowMap(0, shadowMapHandle_);
-
-
 
 	int halfWidth = screenWidth_ / 2;
 
@@ -630,94 +603,85 @@ void GameScene::Draw(void)
 			screenHandle1_ : screenHandle2_;
 		SetDrawScreen(screenHandle_);
 		ClearDrawScreen();
-	
-		// プレイヤー1用のカメラ設定
+
 		players_[i].camera_->SetBeforeDraw();
-	
-		// 3D描画
+
 		skyDome_->Draw();
 		stageManager_->Draw();
 		lightPillar_->Draw();
-		
+
 		for (int j = 0; j < players_.size(); j++)
 		{
 			players_[j].player_->Draw();
 		}
-	
-		// 答えの描画
+
 		for (int i = 0; i < objects_.size(); i++)
 		{
 			auto& obj = objects_[i];
-	
 			if (!obj->IsGrabbed()) continue;
-			// 持っている
-			// 答えの場所に描画
 			DrawSphere3D(ANSWER_VECTOR_LENGTH[i], 80.0f, 16, GetColor(255, 0, 0), GetColor(0, 0, 0), FALSE);
-	
 			MV1SetPosition(pinID_, ANSWER_VECTOR_LENGTH[i]);
 			MV1DrawModel(pinID_);
 		}
-	
-		for (auto& wall : walls_)
-		{
-			wall->Draw();
-		}
-	
-		// 全オブジェクトを順に描画（それぞれの viewWorld を設定）
+
+		//for (auto& wall : walls_)
+		//{
+		//	wall->Draw();
+		//}
+
 		for (auto& obj : objects_)
 		{
 			if (obj == nullptr) continue;
-			//obj->SetViewWorld(WORLD::LEFT);
 			obj->Draw();
 		}
 
-		DrawNamePlate("ゴール", endPos_);;
+		// Board の描画
+		if (board_)
+		{
+			board_->Draw();
+		}
+
+		// Panel の描画
+		for (auto& panel : panels_)
+		{
+			if (panel)
+			{
+				panel->Draw();
+			}
+		}
+
+		DrawNamePlate("ゴール", endPos_);
 	}
 
-	// メイン画面に転送
 	SetDrawScreen(DX_SCREEN_BACK);
 	ClearDrawScreen();
 
-	// 左半分にプレイヤー1の画面
 	DrawExtendGraph(0, 0, halfWidth, screenHeight_, screenHandle1_, true);
-
-	// 右半分にプレイヤー2の画面
 	DrawExtendGraph(halfWidth, 0, screenWidth_, screenHeight_, screenHandle2_, true);
 
-	// 非アクティブ側を薄暗くする
-	int dimAlpha = 150; 
+	int dimAlpha = 150;
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, dimAlpha);
 	if (activePlayer_ == Player::PLAYER_NO::PLAYER1)
 	{
-		// 右側を暗くする
 		DrawBox(halfWidth, 0, screenWidth_, screenHeight_, GetColor(0, 0, 0), TRUE);
 	}
 	else
 	{
-		// 左側を暗くする
 		DrawBox(0, 0, halfWidth, screenHeight_, GetColor(0, 0, 0), TRUE);
 	}
 	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 
 #pragma region デバッグ表示
-
 #ifdef _DEBUG
-
-	//for (int i = 0; i < players_.size(); i++)
-	//{
-	//	int w = halfWidth * i;
-	//	DrawFormatString(halfWidth, 0, GetColor(255, 255, 255), "P%d角度:(%.1f, %.1f, %.1f)",
-	//		i + 1,
-	//		players_[i].player_->GetTransform().quaRot.ToEuler().x,
-	//		players_[i].player_->GetTransform().quaRot.ToEuler().y,
-	//		players_[i].player_->GetTransform().quaRot.ToEuler().z);
-	//}
-
-	int w = halfWidth;
-	DrawFormatString(halfWidth, 0, GetColor(255, 255, 255), "P1角度:(%.1f, %.1f, %.1f)",
-		players_[0].player_->GetTransform().pos.x,
-		players_[0].player_->GetTransform().pos.y,
-		players_[0].player_->GetTransform().pos.z);
+	for (int i = 0; i < players_.size(); i++)
+	{
+		int w = halfWidth * i;
+		DrawFormatString(halfWidth, 0, GetColor(255, 255, 255), "P%d角度:(%.1f, %.1f, %.1f)",
+			i + 1,
+			players_[i].player_->GetTransform().quaRot.ToEuler().x,
+			players_[i].player_->GetTransform().quaRot.ToEuler().y,
+			players_[i].player_->GetTransform().quaRot.ToEuler().z);
+	}
 
 	for (auto& player : players_)
 	{
@@ -757,10 +721,10 @@ void GameScene::Draw(void)
 		y += 40;
 	}
 
-	for(auto& stage : stageManager_->GetStage())
+	for (auto& stage : stageManager_->GetStage())
 	{
 		auto bb = stage->GetBoundingBox();
-		
+
 		float centerX = (bb.minPos.x + bb.maxPos.x) * 0.5f;
 		float centerZ = (bb.minPos.z + bb.maxPos.z) * 0.5f;
 
@@ -775,27 +739,18 @@ void GameScene::Draw(void)
 		DrawSphere3D(VGet(bb.minPos.x, 0, centerZ), 10.0f, 16, GetColor(255, 0, 0), GetColor(255, 0, 0), TRUE);
 		DrawSphere3D(VGet(bb.maxPos.x, 0, centerZ), 10.0f, 16, GetColor(255, 0, 0), GetColor(255, 0, 0), TRUE);
 	}
-	
-#endif // _DEBUG
+#endif
 #pragma endregion
 }
 
 void GameScene::DrawNamePlate(std::string str, VECTOR pos)
 {
-	// オブジェクトの位置
 	const auto objectPos = ConvWorldPosToScreenPos(pos);
-
-	// 文字の長さ
 	const int strWidth = GetDrawStringWidth(str.c_str(), static_cast<int>(str.length()));
-
-	// 半分に
 	const int drawX = static_cast<int>(objectPos.x) - (strWidth / 2);
 
-	// 文字を書く
 	DrawFormatString(drawX, static_cast<int>(objectPos.y) - 120, 0xffff00, str.c_str());
-
-	// 矢印を書く
-	DrawFormatString(static_cast<int>(objectPos.x), static_cast<int>(objectPos.y) - 100, 0xffff00, "　↓");
+	DrawFormatString(static_cast<int>(objectPos.x), static_cast<int>(objectPos.y) - 100, 0xffff00, "↓");
 }
 
 void GameScene::ChangeScene(const std::shared_ptr<SceneBase>& scene) const
@@ -813,19 +768,16 @@ void GameScene::ChangeScene(const std::shared_ptr<SceneBase>& scene) const
 
 void GameScene::Release(void)
 {
-	// オーディオマネージャーのインスタンスの削除
 	AudioManager::GetInstance()->DeleteInstance();
 
 	objects_.clear();
+	panels_.clear();
+	board_.reset();
 
 	MV1DeleteModel(pinID_);
 
-	//enemyManager_->Release();
-	//delete enemyManager_;
-
 	players_.clear();
 
-	// スクリーンハンドルの削除
 	if (screenHandle1_ != -1)
 	{
 		DeleteGraph(screenHandle1_);
@@ -833,5 +785,48 @@ void GameScene::Release(void)
 	if (screenHandle2_ != -1)
 	{
 		DeleteGraph(screenHandle2_);
+	}
+}
+
+void GameScene::InitializeBoardAndPanels(void)
+{
+	// Board の作成と初期化
+	board_ = std::make_unique<Board>();
+
+	// 初期状態
+	std::array<std::array<Board::ELEMENT, Board::STAGE_SIZE>, Board::STAGE_SIZE> initialBoard =
+	{ {
+		{{ Board::ELEMENT::ICE,  Board::ELEMENT::FIRE,  Board::ELEMENT::ICE  }},
+		{{ Board::ELEMENT::FIRE, Board::ELEMENT::WATER, Board::ELEMENT::FIRE }},
+		{{ Board::ELEMENT::ICE,  Board::ELEMENT::FIRE,  Board::ELEMENT::ICE  }}
+	} };
+
+	board_->Initialize(initialBoard);
+
+	// Panel の作成
+	panels_.clear();
+	panels_.reserve(Board::STAGE_SIZE * Board::STAGE_SIZE);
+
+	for (int y = 0; y < Board::STAGE_SIZE; ++y)
+	{
+		for (int x = 0; x < Board::STAGE_SIZE; ++x)
+		{
+			// Panel をワールド座標に配置
+			VECTOR panelPos = board_->GetPanelCenterPos(x, y);
+			panelPos.y = 0.0f;
+
+			auto panel = std::make_unique<Panel>(
+				SceneBase::WORLD::LEFT,
+				VECTOR{ 0.0f, 0.0f, 0.0f },
+				ObjectBase::OBJECT_TYPE::BUTTON
+			);
+
+			panel->SetIndex(x, y);
+			panel->SetBoard(board_.get());
+			panel->SetPosition(panelPos);
+			panel->Init();
+
+			panels_.push_back(std::move(panel));
+		}
 	}
 }
