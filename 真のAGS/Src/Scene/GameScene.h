@@ -108,4 +108,5 @@ private:
 	}
 
 	int shadowMapHandle_;
+
 };
