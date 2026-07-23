@@ -122,7 +122,7 @@ private:
 	//-------------------------
 	// ボタンパターン
 	//-------------------------
-	std::vector<SceneBase::WORLD> buttonRequiredPattern_{ SceneBase::WORLD::RIGHT, SceneBase::WORLD::LEFT, SceneBase::WORLD::LEFT, SceneBase::WORLD::LEFT, SceneBase::WORLD::RIGHT };
+	std::vector<SceneBase::WORLD> buttonRequiredPattern_{ SceneBase::WORLD::LEFT, SceneBase::WORLD::RIGHT, SceneBase::WORLD::LEFT, SceneBase::WORLD::LEFT, SceneBase::WORLD::RIGHT };
 	std::vector<SceneBase::WORLD> buttonPressHistory_;
 	int buttonPTarget_ = 5;
 	int buttonPCount_ = 0;
