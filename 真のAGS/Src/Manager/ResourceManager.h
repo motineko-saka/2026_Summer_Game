@@ -51,6 +51,7 @@ public:
 		GAME_CLEAR,
 		GAME_OVER,
 		HINTO,
+		HINTO2,
 	};
 
 	// 明示的にインステンスを生成する
@@ -73,7 +74,7 @@ public:
 
 	// リソースの複製ロード(モデル用)
 	int LoadModelDuplicate(SRC src);
-
+	void DebugDump() const;
 private:
 
 	// 静的インスタンス

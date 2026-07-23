@@ -2,6 +2,8 @@
 #include "../Application.h"
 #include "Resource.h"
 #include "ResourceManager.h"
+#include <sstream>
+#include <Windows.h>
 
 ResourceManager* ResourceManager::instance_ = nullptr;
 
@@ -141,11 +143,11 @@ void ResourceManager::Init(void)
 	resourcesMap_.emplace(SRC::UI_EXIT, res);
 
 	// 宝箱
-	res = new RES(RES_T::MODEL, PATH_MDL + "Object/Box.mv1");
+	res = new RES(RES_T::MODEL, PATH_MDL + "Object/Chest.mv1");
 	resourcesMap_.emplace(SRC::Chest, res);
 
 	// 開いた宝箱
-	res = new RES(RES_T::MODEL, PATH_MDL + "Object/OpenBox.mv1");
+	res = new RES(RES_T::MODEL, PATH_MDL + "Object/ChestOpen.mv1");
 	resourcesMap_.emplace(SRC::OPENCHEST, res);
 
 	// 絵の具
@@ -189,8 +191,12 @@ void ResourceManager::Init(void)
 	resourcesMap_.emplace(SRC::GAME_OVER, res);
 
 	// ヒント
-	res = new RES(RES_T::IMG, PATH_IMG + "enogu/Hinto2.png");
+	res = new RES(RES_T::IMG, PATH_IMG + "enogu/Hinto3.png");
 	resourcesMap_.emplace(SRC::HINTO, res);
+
+	// ヒント2
+	res = new RES(RES_T::IMG, PATH_IMG + "enogu/Hinto4.png");
+	resourcesMap_.emplace(SRC::HINTO2, res);
 }
 
 void ResourceManager::Release(void)
@@ -241,6 +247,29 @@ int ResourceManager::LoadModelDuplicate(SRC src)
 
 ResourceManager::ResourceManager(void)
 {
+}
+
+// デバッグ用のリソースマネージャの状態を出力する
+void ResourceManager::DebugDump() const
+{
+	std::ostringstream oss;
+	oss << "ResourceManager Dump: resourcesMap_=" << resourcesMap_.size()
+		<< " loadedMap_=" << loadedMap_.size() << "\n";
+
+	for (const auto& p : resourcesMap_)
+	{
+		const auto src = static_cast<int>(p.first);
+		const Resource* r = p.second;
+		oss << " SRC=" << src
+			<< " path=" << r->path_
+			<< " type=" << static_cast<int>(r->type_)
+			<< " handle=" << r->handleId_
+			<< " dupCount=" << r->duplicateModelIds_.size()
+			<< "\n";
+	}
+
+	std::string s = oss.str();
+	OutputDebugStringA(s.c_str());
 }
 
 Resource& ResourceManager::_Load(SRC src)

@@ -10,6 +10,7 @@
 #include "../../Collider/ColliderModel.h"
 #include "../../../Audio/AudioManager.h"
 #include "Player.h"
+#include <memory>
 
 Player::Player(void)
 	:
@@ -123,22 +124,27 @@ void Player::InitTransform(void)
 void Player::InitCollider(void)
 {
 	// モデルのコライダ
-	ColliderModel* colModel =
-		new ColliderModel(ColliderBase::TAG::PLAYER, &transform_);
-	ownColliders_.emplace(static_cast<int>(COLLIDER_TYPE::MODEL), colModel);
+	{
+		auto colModelUP = std::make_unique<ColliderModel>(ColliderBase::TAG::PLAYER, &transform_);
+		ownColliders_.emplace(static_cast<int>(COLLIDER_TYPE::MODEL), std::move(colModelUP));
+	}
 
 	// 主に地面との衝突で使用する線分コライダ
-	ColliderLine* colLine = new ColliderLine(
-		ColliderBase::TAG::PLAYER, &transform_,
-		COL_LINE_START_LOCAL_POS, COL_LINE_END_LOCAL_POS);
-	ownColliders_.emplace(static_cast<int>(COLLIDER_TYPE::LINE), colLine);
+	{
+		auto colLineUP = std::make_unique<ColliderLine>(
+			ColliderBase::TAG::PLAYER, &transform_,
+			COL_LINE_START_LOCAL_POS, COL_LINE_END_LOCAL_POS);
+		ownColliders_.emplace(static_cast<int>(COLLIDER_TYPE::LINE), std::move(colLineUP));
+	}
 
 	// 主に壁や木などの衝突で仕様するカプセルコライダ
-	ColliderCapsule* colCapsule = new ColliderCapsule(
-		ColliderBase::TAG::PLAYER, &transform_,
-		COL_CAPSULE_TOP_LOCAL_POS, COL_CAPSULE_DOWN_LOCAL_POS,
-		COL_CAPSULE_RADIUS);
-	ownColliders_.emplace(static_cast<int>(COLLIDER_TYPE::CAPSULE), colCapsule);
+	{
+		auto colCapsuleUP = std::make_unique<ColliderCapsule>(
+			ColliderBase::TAG::PLAYER, &transform_,
+			COL_CAPSULE_TOP_LOCAL_POS, COL_CAPSULE_DOWN_LOCAL_POS,
+			COL_CAPSULE_RADIUS);
+		ownColliders_.emplace(static_cast<int>(COLLIDER_TYPE::CAPSULE), std::move(colCapsuleUP));
+	}
 }
 
 void Player::InitAnimation(void)
@@ -187,7 +193,7 @@ void Player::UpdateProcess(void)
 	// 掴む/放す処理
 	ProcessPickup();
 
-	if(isGameScene_)
+	if (isGameScene_)
 	{
 		// オブジェクトとの衝突処理
 		CollisionObject();
@@ -217,37 +223,49 @@ void Player::ProcessMove(void)
 
 	movePow_ = AsoUtility::VECTOR_ZERO;
 
-	// ゲームパッドが接続されているかで処理を分ける
-	if (GetJoypadNum() == 0)
+	// キーボード
+	if (InputManager::GetInstance()->IsNew(KEY_INPUT_W))
 	{
-		// WASD で移動処理
-		if (InputManager::GetInstance()->IsNew(KEY_INPUT_W)) { dir = AsoUtility::DIR_F; }
-		if (InputManager::GetInstance()->IsNew(KEY_INPUT_A)) { dir = AsoUtility::DIR_L; }
-		if (InputManager::GetInstance()->IsNew(KEY_INPUT_S)) { dir = AsoUtility::DIR_B; }
-		if (InputManager::GetInstance()->IsNew(KEY_INPUT_D)) { dir = AsoUtility::DIR_R; }
-
-		if (InputManager::GetInstance()->IsNew(KEY_INPUT_W) && InputManager::GetInstance()->IsNew(KEY_INPUT_A)) { dir = AsoUtility::DIR_FL; }
-		if (InputManager::GetInstance()->IsNew(KEY_INPUT_W) && InputManager::GetInstance()->IsNew(KEY_INPUT_D)) { dir = AsoUtility::DIR_FR; }
-		if (InputManager::GetInstance()->IsNew(KEY_INPUT_S) && InputManager::GetInstance()->IsNew(KEY_INPUT_A)) { dir = AsoUtility::DIR_BL; }
-		if (InputManager::GetInstance()->IsNew(KEY_INPUT_S) && InputManager::GetInstance()->IsNew(KEY_INPUT_D)) { dir = AsoUtility::DIR_BR; }
-
-	//if (InputManager::GetInstance()->IsNew(KEY_INPUT_LSHIFT)) { isDash = true; }
+		dir = VAdd(dir, AsoUtility::DIR_F);
 	}
-	else
+
+	if (InputManager::GetInstance()->IsNew(KEY_INPUT_S))
 	{
-		// 接続しているゲームパッド1の情報取得（既存の構成に合わせる）
-		InputManager::JOYPAD_IN_STATE padState =
-			InputManager::GetInstance()->GetJPadInputState(InputManager::JOYPAD_NO::PAD1);
-
-		// アナログキーの入力値を正規化して取得
-		dir = InputManager::GetInstance()->GetDirectionXZAKey(padState.AKeyLX, padState.AKeyLY);
-
-		//if (InputManager::GetInstance()->IsPadBtnNew(InputManager::JOYPAD_NO::PAD1,
-		//	InputManager::JOYPAD_BTN::R_TRIGGER))
-		//{
-		//	isDash = true;
-		//}
+		dir = VAdd(dir, AsoUtility::DIR_B);
 	}
+
+	if (InputManager::GetInstance()->IsNew(KEY_INPUT_A))
+	{
+		dir = VAdd(dir, AsoUtility::DIR_L);
+	}
+
+	if (InputManager::GetInstance()->IsNew(KEY_INPUT_D))
+	{
+		dir = VAdd(dir, AsoUtility::DIR_R);
+	}
+
+	// 接続しているゲームパッド1の情報取得
+	InputManager::JOYPAD_IN_STATE padState =
+		InputManager::GetInstance()->GetJPadInputState(InputManager::JOYPAD_NO::PAD1);
+
+	// アナログキーの入力値を正規化して取得
+	VECTOR padDir =
+		InputManager::GetInstance()->GetDirectionXZAKey(
+			padState.AKeyLX,
+			padState.AKeyLY);
+
+	dir = VAdd(dir, padDir);
+
+	if (!AsoUtility::EqualsVZero(dir))
+	{
+		dir = VNorm(dir);
+	}
+
+	//if (InputManager::GetInstance()->IsPadBtnNew(InputManager::JOYPAD_NO::PAD1,
+	//	InputManager::JOYPAD_BTN::R_TRIGGER))
+	//{
+	//	isDash = true;
+	//}
 
 	if (!AsoUtility::EqualsVZero(dir))
 	{
@@ -315,18 +333,10 @@ void Player::ProcessJump(void)
 	bool isHitKeyNew = false;
 	bool isHitKey = false;
 
-	if (playerNo_ == PLAYER_NO::PLAYER1)
-	{
-		isHitKeyNew = InputManager::GetInstance()->IsNew(KEY_INPUT_SPACE)
-			|| InputManager::GetInstance()->IsPadBtnNew(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::DOWN);
-		isHitKey = InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE)
-			|| InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::DOWN);
-	}
-	//else if (playerNo_ == PLAYER_NO::PLAYER2)
-	//{
-	//	isHitKeyNew = InputManager::GetInstance()->IsNew(KEY_INPUT_RETURN); // Enterキー
-	//	isHitKey = InputManager::GetInstance()->IsTrgDown(KEY_INPUT_RETURN);
-	//}
+	isHitKeyNew = InputManager::GetInstance()->IsNew(KEY_INPUT_SPACE)
+		|| InputManager::GetInstance()->IsPadBtnNew(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::DOWN);
+	isHitKey = InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE)
+		|| InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::DOWN);
 
 	// 溜めジャンプ処理
 	if (isHitKeyNew)
@@ -368,10 +378,13 @@ void Player::ProcessAnimPos(void)
 		// ジャンプ中は線分座標を伸ばす
 		if (ownColliders_.count(static_cast<int>(COLLIDER_TYPE::LINE)) != 0)
 		{
+			// 修正: unique_ptr 保持なら .get() で生ポインタを取得して dynamic_cast する
 			ColliderLine* colLine = dynamic_cast<ColliderLine*>(
-				ownColliders_.at(static_cast<int>(COLLIDER_TYPE::LINE)));
-			colLine->SetLocalPosStart(COL_LINE_JUMP_START_LOCAL_POS);
-			colLine->SetLocalPosEnd(COL_LINE_JUMP_END_LOCAL_POS);
+				ownColliders_.at(static_cast<int>(COLLIDER_TYPE::LINE)).get());
+			if (colLine) {
+				colLine->SetLocalPosStart(COL_LINE_JUMP_START_LOCAL_POS);
+				colLine->SetLocalPosEnd(COL_LINE_JUMP_END_LOCAL_POS);
+			}
 		}
 	}
 	else
@@ -380,9 +393,11 @@ void Player::ProcessAnimPos(void)
 		if (ownColliders_.count(static_cast<int>(COLLIDER_TYPE::LINE)) != 0)
 		{
 			ColliderLine* colLine = dynamic_cast<ColliderLine*>(
-				ownColliders_.at(static_cast<int>(COLLIDER_TYPE::LINE)));
-			colLine->SetLocalPosStart(COL_LINE_START_LOCAL_POS);
-			colLine->SetLocalPosEnd(COL_LINE_END_LOCAL_POS);
+				ownColliders_.at(static_cast<int>(COLLIDER_TYPE::LINE)).get());
+			if (colLine) {
+				colLine->SetLocalPosStart(COL_LINE_START_LOCAL_POS);
+				colLine->SetLocalPosEnd(COL_LINE_END_LOCAL_POS);
+			}
 		}
 	}
 }
@@ -396,9 +411,11 @@ void Player::ProcessAnimCapsule(void)
 		if (ownColliders_.count(static_cast<int>(COLLIDER_TYPE::CAPSULE)) != 0)
 		{
 			ColliderCapsule* colCapsule = dynamic_cast<ColliderCapsule*>(
-				ownColliders_.at(static_cast<int>(COLLIDER_TYPE::CAPSULE)));
-			colCapsule->SetLocalPosTop(COL_CAPSULE_TOP_JUMP_LOCAL_POS);
-			colCapsule->SetLocalPosDown(COL_CAPSULE_DOWN_JUMP_LOCAL_POS);
+				ownColliders_.at(static_cast<int>(COLLIDER_TYPE::CAPSULE)).get());
+			if (colCapsule) {
+				colCapsule->SetLocalPosTop(COL_CAPSULE_TOP_JUMP_LOCAL_POS);
+				colCapsule->SetLocalPosDown(COL_CAPSULE_DOWN_JUMP_LOCAL_POS);
+			}
 		}
 	}
 	else
@@ -407,9 +424,11 @@ void Player::ProcessAnimCapsule(void)
 		if (ownColliders_.count(static_cast<int>(COLLIDER_TYPE::CAPSULE)) != 0)
 		{
 			ColliderCapsule* colCapsule = dynamic_cast<ColliderCapsule*>(
-				ownColliders_.at(static_cast<int>(COLLIDER_TYPE::CAPSULE)));
-			colCapsule->SetLocalPosTop(COL_CAPSULE_TOP_LOCAL_POS);
-			colCapsule->SetLocalPosDown(COL_CAPSULE_DOWN_LOCAL_POS);
+				ownColliders_.at(static_cast<int>(COLLIDER_TYPE::CAPSULE)).get());
+			if (colCapsule) {
+				colCapsule->SetLocalPosTop(COL_CAPSULE_TOP_LOCAL_POS);
+				colCapsule->SetLocalPosDown(COL_CAPSULE_DOWN_LOCAL_POS);
+			}
 		}
 	}
 }
@@ -499,50 +518,7 @@ void Player::DropHeldObject(void)
 void Player::DrawDebug(void)
 {
 	int offsetX = (playerNo_ == PLAYER_NO::PLAYER2) ? 400 : 15;
-	//DrawFormatString(offsetX, 20, 0x000000, "%f,%f,%f", transform_.pos.x, transform_.pos.y, transform_.pos.z);
-
-	// 持っているか表示
-	//if (IsHolding())
-	//{
-	//	DrawFormatString(offsetX, 40, 0x000000, "Holding: YES");
-	//}
-	//else
-	//{
-	//	DrawFormatString(offsetX, 40, 0x000000, "Holding: NO");
-	//}
-
 }
-
-//void Player::CollisionObject(void)
-//{
-//	// プレイヤーのカプセルコライダを取得
-//	int capsuleType = static_cast<int>(COLLIDER_TYPE::CAPSULE);
-//	if (ownColliders_.count(capsuleType) == 0) return;
-//
-//	ColliderCapsule* playerCapsule =
-//		dynamic_cast<ColliderCapsule*>(ownColliders_.at(capsuleType));
-//	if (playerCapsule == nullptr) return;
-//
-//	// 衝突しているコライダをチェック
-//	for (const auto& hitCol : hitColliders_)
-//	{
-//		if (hitCol == nullptr) continue;
-//
-//		// オブジェクトのモデルコライダのみ対象
-//		if (hitCol->GetTag() != ColliderBase::TAG::OBJECT &&
-//			hitCol->GetTag() != ColliderBase::TAG::KINOKO) continue;
-//
-//		if (hitCol->GetShape() != ColliderBase::SHAPE::MODEL) continue;
-//
-//		const ColliderModel* objModel =
-//			dynamic_cast<const ColliderModel*>(hitCol);
-//		if (objModel == nullptr) continue;
-//
-//		// プレイヤーのカプセルをモデルに対して押し戻す
-//		playerCapsule->PushBackAlongNormal(objModel, transform_,
-//			CNT_TRY_COLLISION, COLLISION_BACK_DIS, false, false, false);
-//	}
-//}
 
 void Player::CollisionObject(void)
 {
@@ -551,7 +527,7 @@ void Player::CollisionObject(void)
 	if (ownColliders_.count(capsuleType) == 0) return;
 
 	ColliderCapsule* playerCapsule =
-		dynamic_cast<ColliderCapsule*>(ownColliders_.at(capsuleType));
+		dynamic_cast<ColliderCapsule*>(ownColliders_.at(capsuleType).get());
 	if (playerCapsule == nullptr) return;
 
 	// 衝突しているコライダをチェック

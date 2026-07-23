@@ -34,7 +34,7 @@ Application& Application::GetInstance(void)
 void Application::Init(void)
 {
 	// アプリケーションの初期設定
-	SetWindowText("野本の亡霊");
+	SetWindowText("AGS");
 
 	// ウィンドウサイズ
 	SetGraphMode(SCREEN_SIZE_X, SCREEN_SIZE_Y, 32);
@@ -128,11 +128,20 @@ void Application::Run(void)
 {
 	// マウスの非表示
 	SetMouseDispFlag(false);
+
+	// SceneManager を先に取得して安全確認を行う
+	SceneManager* sceneMgr = SceneManager::GetInstance();
+	if (sceneMgr == nullptr)
+	{
+		OutputDebugStringA("Error: SceneManager::GetInstance() returned nullptr in Application::Run (before loop)\n");
+		return;
+	}
+
 	// ゲームループ
-	while (ProcessMessage() == 0 && !SceneManager::GetInstance()->GetGameEnd())
+	while (ProcessMessage() == 0 && !sceneMgr->GetGameEnd())
 	{
 		InputManager::GetInstance()->Update();
-		SceneManager::GetInstance()->Update();
+		sceneMgr->Update();
 
 		// Effekseer の毎フレーム更新（必須）
 		if (EffekseerEffect::GetInstance()) {
@@ -142,12 +151,12 @@ void Application::Run(void)
 		SetDrawScreen(DX_SCREEN_BACK);
 		ClearDrawScreen();
 
-		SceneManager::GetInstance()->Draw();
+		sceneMgr->Draw();
 
 		// Effekseer の描画（Scene の描画後に呼ぶ）
-		if (EffekseerEffect::GetInstance()) {
-			EffekseerEffect::GetInstance()->Draw();
-		}
+		//if (EffekseerEffect::GetInstance()) {
+		//	EffekseerEffect::GetInstance()->Draw();
+		//}
 
 #ifdef _DEBUG
 		// 平均FPS描画

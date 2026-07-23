@@ -8,6 +8,7 @@
 #include "../Scene/TutorialScene.h"
 #include "../Scene/GameScene.h"
 #include "../Manager/Camera.h"
+#include "../Scene/SceneTransition.h"
 
 SceneManager* SceneManager::instance_ = nullptr;
 
@@ -44,6 +45,8 @@ void SceneManager::Init(void)
 
 	// デルタタイム
 	preTime_ = std::chrono::system_clock::now();
+
+	sceneTransition_ = std::make_unique<SceneTransition>();
 }
 
 
@@ -58,6 +61,28 @@ void SceneManager::Update(void)
 	// シーンがなければ終了
 	if (scenes_.empty())
 		return;
+
+	if (isTransition_)
+	{
+		sceneTransition_->Update();
+
+		if (!sceneTransition_->IsPlay())
+		{
+			if (sceneTransition_->GetState() == SceneTransition::STATE::CLOSE)
+			{
+				// シーン変更
+				ChangeScene(nextScene_);
+
+				// 開く演出
+				sceneTransition_->Open();
+			}
+			else if (sceneTransition_->GetState() == SceneTransition::STATE::OPEN)
+			{
+				isTransition_ = false;
+			}
+		}
+		return;
+	}
 
 	// ロード中
 	if (Loading::GetInstance()->IsLoading())
@@ -104,6 +129,11 @@ void SceneManager::Draw(void)
 		}
 	}
 	
+	if (isTransition_)
+	{
+		sceneTransition_->Draw();
+	}
+
 	//// 背面スクリーンにメインスクリーンを描画
 	//SetDrawScreen(DX_SCREEN_BACK);
 	//DrawGraph(0, 0, mainScreen_, true);
@@ -119,6 +149,19 @@ void SceneManager::Release(void)
 	}
 	scenes_.clear();
 
+	// SceneTransition の解放
+	if (sceneTransition_)
+	{
+		sceneTransition_.reset();
+	}
+
+	// mainScreen_ の解放
+	if (mainScreen_ != -1)
+	{
+		DeleteGraph(mainScreen_);
+		mainScreen_ = -1;
+	}
+
 	// ロード画面の削除
 	Loading::GetInstance()->Release();
 	Loading::GetInstance()->DeleteInstance();
@@ -130,12 +173,20 @@ void SceneManager::ChangeScene(std::shared_ptr<SceneBase> scene)
 	// シーンが空か？
 	if (scenes_.empty())
 	{
-		//空なので新しく入れる
+		// 空なので新しく入れる
 		scenes_.push_back(scene);
 	}
 	else
 	{
-		//末尾のものを新しい物に入れ替える
+		// もしポーズなどのオーバーレイが積まれているならそれを取り除く（1つ分）
+		// これにより「ポーズ画面が置き換わる」問題を防ぎ、下にある実際のゲームシーンを切替できます。
+		if (scenes_.size() > 1)
+		{
+			// 最後に積まれている overlay を削除（shared_ptr の参照が切れれば破棄される）
+			scenes_.pop_back();
+		}
+
+		// 末尾のものを新しい物に入れ替える
 		scenes_.back() = scene;
 	}
 
@@ -188,4 +239,16 @@ void SceneManager::ResetDeltaTime(void)
 {
 	deltaTime_ = 0.016f;
 	preTime_ = std::chrono::system_clock::now();
+}
+
+void SceneManager::ChangeSceneTransition(std::shared_ptr<SceneBase> scene)
+{
+	if (isTransition_)
+		return;
+
+	nextScene_ = scene;
+
+	isTransition_ = true;
+
+	sceneTransition_->Start();
 }

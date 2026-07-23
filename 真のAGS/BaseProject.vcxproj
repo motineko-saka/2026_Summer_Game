@@ -19,8 +19,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+<<<<<<< HEAD
     <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Board.cpp" />
     <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Panel.cpp" />
+=======
+    <ClCompile Include="Src\Scene\SceneTransition.cpp" />
+>>>>>>> 3b12d7343cea60c22c85d594c3f3bff7b2ac1b10
     <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Gate.cpp" />
     <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Axe.cpp" />
     <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Object.cpp" />
@@ -64,7 +68,6 @@
     <ClCompile Include="Src\Scene\DebugScene.cpp" />
     <ClCompile Include="Src\Scene\GameOverScene.cpp" />
     <ClCompile Include="Src\Scene\GameScene.cpp" />
-    <ClCompile Include="Src\Scene\GameTitleScene.cpp" />
     <ClCompile Include="Src\Scene\PauseScene.cpp" />
     <ClCompile Include="Src\Scene\SceneBase.cpp" />
     <ClCompile Include="Src\Scene\TitleScene.cpp" />
@@ -79,7 +82,11 @@
     <ClCompile Include="Src\UI\Tutorial.cpp" />
   </ItemGroup>
   <ItemGroup>
+<<<<<<< HEAD
     <ClInclude Include="Src\Object\Actor\Charactor\GameObject\Board.h" />
+=======
+    <ClInclude Include="Src\Scene\SceneTransition.h" />
+>>>>>>> 3b12d7343cea60c22c85d594c3f3bff7b2ac1b10
     <ClInclude Include="Src\Object\Actor\Charactor\GameObject\Gate.h" />
     <ClInclude Include="Src\Object\Actor\Charactor\GameObject\Axe.h" />
     <ClInclude Include="Src\Object\Actor\Charactor\GameObject\Object.h" />
@@ -124,7 +131,6 @@
     <ClInclude Include="Src\Scene\DebugScene.h" />
     <ClInclude Include="Src\Scene\GameOverScene.h" />
     <ClInclude Include="Src\Scene\GameScene.h" />
-    <ClInclude Include="Src\Scene\GameTitleScene.h" />
     <ClInclude Include="Src\Scene\PauseScene.h" />
     <ClInclude Include="Src\Scene\SceneBase.h" />
     <ClInclude Include="Src\Scene\TitleScene.h" />
@@ -152,10 +158,12 @@
     <FxCompile Include="Src\Shader\Vertex\WallPS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Data/Shader/%(Filename).cso</ObjectFileOutput>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
     <FxCompile Include="Src\Shader\Vertex\WallVS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Data/Shader/%(Filename).cso</ObjectFileOutput>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
     </FxCompile>
     <FxCompile Include="Src\Shader\PostEffect\Monotone.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>

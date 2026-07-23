@@ -6,6 +6,13 @@ class PauseScene : public SceneBase
 {
 public:
 
+	enum MENU
+	{
+		TITLE = 0,
+		EXIT,
+		BACK
+	};
+
 	PauseScene(void);				// コンストラクタ
 	~PauseScene(void) override;		// デストラクタ
 
@@ -19,5 +26,5 @@ public:
 	void Release(void)	override;	// 解放
 
 private:
-	bool selectGameEnd_;
+	int selectMenu_;
 };

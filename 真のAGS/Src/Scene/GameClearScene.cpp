@@ -41,8 +41,8 @@ void GameClearScene::LoadEnd(void)
 void GameClearScene::Update(void)
 {
 	// シーン遷移
-	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE ||
-		InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::DOWN)))
+	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_SPACE) ||
+		InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::DOWN))
 	{
 		// ゲームクリアシーンからタイトルシーンに遷移する際に、AudioManagerのインスタンスを削除してリセットする
 		AudioManager::GetInstance()->StopSE();

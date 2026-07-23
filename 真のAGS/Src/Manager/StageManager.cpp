@@ -81,9 +81,13 @@ void StageManager::DrawDebug(void)
 
 void StageManager::Release(void)
 {
-	for (const auto& stage : stages_)
+	for (auto stage : stages_)
 	{
-		stage->Release();
+		if (stage)
+		{
+			stage->Release();
+			delete stage;
+		}
 	}
 	stages_.clear();
 }

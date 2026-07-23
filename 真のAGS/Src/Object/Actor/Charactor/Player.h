@@ -73,15 +73,15 @@ private:
 	static constexpr VECTOR PLAYER_ONE__DEFAULT_POS = { -1000.0f, 0.0f, 1000.0f };
 	static constexpr VECTOR PLAYER_TWO__DEFAULT_POS = { 1000.0f, 0.0f, 1000.0f };
 
-	static constexpr VECTOR TUTORIAL_PLAYER_ONE_DEFAULT_POS = { -1000.0f, 0.0f, 0.0f };
-	static constexpr VECTOR TUTORIAL_PLAYER_TWO_DEFAULT_POS = { 1000.0f, 0.0f, 0.0f };
+	static constexpr VECTOR TUTORIAL_PLAYER_ONE_DEFAULT_POS = { -800.0f, -520.0f, 200.0f };
+	static constexpr VECTOR TUTORIAL_PLAYER_TWO_DEFAULT_POS = { 1000.0f, -520.0f, 0.0f };
 
 	static constexpr VECTOR PLAYER_DEFAULT_SCALE = { 0.5f, 0.5f, 0.5f };
 
 	static constexpr VECTOR PLAYER_DEFAULT_ROT_LOCAL = { 0.0f,180.0f * DX_PI_F / 180.0f,0.0f };
 
 	// ˆÚ“®
-	static constexpr float SPEED_MOVE = 5.0f;
+	static constexpr float SPEED_MOVE = 7.0f;
 
 	// ƒ_ƒbƒVƒ…
 	static constexpr float SPEED_DASH = 10.0f;

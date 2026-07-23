@@ -50,7 +50,10 @@ void ActorBase::Draw(void)
 	// 所有しているコライダの描画
 	for (const auto& own : ownColliders_)
 	{
-		own.second->Draw();
+		if (own.second)
+		{
+			own.second->Draw();
+		}
 	}
 #endif // _DEBUG
 }
@@ -60,10 +63,7 @@ void ActorBase::Release(void)
 	transform_.Release();
 
 	// 自身のコライダ解放
-	for (auto& own : ownColliders_)
-	{
-		delete own.second;
-	}
+	ownColliders_.clear();
 
 }
 
@@ -78,7 +78,7 @@ const ColliderBase* ActorBase::GetOwnCollider(int key) const
 	{
 		return nullptr;
 	}
-	return ownColliders_.at(key);
+	return ownColliders_.at(key).get();
 }
 
 void ActorBase::AddHitCollider(const ColliderBase* hitCollider)

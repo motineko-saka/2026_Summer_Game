@@ -1,6 +1,7 @@
 #pragma once
 #include <map>
 #include <vector>
+#include <memory>
 #include "../Collider/ColliderBase.h"
 #include "../Common/Transform.h"
 
@@ -33,7 +34,7 @@ public:
 	const Transform& GetTransform(void) const;
 
 	// ©g‚ÌÕ“Ëî•ñæ“¾
-	const std::map<int, ColliderBase*>& GetOwnColliders(void)const
+	const std::map<int, std::unique_ptr<ColliderBase>>& GetOwnColliders(void) const
 	{
 		return ownColliders_;
 	}
@@ -59,7 +60,7 @@ protected:
 	Transform transform_;
 
 	// ©g‚ÌÕ“Ëî•ñ
-	std::map<int, ColliderBase*>ownColliders_;
+	std::map<int, std::unique_ptr<ColliderBase>> ownColliders_;
 
 	// Õ“Ë‘Šè‚Ìî•ñ
 	std::vector<const ColliderBase*> hitColliders_;

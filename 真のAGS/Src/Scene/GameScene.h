@@ -29,6 +29,12 @@ public:
 		bool isPlayerHitObject_;
 	};
 
+<<<<<<< HEAD
+=======
+	static constexpr float INTERACT_DISTANCE = 100.0f;
+
+	// コンストラクタ
+>>>>>>> 3b12d7343cea60c22c85d594c3f3bff7b2ac1b10
 	GameScene(void);
 	~GameScene(void) override;
 
@@ -40,6 +46,14 @@ public:
 	void Release(void) override;
 
 private:
+<<<<<<< HEAD
+=======
+
+	// カメラ
+	Camera* camera_;
+
+	// プレイヤーの数
+>>>>>>> 3b12d7343cea60c22c85d594c3f3bff7b2ac1b10
 	static constexpr int PLAYER_NUM = 2;
 
 	constexpr static VECTOR ANSWER_VECTOR = { 1260.0f, -720.0f, -50.5f };

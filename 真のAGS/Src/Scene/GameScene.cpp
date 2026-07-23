@@ -46,6 +46,7 @@ GameScene::GameScene(void)
 
 GameScene::~GameScene(void)
 {
+	Release();
 }
 
 void GameScene::Init(void)
@@ -67,21 +68,29 @@ void GameScene::Init(void)
 
 	players_.resize(PLAYER_NUM);
 
-	for (int i = 0; i < players_.size(); i++)
+	// グローバルカメラ
+	camera_ = new Camera();
+	camera_->Init();
+
+	// プレイヤー＆カメラ生成
+	for (size_t i = 0; i < players_.size(); ++i)
 	{
 		players_[i].camera_ = std::make_unique<Camera>();
 		players_[i].camera_->Init();
 
-		// プレイヤー番号を設定
 		Player::PLAYER_NO pno = (i == 0) ? Player::PLAYER_NO::PLAYER1 : Player::PLAYER_NO::PLAYER2;
-		players_[i].player_ = std::make_unique<Player>(pno, *players_[i].camera_, true);
+		players_[i].player_ = std::make_unique<Player>(pno, *players_[i].camera_);
 		players_[i].player_->Init();
 
 		players_[i].camera_->SetFollow(&players_[i].player_->GetTransform());
 		players_[i].camera_->ChangeMode(Camera::MODE::FOLLOW);
+		players_[i].camera_->Update();
 
 		players_[i].isPlayerHitObject_ = false;
 	}
+
+	players_[0].camera_->SetMouseCenter(screenWidth_ / 4, screenHeight_ / 2);
+	players_[1].camera_->SetMouseCenter(screenWidth_ * 3 / 4, screenHeight_ / 2);
 
 	// ステージ
 	stageManager_ = std::make_unique<StageManager>(SceneManager::SCENE::MAIN);
@@ -127,6 +136,10 @@ void GameScene::Init(void)
 	
 	//PushObject<Rock>(GameScene::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::DEFAULT, { 1300.0f, -320.0f, 500.0f }, AsoUtility::VECTOR_ONE);
 
+	//objects_.push_back(std::make_unique<Gaer>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::GEAR, *objects_[4]));
+	//objects_.back()->Init();
+	//objects_.back()->SetPosition({ -600.0f, 100.0f, 0.0f });
+	//objects_.back()->SetScale(AsoUtility::VECTOR_ONE);
 	objects_.push_back(std::make_unique<Gaer>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::GEAR));
 	objects_.back()->Init();
 	objects_.back()->SetPosition({ -600.0f, -620.0f, 0.0f });
@@ -635,6 +648,7 @@ void GameScene::Draw(void)
 			obj->Draw();
 		}
 
+<<<<<<< HEAD
 		// Board の描画
 		if (board_)
 		{
@@ -651,6 +665,65 @@ void GameScene::Draw(void)
 		}
 
 		DrawNamePlate("ゴール", endPos_);
+=======
+		// インタラクト文字表示
+		for (auto& obj : objects_)
+		{
+			if (!obj) continue;
+			// 既に掴んでいる物は表示しない
+			if (obj->IsGrabbed()) continue;
+			if (CheckCameraViewClip(obj->GetPos())) continue;
+
+			// 対象とするオブジェクト種類
+			const auto t = obj->GetObjectType();
+			if (t != ObjectBase::OBJECT_TYPE::ROCK &&
+				t != ObjectBase::OBJECT_TYPE::AXE &&
+				t != ObjectBase::OBJECT_TYPE::WBOX &&
+				t != ObjectBase::OBJECT_TYPE::BUTTON)
+				continue;
+
+			// プレイヤーとの距離
+			const float dist = VSize(VSub(players_[i].player_->GetTransform().pos, obj->GetTransform().pos));
+			if (dist > INTERACT_DISTANCE) continue;
+
+			// オブジェクト種類
+			std::string label;
+			switch (obj->GetObjectType())
+			{
+			case ObjectBase::OBJECT_TYPE::ROCK:
+				label = "呼び設定";
+				break;
+			case ObjectBase::OBJECT_TYPE::BUTTON:
+				label = "Fで押す";
+				break;
+			case ObjectBase::OBJECT_TYPE::AXE:
+				label = "Eで持てる";
+				break;
+			case ObjectBase::OBJECT_TYPE::WBOX:
+				label = "Eで開く、閉じる";
+				break;
+			default:
+				break;
+			}
+
+			// ワールド座標をスクリーンへ変換して描画
+			VECTOR screenPos = ConvWorldPosToScreenPos(obj->GetPos());
+			const int textW = GetDrawStringWidth(label.c_str(), static_cast<int>(label.length()));
+			const int drawX = static_cast<int>(screenPos.x) - (textW / 2);
+			const int drawY = static_cast<int>(screenPos.y) - 80; // 表示オフセット調整
+
+			// 背景ボックス（半透明黒）
+			const int pad = 6;
+			SetDrawBlendMode(DX_BLENDMODE_ALPHA, 200);
+			DrawBox(drawX - pad, drawY - pad, drawX + textW + pad, drawY + 18 + pad, GetColor(0, 0, 0), TRUE);
+			DrawFormatString(drawX, drawY, GetColor(255, 255, 255), label.c_str());
+			SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+		}
+
+		/*if (EffekseerEffect::GetInstance()) EffekseerEffect::GetInstance()->Draw();*/
+
+		DrawNamePlate("ゴール", endPos_);;
+>>>>>>> 3b12d7343cea60c22c85d594c3f3bff7b2ac1b10
 	}
 
 	SetDrawScreen(DX_SCREEN_BACK);
@@ -762,29 +835,71 @@ void GameScene::ChangeScene(const std::shared_ptr<SceneBase>& scene) const
 		AudioManager::GetInstance()->DeleteSceneSound(LoadScene::GAME);
 	}
 
-	DeleteShadowMap(shadowMapHandle_);
+	//DeleteShadowMap(shadowMapHandle_);
 	SceneManager::GetInstance()->ChangeScene(scene);
 }
 
 void GameScene::Release(void)
 {
+<<<<<<< HEAD
 	AudioManager::GetInstance()->DeleteInstance();
+=======
+	// オーディオマネージャーのインスタンスの削除（存在チェック）
+	if (AudioManager::GetInstance())
+	{
+		AudioManager::GetInstance()->DeleteInstance();
+	}
+>>>>>>> 3b12d7343cea60c22c85d594c3f3bff7b2ac1b10
 
+	// オブジェクトの破棄（unique_ptr がリソースを解放）
 	objects_.clear();
 	panels_.clear();
 	board_.reset();
 
-	MV1DeleteModel(pinID_);
+	// ピンモデルを安全に削除
+	if (pinID_ != -1)
+	{
+		MV1DeleteModel(pinID_);
+		pinID_ = -1;
+	}
+
+<<<<<<< HEAD
+	players_.clear();
+
+=======
+	// シャドウマップを安全に削除
+	if (shadowMapHandle_ != -1)
+	{
+		DeleteShadowMap(shadowMapHandle_);
+		shadowMapHandle_ = -1;
+	}
+
+	// グローバル camera_ は raw pointer -> delete して nullptr に
+	if (camera_ != nullptr)
+	{
+		delete camera_;
+		camera_ = nullptr;
+	}
 
 	players_.clear();
 
+	// walls, skyDome, stageManager, lightPillar のリセット
+	walls_.clear();
+	if (skyDome_) skyDome_.reset();
+	if (stageManager_) stageManager_.reset();
+	if (lightPillar_) lightPillar_.reset();
+
+	// スクリーンハンドル削除
+>>>>>>> 3b12d7343cea60c22c85d594c3f3bff7b2ac1b10
 	if (screenHandle1_ != -1)
 	{
 		DeleteGraph(screenHandle1_);
+		screenHandle1_ = -1;
 	}
 	if (screenHandle2_ != -1)
 	{
 		DeleteGraph(screenHandle2_);
+		screenHandle2_ = -1;
 	}
 }
 
