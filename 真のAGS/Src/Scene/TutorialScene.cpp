@@ -731,8 +731,8 @@ void TutorialScene::Draw(void)
 	ClearDrawScreen();
 	DrawGraph(0, 0, mainScreen, FALSE);
 
-	DrawFormatString(10, 200, GetColor(255, 255, 255), "pattern progress: %d / %d, tries: %d",
-		static_cast<int>(buttonSP_), buttonPTarget_, buttonPCount_);
+	//DrawFormatString(10, 200, GetColor(255, 255, 255), "pattern progress: %d / %d, tries: %d",
+	//	static_cast<int>(buttonSP_), buttonPTarget_, buttonPCount_);
 
 #ifdef _DEBUG
 	// デバッグ表示
@@ -855,6 +855,7 @@ void TutorialScene::Hint(void)
 
 		// プレイヤーとの距離
 		bool isnear = false;
+
 		for (auto& p : players_)
 		{
 			const float dist = VSize(VSub(p.player_->GetTransform().pos, obj->GetTransform().pos));
@@ -864,6 +865,7 @@ void TutorialScene::Hint(void)
 				break;
 			}
 		}
+
 		if (!isnear) continue;
 
 		// ヒント表示
@@ -945,7 +947,7 @@ void TutorialScene::TyutorialTEXT(void)
 
 	// ステップ5: オブジェクトの操作
 	tutorial_.AddStep(
-		"やった！宝箱が開いたよ！\n中に樽を見つけたね。\n近づいて EキーまたはXで持ち上げてみよう！",
+		"やった！謎が解けたみたい宝箱を開けてみよう！\n中に樽を見つけたね。\n近づいて EキーまたはXで持ち上げてみよう！",
 		[this]() -> bool {
 			for (auto& obj : objects_)
 			{

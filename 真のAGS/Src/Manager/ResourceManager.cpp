@@ -191,8 +191,12 @@ void ResourceManager::Init(void)
 	resourcesMap_.emplace(SRC::GAME_OVER, res);
 
 	// ƒqƒ“ƒg
-	res = new RES(RES_T::IMG, PATH_IMG + "enogu/Hinto.png");
+	res = new RES(RES_T::IMG, PATH_IMG + "enogu/Hinto3.png");
 	resourcesMap_.emplace(SRC::HINTO, res);
+
+	// ƒqƒ“ƒg2
+	res = new RES(RES_T::IMG, PATH_IMG + "enogu/Hinto4.png");
+	resourcesMap_.emplace(SRC::HINTO2, res);
 }
 
 void ResourceManager::Release(void)

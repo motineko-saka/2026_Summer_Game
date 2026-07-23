@@ -51,6 +51,7 @@ public:
 		GAME_CLEAR,
 		GAME_OVER,
 		HINTO,
+		HINTO2,
 	};
 
 	// 明示的にインステンスを生成する

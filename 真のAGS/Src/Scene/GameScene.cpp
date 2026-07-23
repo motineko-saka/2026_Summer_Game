@@ -652,6 +652,62 @@ void GameScene::Draw(void)
 			obj->Draw();
 		}
 
+		// インタラクト文字表示
+		for (auto& obj : objects_)
+		{
+			if (!obj) continue;
+			// 既に掴んでいる物は表示しない
+			if (obj->IsGrabbed()) continue;
+			if (CheckCameraViewClip(obj->GetPos())) continue;
+
+			// 対象とするオブジェクト種類
+			const auto t = obj->GetObjectType();
+			if (t != ObjectBase::OBJECT_TYPE::ROCK &&
+				t != ObjectBase::OBJECT_TYPE::AXE &&
+				t != ObjectBase::OBJECT_TYPE::WBOX &&
+				t != ObjectBase::OBJECT_TYPE::BUTTON)
+				continue;
+
+			// プレイヤーとの距離
+			const float dist = VSize(VSub(players_[i].player_->GetTransform().pos, obj->GetTransform().pos));
+			if (dist > INTERACT_DISTANCE) continue;
+
+			// オブジェクト種類
+			std::string label;
+			switch (obj->GetObjectType())
+			{
+			case ObjectBase::OBJECT_TYPE::ROCK:
+				label = "呼び設定";
+				break;
+			case ObjectBase::OBJECT_TYPE::BUTTON:
+				label = "Fで押す";
+				break;
+			case ObjectBase::OBJECT_TYPE::AXE:
+				label = "Eで持てる";
+				break;
+			case ObjectBase::OBJECT_TYPE::WBOX:
+				label = "Eで開く、閉じる";
+				break;
+			default:
+				break;
+			}
+
+			// ワールド座標をスクリーンへ変換して描画
+			VECTOR screenPos = ConvWorldPosToScreenPos(obj->GetPos());
+			const int textW = GetDrawStringWidth(label.c_str(), static_cast<int>(label.length()));
+			const int drawX = static_cast<int>(screenPos.x) - (textW / 2);
+			const int drawY = static_cast<int>(screenPos.y) - 80; // 表示オフセット調整
+
+			// 背景ボックス（半透明黒）
+			const int pad = 6;
+			SetDrawBlendMode(DX_BLENDMODE_ALPHA, 200);
+			DrawBox(drawX - pad, drawY - pad, drawX + textW + pad, drawY + 18 + pad, GetColor(0, 0, 0), TRUE);
+			DrawFormatString(drawX, drawY, GetColor(255, 255, 255), label.c_str());
+			SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+		}
+
+		/*if (EffekseerEffect::GetInstance()) EffekseerEffect::GetInstance()->Draw();*/
+
 		DrawNamePlate("ゴール", endPos_);;
 	}
 

@@ -56,7 +56,7 @@ private:
 	constexpr static VECTOR ANSWER_VECTOR_LENGTH[] = {
 		{760.0f, -520.0f, 600.0f},
 		{0.0f,  -600.0f, 50.0f},
-		{0.0f,  -600.0f, 50.0f}
+		{300.0f,  -600.0f, 100.0f}
 	};
 
 	// カメラ
@@ -122,7 +122,7 @@ private:
 	//-------------------------
 	// ボタンパターン
 	//-------------------------
-	std::vector<SceneBase::WORLD> buttonRequiredPattern_{ SceneBase::WORLD::RIGHT, SceneBase::WORLD::RIGHT, SceneBase::WORLD::RIGHT, SceneBase::WORLD::RIGHT, SceneBase::WORLD::RIGHT };
+	std::vector<SceneBase::WORLD> buttonRequiredPattern_{ SceneBase::WORLD::RIGHT, SceneBase::WORLD::LEFT, SceneBase::WORLD::LEFT, SceneBase::WORLD::LEFT, SceneBase::WORLD::RIGHT };
 	std::vector<SceneBase::WORLD> buttonPressHistory_;
 	int buttonPTarget_ = 5;
 	int buttonPCount_ = 0;

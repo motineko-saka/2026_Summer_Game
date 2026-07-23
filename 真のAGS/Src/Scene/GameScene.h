@@ -23,6 +23,8 @@ public:
 		bool isPlayerHitObject_;
 	};
 
+	static constexpr float INTERACT_DISTANCE = 100.0f;
+
 	// コンストラクタ
 	GameScene(void);
 
