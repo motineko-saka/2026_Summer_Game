@@ -55,7 +55,7 @@ private:
 	// アンサーポジション
 	constexpr static VECTOR ANSWER_VECTOR_LENGTH[] = {
 		{760.0f, -520.0f, 600.0f},
-		{0.0f,  -600.0f, 50.0f},
+		{300.0f,  -600.0f, 100.0f},
 		{300.0f,  -600.0f, 100.0f}
 	};
 
