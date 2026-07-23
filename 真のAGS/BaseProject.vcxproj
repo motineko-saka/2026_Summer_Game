@@ -19,12 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-<<<<<<< HEAD
     <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Board.cpp" />
     <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Panel.cpp" />
-=======
     <ClCompile Include="Src\Scene\SceneTransition.cpp" />
->>>>>>> 3b12d7343cea60c22c85d594c3f3bff7b2ac1b10
     <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Gate.cpp" />
     <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Axe.cpp" />
     <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Object.cpp" />
@@ -82,11 +79,8 @@
     <ClCompile Include="Src\UI\Tutorial.cpp" />
   </ItemGroup>
   <ItemGroup>
-<<<<<<< HEAD
     <ClInclude Include="Src\Object\Actor\Charactor\GameObject\Board.h" />
-=======
     <ClInclude Include="Src\Scene\SceneTransition.h" />
->>>>>>> 3b12d7343cea60c22c85d594c3f3bff7b2ac1b10
     <ClInclude Include="Src\Object\Actor\Charactor\GameObject\Gate.h" />
     <ClInclude Include="Src\Object\Actor\Charactor\GameObject\Axe.h" />
     <ClInclude Include="Src\Object\Actor\Charactor\GameObject\Object.h" />

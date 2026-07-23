@@ -33,6 +33,11 @@ void Object::InitLoad(void)
 		break;
 	case OBJECT_TYPE::CHEST:
 		transform_.SetModel(ResourceManager::GetInstance().LoadModelDuplicate(ResourceManager::SRC::Chest));
+		isHoldable_ = true;
+		break;
+	case OBJECT_TYPE::OPENCHEST:
+		transform_.SetModel(ResourceManager::GetInstance().LoadModelDuplicate(ResourceManager::SRC::OPENCHEST));
+		isHoldable_ = true;
 		break;
 	default:
 		break;

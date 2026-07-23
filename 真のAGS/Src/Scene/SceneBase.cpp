@@ -92,10 +92,10 @@ void SceneBase::CreateWallGame(StageManager& stageM)
         for (int i = 0; i < 2; i++)
         {
             walls_.push_back(std::make_unique<Wall>(
-                VECTOR(stageCutPos[i].x + 1500, stageCutPos[i].y, stageCutPos[i].z), true, true));
+                VECTOR(stageCutPos[i].x + -1500, stageCutPos[i].y, stageCutPos[i].z), true, true));
 
             walls_.push_back(std::make_unique<Wall>(
-                VECTOR(stageCutPos[i].x + -1500, stageCutPos[i].y, stageCutPos[i].z), true, true));
+                VECTOR(stageCutPos[i].x + 1500, stageCutPos[i].y, stageCutPos[i].z), true, true));
         }
         //walls_.push_back(std::make_unique<Wall>(VECTOR(stageCutPos, 0, bb.minPos.z), true));
         //walls_.push_back(std::make_unique<Wall>(VECTOR(centerX, 0, bb.maxPos.z), true));

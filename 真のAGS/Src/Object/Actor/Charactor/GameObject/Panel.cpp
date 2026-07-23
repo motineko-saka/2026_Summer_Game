@@ -1,6 +1,7 @@
 #include "../../../Collider/ColliderLine.h"
 #include "../../../Collider/ColliderCapsule.h"
 #include "../../../Collider/ColliderModel.h"
+#include "../../../../Manager/EffekseerEffect.h"
 #include "Panel.h"
 #include "Board.h"
 
@@ -19,60 +20,60 @@ void Panel::InitObjCol()
 
 void Panel::ObjectUpdateProcess()
 {
-    isButtonPushed_ = false;
+ //   isButtonPushed_ = false;
 
-    if (!IsHitPlayer())
-    {
-        stepLock_ = false;
-        return;
-    }
+ //   if (!IsHitPlayer())
+ //   {
+ //       stepLock_ = false;
+ //       return;
+ //   }
 
-    //if (stepLock_)
-    //    return;
+ //   //if (stepLock_)
+ //   //    return;
 
-    stepLock_ = true;
-    isButtonPushed_ = true;
+ //   stepLock_ = true;
+ //   isButtonPushed_ = true;
 
-    if (board_)
-    {
-        board_->PushPanel(indexX_, indexY_);
-    }
+ //   if (board_)
+ //   {
+ //       board_->PushPanel(indexX_, indexY_);
+ //   }
 
-	// プレイヤーのカプセルコライダを取得
-	int capsuleType = static_cast<int>(COLLIDER_TYPE::MODEL);
-	if (ownColliders_.count(capsuleType) == 0) return;
+	//// プレイヤーのカプセルコライダを取得
+	//int capsuleType = static_cast<int>(COLLIDER_TYPE::MODEL);
+	//if (ownColliders_.count(capsuleType) == 0) return;
 
-	ColliderModel* objModel =
-		dynamic_cast<ColliderModel*>(ownColliders_.at(capsuleType));
-	if (objModel == nullptr) return;
+	//ColliderModel* objModel =
+	//	dynamic_cast<ColliderModel*>(ownColliders_.at(capsuleType));
+	//if (objModel == nullptr) return;
 
-	// 衝突しているコライダをチェック
-	for (const auto& hitCol : hitColliders_)
-	{
-		if (hitCol == nullptr) continue;
+	//// 衝突しているコライダをチェック
+	//for (const auto& hitCol : hitColliders_)
+	//{
+	//	if (hitCol == nullptr) continue;
 
-		// オブジェクトのカプセルコライダのみ対象
-		if (hitCol->GetTag() != ColliderBase::TAG::PLAYER)continue;
+	//	// オブジェクトのカプセルコライダのみ対象
+	//	if (hitCol->GetTag() != ColliderBase::TAG::PLAYER)continue;
 
-		const ColliderCapsule* playerCapsule =
-			dynamic_cast<const ColliderCapsule*>(hitCol);
-		if (playerCapsule == nullptr) continue;
+	//	const ColliderCapsule* playerCapsule =
+	//		dynamic_cast<const ColliderCapsule*>(hitCol);
+	//	if (playerCapsule == nullptr) continue;
 
-        // モデルとプレイヤーカプセルの衝突判定
-        auto result =
-            MV1CollCheck_Capsule(
-                transform_.modelId,
-                -1,
-                playerCapsule->GetPosTop(),
-                playerCapsule->GetPosDown(),
-                playerCapsule->GetRadius()
-            );
+ //       // モデルとプレイヤーカプセルの衝突判定
+ //       auto result =
+ //           MV1CollCheck_Capsule(
+ //               transform_.modelId,
+ //               -1,
+ //               playerCapsule->GetPosTop(),
+ //               playerCapsule->GetPosDown(),
+ //               playerCapsule->GetRadius()
+ //           );
 
-        if (result.HitNum > 0)
-        {
-            int a = 0;
-        }
-	}
+ //       if (result.HitNum > 0)
+ //       {
+ //           int a = 0;
+ //       }
+	//}
 }
 
 Board::ELEMENT Panel::GetElement() const

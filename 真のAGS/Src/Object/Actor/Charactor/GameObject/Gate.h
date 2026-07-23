@@ -15,7 +15,7 @@ public:
 
 private:
 	// オブジェクト種類
-	OBJECT_TYPE type_{ OBJECT_TYPE::DEFAULT };
+	OBJECT_TYPE type_{ OBJECT_TYPE::CHEST };
 
 	std::unique_ptr<ModelMaterial> vertexMaterial_;
 	std::unique_ptr<ModelRenderer> vertexRenderer_;

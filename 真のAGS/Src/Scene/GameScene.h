@@ -29,12 +29,9 @@ public:
 		bool isPlayerHitObject_;
 	};
 
-<<<<<<< HEAD
-=======
 	static constexpr float INTERACT_DISTANCE = 100.0f;
 
 	// コンストラクタ
->>>>>>> 3b12d7343cea60c22c85d594c3f3bff7b2ac1b10
 	GameScene(void);
 	~GameScene(void) override;
 
@@ -46,14 +43,11 @@ public:
 	void Release(void) override;
 
 private:
-<<<<<<< HEAD
-=======
 
 	// カメラ
 	Camera* camera_;
 
 	// プレイヤーの数
->>>>>>> 3b12d7343cea60c22c85d594c3f3bff7b2ac1b10
 	static constexpr int PLAYER_NUM = 2;
 
 	constexpr static VECTOR ANSWER_VECTOR = { 1260.0f, -720.0f, -50.5f };
@@ -73,8 +67,8 @@ private:
 	std::vector<std::unique_ptr<ObjectBase>> objects_;
 
 	// Board と Panel の管理
-	std::unique_ptr<Board> board_;
-	std::vector<std::unique_ptr<Panel>> panels_;
+	/*std::unique_ptr<Board> board_;
+	std::vector<std::unique_ptr<Panel>> panels_;*/
 
 	int screenHandle1_;
 	int screenHandle2_;
@@ -87,18 +81,24 @@ private:
 	bool isClear_ = false;
 	bool isBreak_ = false;
 	bool isRot_ = false;
+	bool isOpen_ = false;
 
+	VECTOR buttonPos2_ = { 850.0f, -616.0f, 522.0f };
 	VECTOR buttonPos_ = { -850.0f, -616.0f, 522.0f };
+	VECTOR numberButtonPos1_ = { -517.0f,  -616.0f, -789.0f };
+	VECTOR numberButtonPos2_ = { -1106.0f, -616.0f, -745.0f };
 	VECTOR rockPos_ = { -660.0f, -320.0f, 630.0f };
 	VECTOR endPos_ = { 1364.0f, -300.0f, 620.0f };
 
 	Player::PLAYER_NO activePlayer_{ Player::PLAYER_NO::PLAYER1 };
 
 	void CheckCollisions(void);
-	const void MakeNewObject(std::vector<ObjectBase*>& newObjects);
-	const void ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*>& newObjects);
+	const void MakeNewObject(std::vector<std::unique_ptr<ObjectBase>>&);
+	const bool ButtonProcess(ObjectBase& obj);
 	void DrawNamePlate(std::string str, VECTOR pos);
 	void ChangeScene(const std::shared_ptr<SceneBase>& scene) const;
+
+	const void ButtonProcess(ObjectBase& obj, std::vector<std::unique_ptr<ObjectBase>>& newObjects, std::vector<int>& removeIndices);
 
 	// Board と Panel の初期化
 	void InitializeBoardAndPanels(void);
@@ -114,4 +114,17 @@ private:
 	}
 
 	int shadowMapHandle_;
+
+	//-------------------------
+	// ボタンパターン
+	//-------------------------
+	std::vector<SceneBase::WORLD> pbuttonRequiredPattern_{ SceneBase::WORLD::RIGHT, SceneBase::WORLD::LEFT, SceneBase::WORLD::LEFT, SceneBase::WORLD::LEFT, SceneBase::WORLD::RIGHT };
+	std::vector<SceneBase::WORLD> buttonRequiredPattern_{ SceneBase::WORLD::LEFT, SceneBase::WORLD::LEFT, SceneBase::WORLD::LEFT, SceneBase::WORLD::LEFT, SceneBase::WORLD::LEFT };
+	std::vector<SceneBase::WORLD> buttonPressHistory_;
+	int buttonPTarget_ = 5;
+	int buttonPCount_ = 0;
+	size_t buttonSP_ = 0;
+	int butcount_ = false;
+	bool buttonsLocked_ = false;
+	bool chestOpenedOnce_ = false;
 };
