@@ -109,7 +109,7 @@ void TutorialScene::Init(void)
 	};
 
 	// ボタンを左右両方に配置
-	pushObject(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::BUTTON, { -700.0f, -520.0f, 100.0f }, { 0.5f, 0.5f, 0.5f }, true);
+	pushObject(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::BUTTON, { -700.0f, -520.0f, 500.0f }, { 0.5f, 0.5f, 0.5f }, true);
 	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::BUTTON, { 900.0f, -520.0f, 100.0f }, { 0.5f, 0.5f, 0.5f }, true);
 	buttonPressHistory_.clear();
 
@@ -634,8 +634,8 @@ void TutorialScene::Draw(void)
 
 			if (obj->GetObjectType() == ObjectBase::OBJECT_TYPE::BUTTON)
 				DrawNamePlate("ボタン", obj->GetPos());
-			else
-				DrawNamePlate("オブジェクト", obj->GetPos());
+			//else
+			//	DrawNamePlate("オブジェクト", obj->GetPos());
 
 			obj->Draw();
 		}

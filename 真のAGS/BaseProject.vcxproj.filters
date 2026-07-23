@@ -5,6 +5,10 @@
     <FxCompile Include="Src\Shader\PostEffect\Tutorial.hlsl" />
     <FxCompile Include="Src\Shader\Vertex\GatePS.hlsl" />
     <FxCompile Include="Src\Shader\Vertex\GateVS.hlsl" />
+    <FxCompile Include="Src\Shader\Vertex\PanelPS.hlsl" />
+    <FxCompile Include="Src\Shader\Vertex\PanelVS.hlsl" />
+    <FxCompile Include="Src\Shader\Vertex\WallPS.hlsl" />
+    <FxCompile Include="Src\Shader\Vertex\WallVS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Axe.cpp" />

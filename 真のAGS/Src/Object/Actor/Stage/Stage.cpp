@@ -90,6 +90,20 @@ void Stage::InitTransform(void)
 
 	bb_.minPos = minPos;
 	bb_.maxPos = maxPos;
+
+	float centerX = (bb_.minPos.x + bb_.maxPos.x) * 0.5f;
+	float lengthZ = bb_.maxPos.z - bb_.minPos.z;
+
+	for (int i = 0; i < STAGE_CUT_NUM; i++)
+	{
+		float t = (i + 1.0f) / 3.0f;   // STAGE_CUT_NUM=2‚È‚ç 1/3, 2/3
+
+		stageCutPos_[i] = VGet(
+			centerX,
+			0.0f,
+			bb_.minPos.z + lengthZ * t
+		);
+	}
 }
 
 void Stage::InitAnimation(void)

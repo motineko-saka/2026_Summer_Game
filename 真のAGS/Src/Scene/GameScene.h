@@ -93,7 +93,10 @@ private:
 	int stageProgress_ = 0;
 	bool isClear_ = false;
 
-	VECTOR buttonPos_ = { -770.0f, -300.0f, 760.0f };
+	bool isBreak_ = false;
+	bool isRot_ = false;;
+
+	VECTOR buttonPos_ = { -850.0f, -616.0f, 522.0f };
 	VECTOR rockPos_ =	{ -660.0f, -320.0f, 630.0f };
 	VECTOR endPos_ =	{ 1364.0f, -300.0f, 620.0f };
 

@@ -7,10 +7,11 @@
 #include "../../Renderer/ModelRenderer.h"
 #include "Wall.h"
 
-Wall::Wall(VECTOR pos, bool isRot)
+Wall::Wall(VECTOR pos, bool isRot, bool isHalf)
 	:
 	tempPos_(pos),
-	isRot_(isRot)
+	isRot_(isRot),
+	isHalf_(isHalf)
 {
 }
 
@@ -44,6 +45,8 @@ void Wall::InitLoad(void)
 		"GateVS.cso", 1,
 		"GatePS.cso", 4);
 
+	vertexMaterial_->AddConstBufVS({ 8, 8, 8, 0.0f });
+
 	auto dir = GetLightDirection();
 	vertexMaterial_->AddConstBufPS({ dir.x, dir.y, dir.z, 0.0f });
 
@@ -60,7 +63,7 @@ void Wall::InitLoad(void)
 
 void Wall::InitTransform(void)
 {
-	transform_.scl = STAGE_DEFAULT_SCALE;
+	transform_.scl = isHalf_ ? STAGE_HARF_SCALE : STAGE_DEFAULT_SCALE;
 	transform_.quaRot = Quaternion::Identity();
 	transform_.quaRotLocal = Quaternion::Identity();
 

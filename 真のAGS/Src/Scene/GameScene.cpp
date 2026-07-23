@@ -59,6 +59,8 @@ void GameScene::Init(void)
 
 	isPause_ = false;
 	isClear_ = false;
+	isBreak_ = false;
+	isRot_ = false;
 
 	lightPillar_ = std::make_unique<LightPillar>();
 
@@ -96,7 +98,7 @@ void GameScene::Init(void)
 	skyDome_ = std::make_unique<SkyDome>(players_[0].player_->GetTransform());
 	skyDome_->Init();
 
-	CreateWall(*stageManager_);
+	CreateWallGame(*stageManager_);
 
 	// エネミー管理
 	//enemyManager_ = new EnemyManager(player1_);
@@ -136,6 +138,14 @@ void GameScene::Init(void)
 	//objects_.back()->Init();
 	//objects_.back()->SetPosition({ -600.0f, 100.0f, 0.0f });
 	//objects_.back()->SetScale(AsoUtility::VECTOR_ONE);
+	objects_.push_back(std::make_unique<Gaer>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::GEAR));
+	objects_.back()->Init();
+	objects_.back()->SetPosition({ -600.0f, -620.0f, 0.0f });
+	objects_.back()->SetScale(AsoUtility::VECTOR_ONE);
+
+	PushObject<Object>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::GEAR_OBJECT, 
+		{ -600.0f, -620.0f, 0.0f }, AsoUtility::VECTOR_ONE);
+
 
 	//objects_.push_back(std::make_unique<Gaer>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::GEAR, objects_[4]));
 	//objects_.back()->Init();
@@ -161,6 +171,29 @@ void GameScene::Init(void)
 	//objects_.back()->Init();
 	//objects_.back()->SetPosition({ 1300.0f, -320.0f, 500.0f });
 	//objects_.back()->SetScale(AsoUtility::VECTOR_ONE);
+
+	for (const auto& obj : objects_)
+	{
+		if (obj->GetType() != ObjectBase::OBJECT_TYPE::GEAR) continue;
+
+		 Gaer* gaer = dynamic_cast<Gaer*>(obj.get());
+
+		if (gaer == nullptr)
+			continue;
+
+		int gaerObjectNumber = -1;
+
+		for (int i = 0; i < objects_.size(); i++)
+		{
+			if (objects_[i]->GetObjectType() == ObjectBase::OBJECT_TYPE::GEAR_OBJECT)
+			{
+				gaerObjectNumber = i;
+				break;
+			}
+		}
+
+		gaer->AddObject(objects_[gaerObjectNumber].get());
+	}
 
 
 #pragma region コライダ登録
@@ -361,7 +394,7 @@ const void GameScene::ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*>& n
 		(InputManager::GetInstance()->IsTrgDown(KEY_INPUT_F) || InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::RIGHT)))
 	{
 		// ボタンが押されたときの処理（例：ゲームクリア、ドアが開くなど）
-
+		walls_.pop_back();
 		obj.SetButtomPushed(true);
 
 		objects_[0]->SetButtomPushed(true);
@@ -421,13 +454,14 @@ void GameScene::Update(void)
 		isPause_ = true;
 	}
 
-	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_P)) 
+#ifdef _DEBUG
+	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_P))
 	{
 		ChangeScene(std::make_shared<TitleScene>());
 		return;
 	}
 
-	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_Q))
+	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_Q) || isClear_)
 	{
 		ChangeScene(std::make_shared<GameClearScene>());
 		return;
@@ -439,11 +473,13 @@ void GameScene::Update(void)
 		return;
 	}
 
-	if (isClear_)
+	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_8))
 	{
-		ChangeScene(std::make_shared<GameClearScene>());
-		return;
+		walls_.pop_back();
 	}
+#endif // _DEBUG
+
+	
 
 	// プレイヤー選択切替（TAB か 右クリック)
 	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_TAB) ||
@@ -476,33 +512,6 @@ void GameScene::Update(void)
 		}
 	}
 
-	//// 歯車距離処理（後で消す）
-	//for (auto& obj : objects_)
-	//{
-	//	if (obj == nullptr) continue;
-
-	//	// ギアタイプの場合は専用処理
-	//	if (obj->GetType() != ObjectBase::OBJECT_TYPE::GEAR)
-	//	{
-	//		continue;
-	//	}
-
-	//	auto& objectPos = obj->GetPos();
-
-	//	for (auto& player : players_)
-	//	{
-	//		// ステージモデルのコライダーをプレイヤーに登録
-	//		VECTOR playerPos = player.player_->GetTransform().pos;
-
-	//		float distance1 = VSize(VSub(playerPos, objectPos));
-	//		bool hit = (distance1 < 60.0f);
-	//		if (hit)
-	//		{
-	//			obj->SetIsRot(true);
-	//		}
-	//	}
-	//}
-
 	stageManager_->Update();
 	skyDome_->Update();
 	for (int i = 0; i < players_.size(); i++)
@@ -524,22 +533,43 @@ void GameScene::Update(void)
 	for (auto& obj : objects_)
 	{
 		if (obj) obj->Update();
-	}
 
-	// 削除対象のオブジェクトを配列から削除
-	for (auto it = objects_.begin(); it != objects_.end(); )
-	{
-		if ((*it)->GetObjectType() == ObjectBase::OBJECT_TYPE::ROCK && !(*it)->GetIsRockExist())
+		if(!isRot_)
 		{
-			it = objects_.erase(it);
-			for (auto& player : players_)
+			if (obj->GetType() != ObjectBase::OBJECT_TYPE::GEAR) continue;
+
+			Gaer* gear = dynamic_cast<Gaer*>(obj.get());
+
+			if (gear == nullptr)
+				continue;
+
+			if (gear->IsRot())
 			{
-				player.player_->HitColliderErase(2);
+				walls_.pop_back();
+				isRot_ = true;
 			}
 		}
-		else
+	}
+
+	if(!isBreak_)
+	{
+		for (const auto& obj : objects_)
 		{
-			++it;
+			if (obj->GetType() != ObjectBase::OBJECT_TYPE::ROCK) continue;
+
+			Rock* rock = dynamic_cast<Rock*>(obj.get());
+
+			if (rock == nullptr)
+				continue;
+
+			if (!rock->GetIsRockExist())
+			{
+				for (auto& player : players_)
+				{
+					player.player_->HitColliderErase(2);
+					isBreak_ = true;
+				}
+			}
 		}
 	}
 
@@ -740,15 +770,21 @@ void GameScene::Draw(void)
 
 #ifdef _DEBUG
 
-	for (int i = 0; i < players_.size(); i++)
-	{
-		int w = halfWidth * i;
-		DrawFormatString(halfWidth, 0, GetColor(255, 255, 255), "P%d角度:(%.1f, %.1f, %.1f)",
-			i + 1,
-			players_[i].player_->GetTransform().quaRot.ToEuler().x,
-			players_[i].player_->GetTransform().quaRot.ToEuler().y,
-			players_[i].player_->GetTransform().quaRot.ToEuler().z);
-	}
+	//for (int i = 0; i < players_.size(); i++)
+	//{
+	//	int w = halfWidth * i;
+	//	DrawFormatString(halfWidth, 0, GetColor(255, 255, 255), "P%d角度:(%.1f, %.1f, %.1f)",
+	//		i + 1,
+	//		players_[i].player_->GetTransform().quaRot.ToEuler().x,
+	//		players_[i].player_->GetTransform().quaRot.ToEuler().y,
+	//		players_[i].player_->GetTransform().quaRot.ToEuler().z);
+	//}
+
+	int w = halfWidth;
+	DrawFormatString(halfWidth, 0, GetColor(255, 255, 255), "P1角度:(%.1f, %.1f, %.1f)",
+		players_[0].player_->GetTransform().pos.x,
+		players_[0].player_->GetTransform().pos.y,
+		players_[0].player_->GetTransform().pos.z);
 
 	for (auto& player : players_)
 	{

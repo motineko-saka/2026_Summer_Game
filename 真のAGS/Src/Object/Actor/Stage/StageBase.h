@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <array>
 #include "../ActorBase.h"
 
 class StageBase : public ActorBase
@@ -33,6 +34,8 @@ public:
 		ANSWER_STAGE,
 	};
 
+	static constexpr int STAGE_CUT_NUM = 2;
+
 	StageBase();
 	virtual ~StageBase(void);
 
@@ -42,7 +45,12 @@ public:
 
 	void DrawAtOffset(const VECTOR& offset);
 
+
+	void DrawDebug(void);
+
 	const BoundingBox GetBoundingBox(void) const { return bb_; }
+
+	std::array<VECTOR, STAGE_CUT_NUM> GetStageCutPos()const { return stageCutPos_; }
 
 	// œŠOƒtƒŒ[ƒ€–¼Ì
 	const std::vector<std::string> EXCLUDE_FRAME_NAMES = { /*"Grass",*/"Plant","Leaves" };
@@ -64,9 +72,13 @@ protected:
 	// ‰Šú‰»Œã‚ÌŒÂ•Êˆ—
 	void InitPost(void)override;
 
+	
+
 	STAGE_TYPE stageType_;
 
 	BoundingBox bb_;
+
+	std::array<VECTOR, STAGE_CUT_NUM> stageCutPos_;
 
 private:
 	static constexpr VECTOR STAGE_DEFAULT_POS = { 0.0f, 0.0f, 0.0f };

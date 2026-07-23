@@ -3,11 +3,11 @@
 #include "../../../../Common/Quaternion.h"
 #include "Gaer.h"
 
-Gaer::Gaer(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type, ObjectBase& object)
+Gaer::Gaer(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type)
 	:
 	ObjectBase(world, ansVec, type),
-	gearRot_(0.0f),
-	object_(object)
+	gearRot_(0.0f)
+	//object_(object)
 {
 }
 
@@ -33,16 +33,27 @@ void Gaer::ObjectUpdateProcess(void)
 	transform_.quaRotLocal = Quaternion::AngleAxis(AsoUtility::Deg2RadD(gearRot_),
 		AsoUtility::AXIS_Z);
 
-	// 歯車距離処理（後で消す）
+	if (object_ == nullptr)
+	{
+		isRot_ = true;
+		return;
+	}
+
+	// 歯車距離処理
 	auto& objectPos = transform_.pos;
 
-	// ステージモデルのコライダーをプレイヤーに登録
-	VECTOR objectPos1 = object_.GetTransform().pos;
+	// オブジェクトのpos
+	VECTOR objectPos1 = object_->GetTransform().pos;
 
 	float distance1 = VSize(VSub(objectPos1, transform_.pos));
-	bool hit = (distance1 < 60.0f);
+	bool hit = (distance1 > 600.0f);
 	if (hit)
 	{
 		isRot_ = true;
 	}
+}
+
+void Gaer::AddObject(ObjectBase* object)
+{
+	object_ = object;
 }

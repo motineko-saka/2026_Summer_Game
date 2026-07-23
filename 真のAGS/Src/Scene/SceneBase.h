@@ -51,4 +51,5 @@ protected:
 	std::vector<std::unique_ptr<Wall>> walls_;
 
 	virtual void CreateWall(StageManager& stageM);
+	virtual void CreateWallGame(StageManager& stageM);
 };
