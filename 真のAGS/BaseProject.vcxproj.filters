@@ -66,9 +66,18 @@
     <ClCompile Include="Src\Scene\TutorialScene.cpp" />
     <ClCompile Include="Src\UI\Tutorial.cpp" />
     <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Gate.cpp" />
+<<<<<<< HEAD
     <ClCompile Include="Src\Scene\SceneTransition.cpp" />
     <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Panel.cpp" />
     <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Board.cpp" />
+=======
+<<<<<<< HEAD
+    <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Panel.cpp" />
+    <ClCompile Include="Src\Object\Actor\Charactor\GameObject\Board.cpp" />
+=======
+    <ClCompile Include="Src\Scene\SceneTransition.cpp" />
+>>>>>>> 3b12d7343cea60c22c85d594c3f3bff7b2ac1b10
+>>>>>>> 7f92e3119438388ea932cf35fb2f9c2c36ed985f
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Src\Object\Actor\Charactor\GameObject\Axe.h" />
@@ -126,9 +135,18 @@
     <ClInclude Include="Src\Scene\TutorialScene.h" />
     <ClInclude Include="Src\UI\Tutorial.h" />
     <ClInclude Include="Src\Object\Actor\Charactor\GameObject\Gate.h" />
+<<<<<<< HEAD
     <ClInclude Include="Src\Scene\SceneTransition.h" />
     <ClInclude Include="Src\Object\Actor\Charactor\GameObject\Panel.h" />
     <ClInclude Include="Src\Object\Actor\Charactor\GameObject\Board.h" />
+=======
+<<<<<<< HEAD
+    <ClInclude Include="Src\Object\Actor\Charactor\GameObject\Panel.h" />
+    <ClInclude Include="Src\Object\Actor\Charactor\GameObject\Board.h" />
+=======
+    <ClInclude Include="Src\Scene\SceneTransition.h" />
+>>>>>>> 3b12d7343cea60c22c85d594c3f3bff7b2ac1b10
+>>>>>>> 7f92e3119438388ea932cf35fb2f9c2c36ed985f
   </ItemGroup>
   <ItemGroup>
     <None Include="Data\Shader\Monotone.cso" />

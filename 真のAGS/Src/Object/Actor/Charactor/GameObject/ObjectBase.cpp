@@ -83,6 +83,7 @@ void ObjectBase::InitLoad(void)
 	case OBJECT_TYPE::SCENE_PROP:
 		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::WALL));
 		break;
+	case OBJECT_TYPE::NUMBER_BUTTON:
 	case OBJECT_TYPE::BUTTON:
 		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::BUTTON));
 		break;
