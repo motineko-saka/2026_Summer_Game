@@ -14,10 +14,7 @@ public:
 		WBOX,
 		AKEG,
 		SCENE_PROP,
-		OPEN_BUTTON,
-		NUMBER_BUTTON,
 		BUTTON,
-		GOAL_BUTTON,
 		PRESS_BUTTON,
 		GEAR,
 		GEAR_OBJECT,
@@ -100,9 +97,6 @@ protected:
 
 	int handFrame_;
 
-	// オブジェクト種類
-	OBJECT_TYPE type_{ OBJECT_TYPE::DEFAULT };
-
 	// リソースロード
 	void InitLoad(void)override;
 
@@ -149,6 +143,9 @@ private:
 
 	SceneBase::WORLD world_;		// 
 	SceneBase::WORLD viewWorld_;	// 今写っている世界
+
+	// オブジェクト種類
+	OBJECT_TYPE type_{ OBJECT_TYPE::DEFAULT };
 
 	// 押されて移動する量
 	VECTOR pushPow_;
