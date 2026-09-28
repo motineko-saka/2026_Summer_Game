@@ -4,6 +4,7 @@ class GameClearScene :
     public SceneBase
 {
 public:
+
 	// コンストラクタ
 	GameClearScene(void);
 
@@ -29,6 +30,8 @@ public:
 	void Release(void) override;
 
 private:
+
 	int bgImage_;
+
 };
 

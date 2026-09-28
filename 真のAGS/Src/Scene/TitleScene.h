@@ -6,6 +6,7 @@ class SkyDome;
 class TitleScene : public SceneBase
 {
 public:
+
 	// コンストラクタ
 	TitleScene(void);
 
@@ -31,6 +32,7 @@ public:
 	void Release(void) override;
 
 private:
+
 	// UI配置用の定数
 	static constexpr int IMG_TITLE_POS_Y = 125;
 	static constexpr int IMG_TITLE_POS_X = 960;
@@ -63,4 +65,5 @@ private:
 
 	// 前フレームのスティックX
 	float prevStickX_ = 0.0f;
+
 };

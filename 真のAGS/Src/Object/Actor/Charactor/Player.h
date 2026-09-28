@@ -173,4 +173,5 @@ private:
 
 	// 歩行ループSE 再生フラグ
 	bool isWalkSePlaying_{ false };
+
 };

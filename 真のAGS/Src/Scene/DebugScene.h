@@ -40,4 +40,5 @@ private:
 
 	// デバッグポイントの保存
 	void SavePoints(void);
+
 };

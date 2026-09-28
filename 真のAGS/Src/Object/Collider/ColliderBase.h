@@ -105,6 +105,8 @@ protected:
 
 
 private:
+
 	// このコライダがプレイヤーに掴まれる対象か
 	bool isGrabbable_ = true;
+
 };

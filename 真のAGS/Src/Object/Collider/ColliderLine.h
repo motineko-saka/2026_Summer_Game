@@ -62,4 +62,5 @@ private:
 	VECTOR localPosEnd_;
 
 	bool isJump_;
+
 };

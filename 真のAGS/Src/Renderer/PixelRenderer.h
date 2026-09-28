@@ -56,4 +56,5 @@ private:
 
 	// ピクセルマテリアル
 	PixelMaterial& pixelMaterial_;
+
 };
