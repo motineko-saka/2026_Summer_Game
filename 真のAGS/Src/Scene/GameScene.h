@@ -22,6 +22,7 @@ class Panel;
 class GameScene : public SceneBase
 {
 public:
+
 	struct PlayerS
 	{
 		std::unique_ptr<Player> player_;
@@ -127,4 +128,5 @@ private:
 	int butcount_ = false;
 	bool buttonsLocked_ = false;
 	bool chestOpenedOnce_ = false;
+
 };

@@ -70,8 +70,9 @@ protected:
 
 private:
 
-	static constexpr VECTOR PLAYER_ONE__DEFAULT_POS = { -1000.0f, 0.0f, 1000.0f };
-	static constexpr VECTOR PLAYER_TWO__DEFAULT_POS = { 1000.0f, 0.0f, 1000.0f };
+	// プレイヤー１の初期位置
+	static constexpr VECTOR PLAYER_ONE_INIT_POS = { -1000.0f, 0.0f, 1000.0f };
+	static constexpr VECTOR PLAYER_TWO_INIT_POS = { 1000.0f, 0.0f, 1000.0f };
 
 	static constexpr VECTOR TUTORIAL_PLAYER_ONE_DEFAULT_POS = { -800.0f, -520.0f, 200.0f };
 	static constexpr VECTOR TUTORIAL_PLAYER_TWO_DEFAULT_POS = { 1000.0f, -520.0f, 0.0f };
