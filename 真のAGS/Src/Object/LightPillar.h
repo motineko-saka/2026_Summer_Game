@@ -21,5 +21,4 @@ private:
 	int timer_;
 
 	bool active_;
-
 };

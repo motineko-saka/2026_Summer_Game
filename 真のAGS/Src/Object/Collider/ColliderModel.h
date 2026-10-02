@@ -55,5 +55,4 @@ protected:
 
 	// Õ“Ë”»’è‚Ì‘ÎÛ‚Æ‚·‚éƒtƒŒ[ƒ€”Ô†
 	std::vector<int> targetFrameIds_;
-
 };

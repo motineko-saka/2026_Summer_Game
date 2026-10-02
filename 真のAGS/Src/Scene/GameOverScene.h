@@ -4,7 +4,6 @@ class GameOverScene :
 	public SceneBase
 {
 public:
-
 	// コンストラクタ
 	GameOverScene(void);
 
@@ -30,8 +29,6 @@ public:
 	void Release(void) override;
 
 private:
-
 	int bgImage_;
-
 };
 

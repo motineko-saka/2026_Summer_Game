@@ -34,6 +34,15 @@ public:
 
 protected:
 
+	// 最大落下速度
+	static constexpr float MAX_FALL_SPEED = -30.0f;
+
+	// 衝突時の押し戻し試行回数
+	static constexpr int CNT_TRY_COLLISION = 20;
+
+	// 衝突時の押し戻し量
+	static constexpr float COLLISION_BACK_DIS = 1.0f;
+
 	AnimationController* animController_;
 
 	// 移動方向
@@ -84,16 +93,5 @@ protected:
 	void Collision(void);
 	void CollisionGravity(void);
 	void CollisionCapsule();
-
-private:
-
-	// 最大落下速度
-	static constexpr float MAX_FALL_SPEED = -30.0f;
-
-	// 衝突時の押し戻し試行回数
-	static constexpr int CNT_TRY_COLLISION = 20;
-
-	// 衝突時の押し戻し量
-	static constexpr float COLLISION_BACK_DIS = 1.0f;
 
 };

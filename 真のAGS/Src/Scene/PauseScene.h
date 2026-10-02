@@ -26,7 +26,5 @@ public:
 	void Release(void)	override;	// ‰ð•ú
 
 private:
-
 	int selectMenu_;
-
 };
