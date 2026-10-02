@@ -44,7 +44,7 @@ public:
 
 	// モデル制御の基本情報更新
 	void Update(void);
-	
+
 	// 解放
 	void Release(void);
 

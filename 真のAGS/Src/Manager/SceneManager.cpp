@@ -14,11 +14,11 @@ SceneManager* SceneManager::instance_ = nullptr;
 
 // コンストラクタ
 SceneManager::SceneManager(void)
+	:
+	isGameEnd_(false),
+	deltaTime_(1.0f / 60.0f),
+	mainScreen_(-1)
 {
-	isGameEnd_ = false;
-
-	deltaTime_ = 1.0f / 60.0f;
-
 }
 
 // デストラクタ
@@ -36,10 +36,8 @@ void SceneManager::Init(void)
 
 	// 最初はタイトル画面から
 	ChangeScene(std::make_shared<TitleScene>());
-	//ChangeScene(std::make_shared<TutorialScene>());
-	//ChangeScene(std::make_shared<GameScene>());
 
-		// メインスクリーン
+	// メインスクリーン
 	mainScreen_ = MakeScreen(
 		Application::SCREEN_SIZE_X, Application::SCREEN_SIZE_Y, true);
 
@@ -108,10 +106,6 @@ void SceneManager::Update(void)
 // 描画
 void SceneManager::Draw(void)
 {
-	//SetDrawScreen(mainScreen_);
-	//// 画面を初期化
-	//ClearDrawScreen();
-
 	// ロード中ならロード画面を描画
 	if (Loading::GetInstance()->IsLoading())
 	{
@@ -133,10 +127,6 @@ void SceneManager::Draw(void)
 	{
 		sceneTransition_->Draw();
 	}
-
-	//// 背面スクリーンにメインスクリーンを描画
-	//SetDrawScreen(DX_SCREEN_BACK);
-	//DrawGraph(0, 0, mainScreen_, true);
 }
 
 // 解放
@@ -227,7 +217,6 @@ void SceneManager::JumpScene(std::shared_ptr<SceneBase> scene)
 float SceneManager::GetDeltaTime(void) const
 {
 	return deltaTime_;
-	//return 1 / 60.0f;
 }
 
 int SceneManager::GetMainScreen(void) const

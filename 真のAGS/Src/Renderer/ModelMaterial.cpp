@@ -26,7 +26,6 @@ ModelMaterial::ModelMaterial(
 	// ピクセルシェーダー用の定数バッファを作成
 	constBufPS_ = CreateShaderConstantBuffer(sizeof(FLOAT4) * constBufFloat4SizePS);
 
-
 	// テクスチャアドレス
 	texAddress_ = TEXADDRESS::CLAMP;
 

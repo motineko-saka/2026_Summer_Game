@@ -69,7 +69,6 @@ private:
 	// 定数バッファハンドル
 	int constBuf_;
 
-
 	// シェーダ
 	int shaderVS_;
 

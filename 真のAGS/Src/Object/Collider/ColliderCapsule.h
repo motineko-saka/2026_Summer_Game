@@ -51,7 +51,7 @@ public:
 		bool isExclude = false, bool isTarget = false, bool onlyYAxis = false) const;
 
 	// Õ“Ë‚µ‚Ä‚¢‚é‚©”Û‚©i‘Îƒ‚ƒfƒ‹j
-	bool IsHit(const ColliderModel* colliderModel, 
+	bool IsHit(const ColliderModel* colliderModel,
 		bool isExclude = false, bool isTarget = false) const;
 
 protected:

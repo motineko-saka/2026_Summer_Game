@@ -28,7 +28,6 @@ public:
 	ObjectBase(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type = OBJECT_TYPE::DEFAULT);
 	virtual ~ObjectBase(void);
 
-	//void Update(void)override;
 	void Draw(void)override;
 	void Release(void)override;
 
@@ -125,6 +124,7 @@ protected:
 
 	virtual void SetFlame(const Transform* follow) {};
 	ColliderBase::TAG tag_;
+
 private:
 	// 衝突判定用ライン開始
 	static constexpr VECTOR COL_LINE_START_LOCAL_POS = { 0.0f, 80.0f, 0.0f };

@@ -72,6 +72,7 @@ protected:
 	// ジャンプの入力受付時間
 	float stepJump_;
 
+	// 重力の計算量
 	bool isGrav = true;
 
 	// リソースロード

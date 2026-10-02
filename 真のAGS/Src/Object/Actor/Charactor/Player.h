@@ -14,7 +14,6 @@ public:
 		RUN,
 		FAST_RUN,
 		JUMP,
-		//MAX,
 	};
 
 	// プレイヤー番号
@@ -44,7 +43,8 @@ public:
 	bool IsActive() const { return isActive_; }
 
 	void HitColliderErase(int index) { 
-		hitColliders_.erase(hitColliders_.begin() + index); }
+		hitColliders_.erase(hitColliders_.begin() + index); 
+	}
 
 protected:
 
@@ -66,6 +66,7 @@ protected:
 	// 更新処理
 	void UpdateProcess(void) override;
 
+	// 更新後処理
 	void UpdateProcessPost(void) override;
 
 private:
@@ -150,9 +151,10 @@ private:
 	// デバッグ描画
 	void DrawDebug(void);
 
-	// 掴んでいるコライダ（NULL=何も掴んでいない）
+	// 掴んでいるコライダ
 	ColliderBase* heldCollider_{ nullptr };
-	// 掴む前にコライダが追従していたTransform（戻すために保持）
+
+	// 掴む前にコライダが追従していたTransform
 	const Transform* heldPrevFollow_{ nullptr };
 
 	// 入力で掴む/放す処理

@@ -52,7 +52,7 @@ void Application::Init(void)
 		return;
 	}
 
-	// Effekseerの初期化（低レベル）
+	// Effekseerの初期化
 	InitEffekseer();
 
 	// EffekseerEffect（ラッパー）の生成・初期化

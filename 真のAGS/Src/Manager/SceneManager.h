@@ -31,11 +31,6 @@ private:
 	SceneManager& operator=(const SceneManager&) = delete;
 	SceneManager(SceneManager&&) = delete;
 	SceneManager& operator=(SceneManager&&) = delete;
-
-	// 下記をコンパイルエラーさせるため 上記を追加
-	// SceneManager copy = *SceneManager::GetInstance();
-	// SceneManager copied(*SceneManager::GetInstance());
-	// SceneManager moved = std::move(*SceneManager::GetInstance());
 public:
 
 	enum SCENE
@@ -44,10 +39,17 @@ public:
 		MAIN,
 	};
 
-	void Init(void);	// 初期化
-	void Update(void);	// 更新
-	void Draw(void);	// 描画
-	void Release(void);	// 解放
+	// 初期化
+	void Init(void);
+
+	// 更新
+	void Update(void);	
+
+	// 描画
+	void Draw(void);	
+
+	// 解放
+	void Release(void);	
 
 	// 状態遷移
 	void ChangeScene(std::shared_ptr<SceneBase> scene);

@@ -20,7 +20,11 @@ ObjectBase::ObjectBase(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type)
 	viewWorld_(world),
 	ansVec_(ansVec),
 	type_(type),
-	pushPow_(AsoUtility::VECTOR_ZERO)
+	pushPow_(AsoUtility::VECTOR_ZERO),
+	handFrame_(-1),
+	isButtomPushed_(false),
+	isRot_(false),
+	tag_(ColliderBase::TAG::OBJECT)
 {
 }
 

@@ -36,13 +36,13 @@ public:
 	constexpr static float PICKUP_DISTANCE = 90.0f;
 
 	// オブジェクト初期配置
-	constexpr static VECTOR BUTTON_LEFT_POS  = { -700.0f, -520.0f, 500.0f };
+	constexpr static VECTOR BUTTON_LEFT_POS = { -700.0f, -520.0f, 500.0f };
 	constexpr static VECTOR BUTTON_RIGHT_POS = { 900.0f,  -520.0f, 100.0f };
-	constexpr static VECTOR AKEG_POS        = { 900.0f,  -520.0f, 300.0f };
-	constexpr static VECTOR CHEST_POS       = { 900.0f,  -520.0f, 300.0f };
-	constexpr static VECTOR WBOX_POS        = { 800.0f,  -520.0f, 100.0f };
-	constexpr static VECTOR NEW_OBJECT_POS  = { 900.0f,  -520.0f, 300.0f };
-	constexpr static VECTOR EFFECT_POS      = { 900.0f,  -520.0f, 300.0f };
+	constexpr static VECTOR AKEG_POS = { 900.0f,  -520.0f, 300.0f };
+	constexpr static VECTOR CHEST_POS = { 900.0f,  -520.0f, 300.0f };
+	constexpr static VECTOR WBOX_POS = { 800.0f,  -520.0f, 100.0f };
+	constexpr static VECTOR NEW_OBJECT_POS = { 900.0f,  -520.0f, 300.0f };
+	constexpr static VECTOR EFFECT_POS = { 900.0f,  -520.0f, 300.0f };
 
 	// プレビュー色（RGBA を分解して定義）
 	constexpr static float PREVIEW_COLOR_R = 0.0f;
@@ -74,6 +74,18 @@ private:
 		{300.0f,  -600.0f, 100.0f},
 		{300.0f,  -600.0f, 100.0f}
 	};
+
+	// オブジェクトスポーン位置 / 効果位置
+	const VECTOR kButtonLeftPos = { -700.0f, -520.0f, 500.0f };
+	const VECTOR kButtonRightPos = { 900.0f,  -520.0f, 100.0f };
+	const VECTOR kAkegPos = { 900.0f,  -520.0f, 300.0f };
+	const VECTOR kChestPos = { 900.0f,  -520.0f, 300.0f };
+	const VECTOR kWboxPos = { 800.0f,  -520.0f, 100.0f };
+	const VECTOR kNewObjectPos = { 900.0f,  -520.0f, 300.0f };
+	const VECTOR kEffectPos = { 900.0f,  -520.0f, 300.0f };
+
+	// オブジェクトスケール
+	const VECTOR ObjectScale = { 0.5f, 0.5f, 0.5f };
 
 	// カメラ
 	Camera* camera_ = nullptr;
@@ -145,8 +157,8 @@ private:
 	size_t buttonSP_ = 0;
 	bool butcount_ = false;
 	bool TbutonCount_ = false;
-	bool buttonsLocked_ = false;  
-	bool chestOpenedOnce_ = false;  
+	bool buttonsLocked_ = false;
+	bool chestOpenedOnce_ = false;
 
 	//-------------------------
 	// ヒント

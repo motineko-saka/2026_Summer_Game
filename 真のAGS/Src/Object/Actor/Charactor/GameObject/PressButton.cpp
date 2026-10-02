@@ -30,7 +30,8 @@ void PressButton::ObjectUpdateProcess(void)
 
 		// 3D距離を計算
 		float distance = VSize(diff);
-		const float BUTTON_TRIGGER_DISTANCE = 100.0f; // 適切な値に調整
+		// 適切な値に調整
+		const float BUTTON_TRIGGER_DISTANCE = 100.0f; 
 
 		if (distance < BUTTON_TRIGGER_DISTANCE)
 		{

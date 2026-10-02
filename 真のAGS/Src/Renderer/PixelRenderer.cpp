@@ -1,7 +1,13 @@
 #include "PixelRenderer.h"
 #include "../Application.h"
 
-PixelRenderer::PixelRenderer(PixelMaterial& pixelMaterial) : pixelMaterial_(pixelMaterial)
+PixelRenderer::PixelRenderer(PixelMaterial& pixelMaterial) 
+	:
+	pixelMaterial_(pixelMaterial),
+	indexes_{},
+	vertexs_{},
+	pos_(0, 0),
+	size_(0, 0)
 {
 }
 
@@ -110,8 +116,7 @@ void PixelRenderer::Draw(void)
 
 	size_t size;
 
-	// ピクセルシェーダにテクスチャを転送
-	//const auto& textures = pixelMaterial_.GetTextures();
+	// テクスチャ設定
 	size = textures.size();
 	for (int i = 0; i < size; i++)
 	{
@@ -150,15 +155,6 @@ void PixelRenderer::Draw(void)
 
 	// テクスチャアドレスタイプを変更
 	SetTextureAddressModeUV(texAType, texAType);
-
-	//for (int i = 0; i < 4; i++)
-	//{
-	//	printfDx("%d : %.0f %.0f\n",
-	//		i,
-	//		vertexs_[i].pos.x,
-	//		vertexs_[i].pos.y);
-	//}
-
 	// 描画
 	int result = DrawPolygonIndexed2DToShader(
 		vertexs_,
@@ -166,10 +162,9 @@ void PixelRenderer::Draw(void)
 		indexes_,
 		NUM_POLYGON);
 
-	//printfDx("DrawPolygonIndexed2DToShader = %d\n", result);
-
 	// テクスチャアドレスタイプを元に戻す
-	SetTextureAddressModeUV(DX_TEXADDRESS_CLAMP, DX_TEXADDRESS_CLAMP);	//-----------------------------------------
+	//-----------------------------------------
+	SetTextureAddressModeUV(DX_TEXADDRESS_CLAMP, DX_TEXADDRESS_CLAMP);	
 
 	// テクスチャ解除
 	size = textures.size();

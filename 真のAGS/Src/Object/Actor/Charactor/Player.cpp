@@ -19,7 +19,8 @@ Player::Player(void)
 	heldCollider_(nullptr),
 	heldPrevFollow_(nullptr),
 	camera_(nullptr),
-	isActive_(true)
+	isActive_(true),
+	isGameScene_(false)
 {
 }
 

@@ -23,7 +23,7 @@ void ColliderModel::AddExcludeFrameIds(const std::string& name)
 		if (frameName.find(name) != std::string::npos)
 		{
 			// èúäOÉtÉåÅ[ÉÄÇ…í«â¡
-			
+
 			excludeFrameIds_.push_back(i);
 		}
 	}
@@ -84,7 +84,7 @@ bool ColliderModel::IsTargetFrame(int frameIdx) const
 	return false;
 }
 
-MV1_COLL_RESULT_POLY ColliderModel::GetNearestHitPolyLine(const VECTOR& start, 
+MV1_COLL_RESULT_POLY ColliderModel::GetNearestHitPolyLine(const VECTOR& start,
 	const VECTOR& end, bool isExclude, bool isTarget) const
 {
 	MV1_COLL_RESULT_POLY ret = MV1_COLL_RESULT_POLY();
@@ -144,5 +144,5 @@ MV1_COLL_RESULT_POLY ColliderModel::GetNearestHitPolyLine(const VECTOR& start,
 
 VECTOR ColliderModel::GetPosPushBackAlongNormal(const MV1_COLL_RESULT_POLY& hitColPoly, int maxTryCnt, float pushDistance) const
 {
-	return {0.0f,0.0f,0.0f};
+	return { 0.0f,0.0f,0.0f };
 }

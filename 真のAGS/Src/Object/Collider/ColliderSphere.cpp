@@ -2,10 +2,10 @@
 #include "ColliderSphere.h"
 
 ColliderSphere::ColliderSphere(TAG tag, const Transform* follow, const VECTOR& localPos, float radius)
-:
-ColliderBase(SHAPE::SPHERE, tag, follow),
-localPos_(localPos),
-radius_(radius)
+	:
+	ColliderBase(SHAPE::SPHERE, tag, follow),
+	localPos_(localPos),
+	radius_(radius)
 {
 }
 
@@ -15,27 +15,27 @@ ColliderSphere::~ColliderSphere(void)
 
 const VECTOR& ColliderSphere::GetLocalPos(void) const
 {
-    return localPos_;
+	return localPos_;
 }
 
 void ColliderSphere::SetLocalPos(const VECTOR& localPos)
 {
-    localPos_ = localPos;
+	localPos_ = localPos;
 }
 
 VECTOR ColliderSphere::GetPos(void) const
 {
-    return GetRotPos(localPos_);
+	return GetRotPos(localPos_);
 }
 
 float ColliderSphere::GetRadius(void) const
 {
-    return radius_;
+	return radius_;
 }
 
 void ColliderSphere::SetRadius(float radius)
 {
-    radius_ = radius;
+	radius_ = radius;
 }
 
 VECTOR ColliderSphere::GetPosPushBackAlongNormal(const MV1_COLL_RESULT_POLY& hitColPoly, int maxTryCnt, float pushDistance) const

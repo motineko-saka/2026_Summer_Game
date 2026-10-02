@@ -27,21 +27,10 @@
 namespace
 {
 	// UI / 入力距離しきい値
-	constexpr float kInteractDistance = TutorialScene::INTERACT_DISTANCE; // 既存定義を再利用
+	constexpr float kInteractDistance = TutorialScene::INTERACT_DISTANCE;
 	constexpr float kButtonInteractDistance = 180.0f;
 	constexpr float kHintNearDistance = 60.0f;
 	constexpr float kPickupDistance = 90.0f;
-
-	// 画面分割（比率） - halfWidth は動的に計算するため定義せず
-
-	// オブジェクトスポーン位置 / 効果位置
-	static const VECTOR kButtonLeftPos  = { -700.0f, -520.0f, 500.0f };
-	static const VECTOR kButtonRightPos = { 900.0f,  -520.0f, 100.0f };
-	static const VECTOR kAkegPos        = { 900.0f,  -520.0f, 300.0f };
-	static const VECTOR kChestPos       = { 900.0f,  -520.0f, 300.0f };
-	static const VECTOR kWboxPos        = { 800.0f,  -520.0f, 100.0f };
-	static const VECTOR kNewObjectPos   = { 900.0f,  -520.0f, 300.0f };
-	static const VECTOR kEffectPos      = { 900.0f,  -520.0f, 300.0f };
 
 	// プレビュー描画色 (DiffColorScale)
 	static const auto kPreviewColor = COLOR_F(0.0, 0.5, 1.0, 0.5);
@@ -130,16 +119,16 @@ void TutorialScene::Init(void)
 		o->SetScale(scl);
 		if (placed) o->SetPlaced(true);
 		objects_.push_back(o);
-	};
+		};
 
-	// ボタンを左右両方に配置（位置はヘッダー定数を利用）
-	pushObject(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::BUTTON, TutorialScene::BUTTON_LEFT_POS,  { 0.5f, 0.5f, 0.5f }, true);
-	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::BUTTON, TutorialScene::BUTTON_RIGHT_POS, { 0.5f, 0.5f, 0.5f }, true);
+	// ボタンを左右両方に配置
+	pushObject(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::BUTTON, TutorialScene::BUTTON_LEFT_POS, ObjectScale, true);
+	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::BUTTON, TutorialScene::BUTTON_RIGHT_POS, ObjectScale, true);
 	buttonPressHistory_.clear();
 
-	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::AKEG,  TutorialScene::AKEG_POS,  { 0.3f, 0.3f, 0.3f }, true);
-	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::CHEST, TutorialScene::CHEST_POS, { 0.6f, 0.6f, 0.6f }, true);
-	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[2], ObjectBase::OBJECT_TYPE::WBOX,  TutorialScene::WBOX_POS,  { 0.5f, 0.5f, 0.5f }, true);
+	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::AKEG, TutorialScene::AKEG_POS, ObjectScale, true);
+	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::CHEST, TutorialScene::CHEST_POS, ObjectScale, true);
+	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[2], ObjectBase::OBJECT_TYPE::WBOX, TutorialScene::WBOX_POS, ObjectScale, true);
 
 	// ステージのコライダをプレイヤー／カメラ／オブジェクトに登録
 	for (const auto& stage : stageManager_->GetStage())
@@ -169,7 +158,7 @@ void TutorialScene::Init(void)
 		}
 	}
 
-	// プレイヤーのラインコライダをButtonに登録（将来的な利用に備え無視しない）
+	// プレイヤーのラインコライダをButtonに登録
 	for (auto& player : players_)
 	{
 		const ColliderBase* playerCollider = player.player_->GetOwnCollider(static_cast<int>(Player::COLLIDER_TYPE::LINE));

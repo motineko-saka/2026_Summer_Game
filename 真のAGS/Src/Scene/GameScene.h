@@ -26,7 +26,7 @@ public:
 	{
 		std::unique_ptr<Player> player_;
 		std::unique_ptr<Camera> camera_;
-		bool isPlayerHitObject_;
+		bool isPlayerHitObject_ = false;
 	};
 
 	static constexpr float INTERACT_DISTANCE = 100.0f;

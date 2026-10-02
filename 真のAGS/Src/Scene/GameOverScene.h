@@ -1,7 +1,7 @@
 #pragma once
 #include "SceneBase.h"
-class GameOverScene :
-	public SceneBase
+
+class GameOverScene : public SceneBase
 {
 public:
 	// コンストラクタ
@@ -29,6 +29,7 @@ public:
 	void Release(void) override;
 
 private:
+
 	int bgImage_;
 };
 

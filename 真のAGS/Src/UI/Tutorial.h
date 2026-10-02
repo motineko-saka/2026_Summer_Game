@@ -29,7 +29,8 @@ private:
 		std::string text;
 		ConditionFunc condition;
 		OnEnterFunc onEnter;
-		int enoguHandle = -1; // ステップ固有の絵の具ハンドル
+		// ステップ固有の絵の具ハンドル
+		int enoguHandle = -1;
 	};
 
 	std::vector<StepInfo> steps_;
@@ -49,11 +50,16 @@ private:
 
 	// Yu GothicUI
 	int fontHandle_ = -1;
-	int fontSize_ = 20;        // フォントの高さ
-	int lineSpacing_ = 4;      // 行間ピクセル
-	int bubblePaddingY_ = 8;   // 吹き出し上下の余白
-	int minBubbleH_ = 64;      // 最小の吹き出し高さ
-	int maxBubbleH_ = 200;     // 最大の吹き出し高さ）
+	// フォントの高さ
+	int fontSize_ = 20;  
+	// 行間ピクセル
+	int lineSpacing_ = 4;   
+	// 吹き出し上下の余白
+	int bubblePaddingY_ = 8; 
+	// 最小の吹き出し高さ
+	int minBubbleH_ = 64;      
+	// 最大の吹き出し高さ）
+	int maxBubbleH_ = 200;     
 
 	// 描画レイアウト
 	struct Layout
