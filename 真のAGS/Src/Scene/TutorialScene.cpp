@@ -24,6 +24,30 @@
 #include "../Manager/EffekseerEffect.h"
 #include "../Audio/AudioManager.h"
 
+namespace
+{
+	// UI / 入力距離しきい値
+	constexpr float kInteractDistance = TutorialScene::INTERACT_DISTANCE; // 既存定義を再利用
+	constexpr float kButtonInteractDistance = 180.0f;
+	constexpr float kHintNearDistance = 60.0f;
+	constexpr float kPickupDistance = 90.0f;
+
+	// 画面分割（比率） - halfWidth は動的に計算するため定義せず
+
+	// オブジェクトスポーン位置 / 効果位置
+	static const VECTOR kButtonLeftPos  = { -700.0f, -520.0f, 500.0f };
+	static const VECTOR kButtonRightPos = { 900.0f,  -520.0f, 100.0f };
+	static const VECTOR kAkegPos        = { 900.0f,  -520.0f, 300.0f };
+	static const VECTOR kChestPos       = { 900.0f,  -520.0f, 300.0f };
+	static const VECTOR kWboxPos        = { 800.0f,  -520.0f, 100.0f };
+	static const VECTOR kNewObjectPos   = { 900.0f,  -520.0f, 300.0f };
+	static const VECTOR kEffectPos      = { 900.0f,  -520.0f, 300.0f };
+
+	// プレビュー描画色 (DiffColorScale)
+	static const auto kPreviewColor = COLOR_F(0.0, 0.5, 1.0, 0.5);
+}
+
+// コンストラクタ / デストラクタ
 TutorialScene::TutorialScene(void)
 	:
 	stageManager_(nullptr),
@@ -108,15 +132,14 @@ void TutorialScene::Init(void)
 		objects_.push_back(o);
 	};
 
-	// ボタンを左右両方に配置
-	pushObject(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::BUTTON, { -700.0f, -520.0f, 500.0f }, { 0.5f, 0.5f, 0.5f }, true);
-	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::BUTTON, { 900.0f, -520.0f, 100.0f }, { 0.5f, 0.5f, 0.5f }, true);
+	// ボタンを左右両方に配置（位置はヘッダー定数を利用）
+	pushObject(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::BUTTON, TutorialScene::BUTTON_LEFT_POS,  { 0.5f, 0.5f, 0.5f }, true);
+	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::BUTTON, TutorialScene::BUTTON_RIGHT_POS, { 0.5f, 0.5f, 0.5f }, true);
 	buttonPressHistory_.clear();
 
-	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::AKEG, { 900.0f, -520.0f, 300.0f }, { 0.3f, 0.3f, 0.3f }, true);
-	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::CHEST, { 900.0f, -520.0f, 300.0f }, { 0.6f, 0.6f, 0.6f }, true);
-	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[2], ObjectBase::OBJECT_TYPE::WBOX, { 800.0f, -520.0f, 100.0f }, { 0.5f, 0.5f, 0.5f }, true);
-
+	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::AKEG,  TutorialScene::AKEG_POS,  { 0.3f, 0.3f, 0.3f }, true);
+	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::CHEST, TutorialScene::CHEST_POS, { 0.6f, 0.6f, 0.6f }, true);
+	pushObject(SceneBase::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[2], ObjectBase::OBJECT_TYPE::WBOX,  TutorialScene::WBOX_POS,  { 0.5f, 0.5f, 0.5f }, true);
 
 	// ステージのコライダをプレイヤー／カメラ／オブジェクトに登録
 	for (const auto& stage : stageManager_->GetStage())
@@ -146,7 +169,7 @@ void TutorialScene::Init(void)
 		}
 	}
 
-	// プレイヤーのラインコライダをButtonに登録
+	// プレイヤーのラインコライダをButtonに登録（将来的な利用に備え無視しない）
 	for (auto& player : players_)
 	{
 		const ColliderBase* playerCollider = player.player_->GetOwnCollider(static_cast<int>(Player::COLLIDER_TYPE::LINE));
@@ -155,12 +178,9 @@ void TutorialScene::Init(void)
 
 	for (auto& wall : walls_)
 	{
-		const ColliderBase* wallCollider =
-			wall->GetOwnCollider(static_cast<int>(Stage::COLLIDER_TYPE::MODEL));
-
-		for (int i = 0; i < players_.size(); i++)
+		const ColliderBase* wallCollider = wall->GetOwnCollider(static_cast<int>(Stage::COLLIDER_TYPE::MODEL));
+		for (int i = 0; i < static_cast<int>(players_.size()); i++)
 		{
-			// 壁モデルのコライダーをプレイヤーに登録
 			players_[i].player_->AddHitCollider(wallCollider);
 		}
 	}
@@ -243,14 +263,14 @@ void TutorialScene::CheckCollisions(void)
 		const VECTOR objectPos = obj->GetTransform().pos;
 
 		// ボタンは専用処理へ委譲
-		if (obj->GetType() == ObjectBase::OBJECT_TYPE::BUTTON)
+		if (obj->GetObjectType() == ObjectBase::OBJECT_TYPE::BUTTON)
 		{
 			ButtonProcess(*obj, newObjects, removeIndices);
 			continue;
 		}
 
 		// OPENCHESTを生成する処理
-		if (obj->GetType() == ObjectBase::OBJECT_TYPE::CHEST)
+		if (obj->GetObjectType() == ObjectBase::OBJECT_TYPE::CHEST)
 		{
 			// ボタンの正解が成立していなければチェストは開けない
 			if (!butcount_) continue;
@@ -268,7 +288,7 @@ void TutorialScene::CheckCollisions(void)
 			for (auto& p : players_)
 			{
 				const float dist = VSize(VSub(p.player_->GetTransform().pos, objectPos));
-				if (dist < INTERACT_DISTANCE)
+				if (dist < TutorialScene::INTERACT_DISTANCE)
 				{
 					isNearPlayer = true;
 					break;
@@ -283,10 +303,9 @@ void TutorialScene::CheckCollisions(void)
 				ObjectBase::OBJECT_TYPE::OPENCHEST));
 
 			// エフェクト
-			const VECTOR effectPos = { 900.0f, -520.0f, 300.0f };
 			if (EffekseerEffect::GetInstance())
 			{
-				EffekseerEffect::GetInstance()->PlayTutorialEffect(effectPos, 0.0f);
+				EffekseerEffect::GetInstance()->PlayTutorialEffect(TutorialScene::EFFECT_POS, 0.0f);
 			}
 
 			// AKEG を再度操作可能にする
@@ -361,7 +380,7 @@ void TutorialScene::CheckCollisions(void)
 	if (!newObjects.empty()) MakeNewObject(newObjects);
 }
 
-const void TutorialScene::ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*>& newObjects, std::vector<int>& removeIndices)
+void TutorialScene::ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*>& newObjects, std::vector<int>& removeIndices)
 {
 	const VECTOR objectPos = obj.GetTransform().pos;
 
@@ -385,7 +404,7 @@ const void TutorialScene::ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*
 		players_[playerNo].player_->GetTransform().pos,
 		objectPos));
 
-	if (distance >= 180.0f)
+	if (distance >= TutorialScene::BUTTON_INTERACT_DISTANCE)
 	{
 		return;
 	}
@@ -506,7 +525,6 @@ void TutorialScene::Update(void)
 	}
 
 	lightPillar_->Update();
-	//for (auto& wall : walls_) wall->Update();
 
 	// 衝突判定（Object更新前）
 	CheckCollisions();
@@ -547,14 +565,14 @@ void TutorialScene::AnswerChack(void)
 	}
 }
 
-const void TutorialScene::MakeNewObject(std::vector<ObjectBase*>& newObjects)
+void TutorialScene::MakeNewObject(std::vector<ObjectBase*>& newObjects)
 {
 	for (auto& newObj : newObjects)
 	{
 		if (!newObj) continue;
 
 		newObj->Init();
-		newObj->SetPosition({ 900.0f, -520.0f, 300.0f });
+		newObj->SetPosition(TutorialScene::NEW_OBJECT_POS);
 		newObj->SetScale({ 0.6f, 0.6f, 0.6f });
 		newObj->SetPlaced(true);
 
@@ -610,7 +628,7 @@ void TutorialScene::Draw(void)
 			isHold = true;
 			if (pinID_ == -1) pinID_ = MV1DuplicateModel(obj->GetTransform().modelId);
 
-			MV1SetDifColorScale(pinID_, COLOR_F(0.0, 0.5, 1.0, 0.5));
+			MV1SetDifColorScale(pinID_, COLOR_F(TutorialScene::PREVIEW_COLOR_R, TutorialScene::PREVIEW_COLOR_G, TutorialScene::PREVIEW_COLOR_B, TutorialScene::PREVIEW_COLOR_A));
 			MV1SetPosition(pinID_, ANSWER_VECTOR_LENGTH[j]);
 			MV1SetScale(pinID_, obj->GetTransform().scl);
 			MV1DrawModel(pinID_);
@@ -634,8 +652,6 @@ void TutorialScene::Draw(void)
 
 			if (obj->GetObjectType() == ObjectBase::OBJECT_TYPE::BUTTON)
 				DrawNamePlate("ボタン", obj->GetPos());
-			//else
-			//	DrawNamePlate("オブジェクト", obj->GetPos());
 
 			obj->Draw();
 		}
@@ -658,7 +674,7 @@ void TutorialScene::Draw(void)
 
 			// プレイヤーとの距離
 			const float dist = VSize(VSub(players_[i].player_->GetTransform().pos, obj->GetTransform().pos));
-			if (dist > INTERACT_DISTANCE) continue;
+			if (dist > TutorialScene::INTERACT_DISTANCE) continue;
 
 			// オブジェクト種類
 			std::string label;
@@ -730,9 +746,6 @@ void TutorialScene::Draw(void)
 	SetDrawScreen(DX_SCREEN_BACK);
 	ClearDrawScreen();
 	DrawGraph(0, 0, mainScreen, FALSE);
-
-	//DrawFormatString(10, 200, GetColor(255, 255, 255), "pattern progress: %d / %d, tries: %d",
-	//	static_cast<int>(buttonSP_), buttonPTarget_, buttonPCount_);
 
 #ifdef _DEBUG
 	// デバッグ表示
@@ -847,19 +860,18 @@ void TutorialScene::Hint(void)
 		return;
 	}
 
-	// ヒントの表示条件式にゃん
+	// ヒントの表示条件
 	for (auto& obj : objects_)
 	{
 		if (!obj) continue;
 		if (obj->GetObjectType() != ObjectBase::OBJECT_TYPE::WBOX) continue;
 
-		// プレイヤーとの距離
+		// プレイヤーとの距離判定
 		bool isnear = false;
-
 		for (auto& p : players_)
 		{
 			const float dist = VSize(VSub(p.player_->GetTransform().pos, obj->GetTransform().pos));
-			if (dist < 60.0f)
+			if (dist < kHintNearDistance)
 			{
 				isnear = true;
 				break;
@@ -955,8 +967,7 @@ void TutorialScene::TyutorialTEXT(void)
 				for (auto& player : players_)
 				{
 					const float dist = VSize(VSub(player.player_->GetTransform().pos, obj->GetTransform().pos));
-					// 距離判定とキー入力を正しくグループ化して評価する
-					if (dist < 90.0f &&
+					if (dist < kPickupDistance &&
 						(InputManager::GetInstance()->IsTrgDown(KEY_INPUT_E)
 							|| InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::LEFT)))
 					{

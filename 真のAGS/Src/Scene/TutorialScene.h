@@ -26,14 +26,29 @@ class TutorialScene : public SceneBase
 
 public:
 	// 世界
-	enum class WORLD
-	{
-		LEFT = 0,
-		RIGHT,
-		ANSWER,
-	};
+	using WORLD = SceneBase::WORLD;
 
 	static constexpr float INTERACT_DISTANCE = 100.0f;
+
+	// マジックナンバーをヘッダーに集約
+	constexpr static float BUTTON_INTERACT_DISTANCE = 180.0f;
+	constexpr static float HINT_NEAR_DISTANCE = 60.0f;
+	constexpr static float PICKUP_DISTANCE = 90.0f;
+
+	// オブジェクト初期配置
+	constexpr static VECTOR BUTTON_LEFT_POS  = { -700.0f, -520.0f, 500.0f };
+	constexpr static VECTOR BUTTON_RIGHT_POS = { 900.0f,  -520.0f, 100.0f };
+	constexpr static VECTOR AKEG_POS        = { 900.0f,  -520.0f, 300.0f };
+	constexpr static VECTOR CHEST_POS       = { 900.0f,  -520.0f, 300.0f };
+	constexpr static VECTOR WBOX_POS        = { 800.0f,  -520.0f, 100.0f };
+	constexpr static VECTOR NEW_OBJECT_POS  = { 900.0f,  -520.0f, 300.0f };
+	constexpr static VECTOR EFFECT_POS      = { 900.0f,  -520.0f, 300.0f };
+
+	// プレビュー色（RGBA を分解して定義）
+	constexpr static float PREVIEW_COLOR_R = 0.0f;
+	constexpr static float PREVIEW_COLOR_G = 0.5f;
+	constexpr static float PREVIEW_COLOR_B = 1.0f;
+	constexpr static float PREVIEW_COLOR_A = 0.5f;
 
 	// コンストラクタ / デストラクタ
 	TutorialScene(void);
@@ -52,6 +67,7 @@ public:
 	void Hint(void);
 
 private:
+
 	// アンサーポジション
 	constexpr static VECTOR ANSWER_VECTOR_LENGTH[] = {
 		{760.0f, -520.0f, 600.0f},
@@ -99,8 +115,8 @@ private:
 	void TutorialInit(void);
 
 	// オブジェクト生成 / ボタン処理
-	const void MakeNewObject(std::vector<ObjectBase*>& newObjects);
-	const void ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*>& newObjects, std::vector<int>& removeIndices);
+	void MakeNewObject(std::vector<ObjectBase*>& newObjects);
+	void ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*>& newObjects, std::vector<int>& removeIndices);
 
 	// 衝突判定・解答判定
 	void CheckCollisions(void);
@@ -127,8 +143,8 @@ private:
 	int buttonPTarget_ = 5;
 	int buttonPCount_ = 0;
 	size_t buttonSP_ = 0;
-	int butcount_ = false;
-	int TbutonCount_ = false;
+	bool butcount_ = false;
+	bool TbutonCount_ = false;
 	bool buttonsLocked_ = false;  
 	bool chestOpenedOnce_ = false;  
 
