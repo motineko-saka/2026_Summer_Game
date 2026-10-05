@@ -28,7 +28,7 @@ public:
 	};
 
 	// world と種類を指定可能に
-	ObjectBase(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type = OBJECT_TYPE::DEFAULT);
+	ObjectBase(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type = OBJECT_TYPE::DEFAULT, bool isHold = false);
 	virtual ~ObjectBase(void);
 
 	//void Update(void)override;
@@ -96,7 +96,8 @@ protected:
 	// BUTTON が押されているか
 	bool isButtomPushed_ = false;
 
-	bool isHoldable_ = false;
+	// 持っているか
+	bool isHoldAble_ = false;
 
 	int handFrame_;
 
@@ -130,6 +131,7 @@ protected:
 	virtual void ObjectUpdateProcess(void) {};
 
 	virtual void SetFlame(const Transform* follow) {};
+
 	ColliderBase::TAG tag_;
 private:
 	// 衝突判定用ライン開始

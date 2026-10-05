@@ -1,8 +1,8 @@
+#include "SkyDome.h"
 #include "../../Utility/AsoUtility.h"
 #include "../../Manager/ResourceManager.h"
 #include "../../Manager/Resource.h"
 #include "../../Manager/SceneManager.h"
-#include "SkyDome.h"
 
 SkyDome::SkyDome(const Transform& transform)
 	:
@@ -38,7 +38,6 @@ void SkyDome::Draw(void)
 	SetUseLighting(false);
 	ActorBase::Draw();
 	
-	//MV1DrawModel(transform_.modelId);
 	SetUseLighting(true);
 }
 

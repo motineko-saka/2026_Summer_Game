@@ -1,5 +1,5 @@
-#include "../Application.h"
 #include "ModelMaterial.h"
+#include "../Application.h"
 
 ModelMaterial::ModelMaterial(
 	std::string shaderFileNameVS, int constBufFloat4SizeVS,

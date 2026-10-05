@@ -1,4 +1,5 @@
 #pragma once
+
 #include "ObjectBase.h"
 
 class Rock : public ObjectBase
@@ -6,7 +7,7 @@ class Rock : public ObjectBase
 public:
 	Rock(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type);
 
-	bool GetIsRockExist(void) { return isRockExist_; }
+	const bool GetIsRockExist(void) const{ return isRockExist_; }
 
 private:
 

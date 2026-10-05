@@ -1,8 +1,8 @@
+#include "ActorBase.h"
 #include <algorithm>
 #include "../../Manager/ResourceManager.h"
 #include "../../Manager/SceneManager.h"
 #include "../Collider/ColliderBase.h"
-#include "ActorBase.h"
 
 ActorBase::ActorBase(void)
 	:

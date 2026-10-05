@@ -1,4 +1,5 @@
 #pragma once
+
 #include "../../Application.h"
 #include "ActorBase.h"
 
@@ -48,7 +49,6 @@ private:
 
 	static constexpr VECTOR DEFAULT_SKYDOME_SCALE = { 100.0f,100.0f,100.0f };
 	static constexpr VECTOR DEFAULT_SKYDOME_POS = { 0.0f,0.0f,0.0f };
-
 
 	static constexpr VECTOR DEFAULT_ROT_LOCAL = { 0.0f,180.0f,0.0f };
 

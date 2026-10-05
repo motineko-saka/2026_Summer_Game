@@ -1,6 +1,5 @@
-#include <DxLib.h>
-#include "../../Utility/AsoUtility.h"
 #include "Transform.h"
+#include "../../Utility/AsoUtility.h"
 
 Transform::Transform(void)
 	:
@@ -14,7 +13,6 @@ Transform::Transform(void)
 	matPos(MGetIdent()),
 	quaRot(Quaternion()),
 	quaRotLocal(Quaternion())
-
 {
 }
 

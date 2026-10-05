@@ -1,13 +1,15 @@
-#include "../Manager/InputManager.h"
-#include "../Manager/SceneManager.h"
 #include "GameClearScene.h"
 #include "TitleScene.h"
+#include "../Manager/InputManager.h"
+#include "../Manager/SceneManager.h"
 #include "../Manager/ResourceManager.h"
 #include "../Application.h"
 #include "../Audio/AudioManager.h"
 
 
 GameClearScene::GameClearScene(void)
+	:
+	bgImage_(-1)
 {
 }
 

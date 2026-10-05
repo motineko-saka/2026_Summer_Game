@@ -1,4 +1,5 @@
 #pragma once
+
 #include "ActorBase.h"
 
 class ModelMaterial;

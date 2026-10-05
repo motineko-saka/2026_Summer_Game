@@ -1,5 +1,5 @@
-#include "../Common/Transform.h"
 #include "ColliderBase.h"
+#include "../Common/Transform.h"
 
 ColliderBase::ColliderBase(SHAPE shape, TAG tag, const Transform* follow)
 	:

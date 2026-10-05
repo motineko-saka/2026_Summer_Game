@@ -1,4 +1,5 @@
 #include "ObjectBase.h"
+#include <memory>
 #include "../../../../Utility/AsoUtility.h"
 #include "../../../../Manager/ResourceManager.h"
 #include "../../../../Manager/Resource.h"
@@ -8,11 +9,11 @@
 #include "../../../Collider/ColliderCapsule.h"
 #include "../../../Collider/ColliderModel.h"
 #include "../../../../Manager/InputManager.h"
-#include <memory>
 
-ObjectBase::ObjectBase(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type)
+ObjectBase::ObjectBase(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type, bool isHold)
 	:
 	CharactorBase(),
+	isHoldAble_(isHold),
 	isAnswerPosition_(false),
 	isGrabbed_(false),
 	isPressButton_(false),
@@ -20,7 +21,9 @@ ObjectBase::ObjectBase(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type)
 	viewWorld_(world),
 	ansVec_(ansVec),
 	type_(type),
-	pushPow_(AsoUtility::VECTOR_ZERO)
+	pushPow_(AsoUtility::VECTOR_ZERO),
+	handFrame_(-1),
+	tag_()
 {
 }
 
@@ -123,7 +126,7 @@ void ObjectBase::InitTransform(void)
 
 	transform_.quaRotLocal = Quaternion::Identity();
 
-	transform_.pos = { -1000.0f, 80.0f, -10.0f };
+	transform_.pos = AsoUtility::VECTOR_ZERO;
 
 	InitObjTrans();
 
@@ -160,7 +163,7 @@ void ObjectBase::InitCollider(void)
 	ownColliders_.emplace(static_cast<int>(COLLIDER_TYPE::CAPSULE), std::move(colCapsuleUP));
 
 	// Ž‚Ä‚È‚­‚·‚é
-	if (isHoldable_)
+	if (isHoldAble_)
 	{
 		if (colLinePtr) colLinePtr->SetGrabbable(false);
 		if (colCapsulePtr) colCapsulePtr->SetGrabbable(false);
@@ -223,7 +226,7 @@ void ObjectBase::UpdateProcess(void)
 			transform_.quaRot = follow->quaRot;
 			transform_.quaRotLocal = Quaternion::AngleAxis(AsoUtility::Deg2RadD(-90.0f),
 				AsoUtility::AXIS_Z);
-			pushPow_ = { 0.0f, 0.0f, 0.0f };
+			pushPow_ = AsoUtility::VECTOR_ZERO;
 		}
 		else
 		{
@@ -231,7 +234,7 @@ void ObjectBase::UpdateProcess(void)
 			const VECTOR worldPos = VAdd(follow->pos, follow->quaRot.PosAxis(localPos));
 			transform_.pos = worldPos;
 			transform_.quaRot = follow->quaRot;
-			pushPow_ = { 0.0f, 0.0f, 0.0f };
+			pushPow_ = AsoUtility::VECTOR_ZERO;
 		}
 		break;
 	}

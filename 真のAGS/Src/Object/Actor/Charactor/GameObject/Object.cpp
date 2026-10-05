@@ -1,10 +1,10 @@
+#include "Object.h"
 #include "../../../Collider/ColliderLine.h"
 #include "../../../Collider/ColliderCapsule.h"
 #include "../../../Collider/ColliderModel.h"
 #include "../../../../Manager/ResourceManager.h"
 #include "../../../../Utility/AsoUtility.h"
 #include "../../../../Common/Quaternion.h"
-#include "Object.h"
 
 Object::Object(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type)
 	:
@@ -33,11 +33,11 @@ void Object::InitLoad(void)
 		break;
 	case OBJECT_TYPE::CHEST:
 		transform_.SetModel(ResourceManager::GetInstance().LoadModelDuplicate(ResourceManager::SRC::Chest));
-		isHoldable_ = true;
+		isHoldAble_ = true;
 		break;
 	case OBJECT_TYPE::OPENCHEST:
 		transform_.SetModel(ResourceManager::GetInstance().LoadModelDuplicate(ResourceManager::SRC::OPENCHEST));
-		isHoldable_ = true;
+		isHoldAble_ = true;
 		break;
 	default:
 		break;

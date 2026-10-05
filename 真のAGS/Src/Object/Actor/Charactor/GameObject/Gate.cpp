@@ -1,3 +1,4 @@
+#include "Gate.h"
 #include "../../../../Application.h"
 #include "../../../../Manager/SceneManager.h"
 #include "../../../../Manager/ResourceManager.h"
@@ -5,11 +6,18 @@
 #include "../../../../Common/Quaternion.h"
 #include "../../../../Renderer/ModelMaterial.h"
 #include "../../../../Renderer/ModelRenderer.h"
-#include "Gate.h"
 
 Gate::Gate(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type)
 	:
-	ObjectBase(world, ansVec, type)
+	time_(0.0f),
+	dissolveTime_(0.0f),
+	shader_(-1),
+	constBufFloat4Size_(0),
+	constBuf_(-1),
+	shaderVS_(-1),
+	constBufFloat4SizeVS_(0),
+	constBufVS_(-1),
+	ObjectBase(world, ansVec, type, true)
 {
 }
 
@@ -29,7 +37,6 @@ void Gate::Draw()
 void Gate::InitLoad(void)
 {
 	transform_.SetModel(ResourceManager::GetInstance().LoadModelDuplicate(ResourceManager::SRC::GATE));
-	isHoldable_ = true;
 
 	vertexMaterial_ = std::make_unique<ModelMaterial>(
 		"GateVS.cso", 1,

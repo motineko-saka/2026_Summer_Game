@@ -1,7 +1,7 @@
+#include "PressButton.h"
 #include "../../../../Manager/ResourceManager.h"
 #include "../../../../Utility/AsoUtility.h"
 #include "../../../../Common/Quaternion.h"
-#include "PressButton.h"
 
 PressButton::PressButton(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type)
 	:

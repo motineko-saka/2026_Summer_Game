@@ -1,3 +1,4 @@
+#include "DebugScene.h"
 #include <fstream>
 #include <DxLib.h>
 #include "../Common/Vector2.h"
@@ -6,7 +7,6 @@
 #include "../Manager/Camera.h"
 #include "../Object/Actor/Stage/Stage.h"
 #include "../Object/Collider/ColliderModel.h"
-#include "DebugScene.h"
 
 DebugScene::DebugScene(void)
 	:

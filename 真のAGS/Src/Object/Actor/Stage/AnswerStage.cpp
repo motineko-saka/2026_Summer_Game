@@ -1,9 +1,9 @@
+#include "AnswerStage.h"
 #include "../../../Utility/AsoUtility.h"
 #include "../../../Manager/ResourceManager.h"
 #include "../../../Manager/Resource.h"
 #include "../../../Manager/SceneManager.h"
 #include "../../Collider/ColliderModel.h"
-#include "AnswerStage.h"
 
 AnswerStage::AnswerStage(void)
 	:
@@ -24,7 +24,6 @@ void AnswerStage::InitTransform(void)
 	transform_.quaRotLocal = Quaternion::Identity();
 
 	transform_.pos = STAGE_DEFAULT_POS;
-	transform_.pos.y -= 200.0f;
 	transform_.Update();
 }
 

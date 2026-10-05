@@ -1,4 +1,5 @@
 #pragma once
+
 #include <string>
 #include <array>
 #include "../ActorBase.h"
@@ -45,15 +46,11 @@ public:
 
 	void DrawAtOffset(const VECTOR& offset);
 
-
 	void DrawDebug(void);
 
 	const BoundingBox GetBoundingBox(void) const { return bb_; }
 
 	std::array<VECTOR, STAGE_CUT_NUM> GetStageCutPos()const { return stageCutPos_; }
-
-	// 除外フレーム名称
-	const std::vector<std::string> EXCLUDE_FRAME_NAMES = { /*"Grass",*/"Plant","Leaves" };
 
 protected:
 
@@ -72,13 +69,17 @@ protected:
 	// 初期化後の個別処理
 	void InitPost(void)override;
 
-	
-
 	STAGE_TYPE stageType_;
 
 	BoundingBox bb_;
 
 	std::array<VECTOR, STAGE_CUT_NUM> stageCutPos_;
+
+	// 除外フレーム名称
+	const std::vector<std::string> EXCLUDE_FRAME_NAMES =
+	{
+		/*"Grass",*/"Plant","Leaves"
+	};
 
 private:
 
@@ -89,7 +90,7 @@ private:
 	// 対象フレーム
 	const std::vector<std::string> TARGET_FRAME_NAMES =
 	{
-	"Ground","Grass","Plant","Leaves"
+		"Ground","Grass","Plant","Leaves"
 	};
 
 };

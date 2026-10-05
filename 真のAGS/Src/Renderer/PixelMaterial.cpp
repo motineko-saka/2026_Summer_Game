@@ -1,5 +1,5 @@
-#include "../Application.h"
 #include "PixelMaterial.h"
+#include "../Application.h"
 
 PixelMaterial::PixelMaterial(std::string shaderFileName, int constBufFloat4Size)
 {

@@ -1,3 +1,4 @@
+#include "Wall.h"
 #include "../../Utility/AsoUtility.h"
 #include "../../Manager/ResourceManager.h"
 #include "../../Manager/Resource.h"
@@ -5,7 +6,6 @@
 #include "../Collider/ColliderModel.h"
 #include "../../Renderer/ModelMaterial.h"
 #include "../../Renderer/ModelRenderer.h"
-#include "Wall.h"
 
 Wall::Wall(VECTOR pos, bool isRot, bool isHalf)
 	:

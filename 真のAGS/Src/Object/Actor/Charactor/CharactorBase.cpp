@@ -1,3 +1,4 @@
+#include "CharactorBase.h"
 #include "../../../Utility/AsoUtility.h"
 #include "../../../Manager/SceneManager.h"
 #include "../../../Application.h"
@@ -8,7 +9,6 @@
 #include "../../../Manager/Resource.h"
 #include "../../../Manager/ResourceManager.h"
 #include "../../../Audio/AudioManager.h"
-#include "CharactorBase.h"
 
 CharactorBase::CharactorBase(void)
 	:

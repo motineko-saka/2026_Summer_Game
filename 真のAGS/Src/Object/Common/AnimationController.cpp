@@ -1,6 +1,6 @@
+#include "AnimationController.h"
 #include <DxLib.h>
 #include "../../Manager/SceneManager.h"
-#include "AnimationController.h"
 
 AnimationController::AnimationController(int modelId)
 	:

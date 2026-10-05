@@ -1,4 +1,5 @@
 #pragma once
+
 #include <DxLib.h>
 #include "../Common/Vector2.h"
 #include "../Renderer/ModelMaterial.h"

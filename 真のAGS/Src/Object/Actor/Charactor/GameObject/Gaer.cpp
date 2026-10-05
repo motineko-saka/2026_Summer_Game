@@ -1,20 +1,19 @@
+#include "Gaer.h"
 #include "../../../../Manager/ResourceManager.h"
 #include "../../../../Utility/AsoUtility.h"
 #include "../../../../Common/Quaternion.h"
-#include "Gaer.h"
 
 Gaer::Gaer(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type)
 	:
-	ObjectBase(world, ansVec, type),
+	object_(nullptr),
+	ObjectBase(world, ansVec, type, true),
 	gearRot_(0.0f)
-	//object_(object)
 {
 }
 
 void Gaer::InitLoad(void)
 {
 	transform_.SetModel(ResourceManager::GetInstance().LoadModelDuplicate(ResourceManager::SRC::GEAR));
-	isHoldable_ = true;
 }
 
 void Gaer::InitPost(void)
@@ -27,7 +26,7 @@ void Gaer::ObjectUpdateProcess(void)
 {
 	if (isRot_)
 	{
-		gearRot_ += 5.0f;
+		gearRot_ += GEAR_ROT_SPEED;
 	}
 
 	transform_.quaRotLocal = Quaternion::AngleAxis(AsoUtility::Deg2RadD(gearRot_),

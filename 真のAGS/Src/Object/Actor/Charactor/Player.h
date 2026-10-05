@@ -1,4 +1,5 @@
 #pragma once
+
 #include "CharactorBase.h"
 
 class Camera;
@@ -24,7 +25,6 @@ public:
 		PLAYER2,
 	};
 
-	Player(void);
 	Player(PLAYER_NO playerNo, Camera& camera, bool isGameScene = false); // プレイヤー番号付きコンストラクタ
 	virtual ~Player(void);
 
@@ -129,6 +129,8 @@ private:
 	static constexpr float PICKUP_FRONT_DIST = 60.0f;
 	static constexpr float PICKUP_UP_DIST = 30.0f;
 
+	static constexpr float PICKUP_DISTANCE = 90.0f;
+
 	// プレイヤー番号
 	PLAYER_NO playerNo_;
 
@@ -147,9 +149,6 @@ private:
 
 	// 衝突関連
 	void CollisionReserve(void) override;
-
-	// デバッグ描画
-	void DrawDebug(void);
 
 	// 掴んでいるコライダ（NULL=何も掴んでいない）
 	ColliderBase* heldCollider_{ nullptr };

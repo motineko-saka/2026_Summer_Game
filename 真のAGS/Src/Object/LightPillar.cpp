@@ -1,7 +1,5 @@
-#include <DxLib.h>
-#include <algorithm>
 #include "LightPillar.h"
-
+#include <algorithm>
 
 void LightPillar::Init(VECTOR pos)
 {

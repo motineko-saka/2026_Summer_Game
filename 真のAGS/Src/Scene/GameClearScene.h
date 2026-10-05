@@ -1,5 +1,7 @@
 #pragma once
+
 #include "SceneBase.h"
+
 class GameClearScene :
     public SceneBase
 {

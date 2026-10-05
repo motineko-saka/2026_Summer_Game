@@ -34,7 +34,6 @@ private:
 	// 定数バッファハンドル
 	int constBuf_;
 
-
 	// シェーダ
 	int shaderVS_;
 
@@ -43,8 +42,6 @@ private:
 
 	// 定数バッファハンドル
 	int constBufVS_;
-
-	const int CONSTANT_BUF_SLOT_BEGIN_VS = 1;
 
 	// リソースロード
 	void InitLoad(void)override;

@@ -1,9 +1,9 @@
+#include "Stage.h"
 #include "../../../Manager/ResourceManager.h"
 #include "../../../Manager/Resource.h"
 #include "../../../Manager/SceneManager.h"
 #include "../../Collider/ColliderModel.h"
 #include "../../../Utility/AsoUtility.h"
-#include "Stage.h"
 
 Stage::Stage(int modelID)
 	:
@@ -48,6 +48,8 @@ void Stage::InitTransform(void)
 
 	transform_.quaRotLocal = Quaternion::AngleAxis(AsoUtility::Deg2RadD(-90.0f),
 		AsoUtility::AXIS_Z);
+
+#pragma region バウンディングボックス
 
 	// 最小最大座標取得
 	Vector3 minPos = { FLT_MAX, FLT_MAX, FLT_MAX };
@@ -104,6 +106,8 @@ void Stage::InitTransform(void)
 			bb_.minPos.z + lengthZ * t
 		);
 	}
+
+#pragma endregion
 }
 
 void Stage::InitAnimation(void)

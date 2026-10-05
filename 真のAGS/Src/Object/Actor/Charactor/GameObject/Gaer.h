@@ -13,6 +13,7 @@ public:
 
 	void AddObject(ObjectBase* object);
 private:
+	static constexpr float GEAR_ROT_SPEED = 5.0f;
 
 	float gearRot_;
 	bool isRot_ = false;

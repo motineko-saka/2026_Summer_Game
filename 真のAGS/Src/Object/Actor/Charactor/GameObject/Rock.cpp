@@ -1,10 +1,10 @@
+#include "Rock.h"
 #include "../../../Collider/ColliderLine.h"
 #include "../../../Collider/ColliderCapsule.h"
 #include "../../../Collider/ColliderModel.h"
 #include "../../../../Manager/ResourceManager.h"
 #include "../../../../Utility/AsoUtility.h"
 #include "../../../../Common/Quaternion.h"
-#include "Rock.h"
 
 Rock::Rock(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type)
 	:
@@ -23,7 +23,7 @@ void Rock::Draw()
 void Rock::InitLoad(void)
 {
 	transform_.SetModel(ResourceManager::GetInstance().LoadModelDuplicate(ResourceManager::SRC::ROCK));
-	isHoldable_ = true;
+	isHoldAble_ = true;
 }
 
 void Rock::InitObjCol(void)

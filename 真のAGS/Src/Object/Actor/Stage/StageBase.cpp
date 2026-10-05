@@ -1,13 +1,14 @@
+#include "StageBase.h"
 #include "../../../Utility/AsoUtility.h"
 #include "../../../Manager/ResourceManager.h"
 #include "../../../Manager/Resource.h"
 #include "../../../Manager/SceneManager.h"
 #include "../../Collider/ColliderModel.h"
-#include "StageBase.h"
-#include "Stage.h"
 
 StageBase::StageBase()
 	:
+	stageType_(STAGE_TYPE::MAIN_STAGE),
+	stageCutPos_({}),
 	ActorBase()
 {
 }
@@ -77,7 +78,6 @@ void StageBase::InitCollider(void)
 		colModel->AddTargetFrameIds(name);
 	}
 
-
 	ownColliders_.emplace(static_cast<int>(COLLIDER_TYPE::MODEL), colModel);
 }
 
@@ -92,6 +92,9 @@ void StageBase::InitPost(void)
 void StageBase::DrawDebug(void)
 {
 	printf("%f %f\n", bb_.minPos.z, bb_.maxPos.z);
-	printf("%f\n", stageCutPos_[0].z);
-	printf("%f\n", stageCutPos_[1].z);
+
+	for (const auto& stageCutPos : stageCutPos_)
+	{
+		printf("%f\n", stageCutPos.z);
+	}
 }

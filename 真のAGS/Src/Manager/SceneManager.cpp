@@ -5,8 +5,6 @@
 
 #include "../Loading/Loading.h"
 #include "../Scene/TitleScene.h"
-#include "../Scene/TutorialScene.h"
-#include "../Scene/GameScene.h"
 #include "../Manager/Camera.h"
 #include "../Scene/SceneTransition.h"
 
@@ -36,8 +34,6 @@ void SceneManager::Init(void)
 
 	// 最初はタイトル画面から
 	ChangeScene(std::make_shared<TitleScene>());
-	//ChangeScene(std::make_shared<TutorialScene>());
-	//ChangeScene(std::make_shared<GameScene>());
 
 		// メインスクリーン
 	mainScreen_ = MakeScreen(

@@ -1,4 +1,5 @@
 #pragma once
+
 #include <vector>
 #include <DxLib.h>
 #include "SceneBase.h"

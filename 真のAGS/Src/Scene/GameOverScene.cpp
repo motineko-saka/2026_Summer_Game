@@ -1,13 +1,15 @@
+#include "GameOverScene.h"
+#include <DxLib.h>
+#include "TitleScene.h"
 #include "../Manager/InputManager.h"
 #include "../Manager/SceneManager.h"
-#include <DxLib.h>
-#include "GameOverScene.h"
-#include "TitleScene.h"
 #include "../Manager/ResourceManager.h"
 #include "../Application.h"
 #include "../Audio/AudioManager.h"
 
 GameOverScene::GameOverScene(void)
+	:
+	bgImage_(-1)
 {
 }
 

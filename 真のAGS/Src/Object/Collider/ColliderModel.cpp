@@ -1,5 +1,5 @@
-#include "../../Utility/AsoUtility.h"
 #include "ColliderModel.h"
+#include "../../Utility/AsoUtility.h"
 
 ColliderModel::ColliderModel(TAG tag, const Transform* follow)
 	:
