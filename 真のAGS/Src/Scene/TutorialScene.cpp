@@ -34,6 +34,19 @@ namespace
 
 	// プレビュー描画色 (DiffColorScale)
 	static const auto kPreviewColor = COLOR_F(0.0, 0.5, 1.0, 0.5);
+
+	// 該当なしなら nullptr を返す
+	const char* GetInteractLabel(ObjectBase::OBJECT_TYPE type)
+	{
+		switch (type)
+		{
+		case ObjectBase::OBJECT_TYPE::AKEG:   return "Eで持つ";
+		case ObjectBase::OBJECT_TYPE::BUTTON: return "Fで押す";
+		case ObjectBase::OBJECT_TYPE::CHEST:  return "Eで開ける";
+		case ObjectBase::OBJECT_TYPE::WBOX:   return "Eで開く、閉じる";
+		default:                              return nullptr;
+		}
+	}
 }
 
 // コンストラクタ / デストラクタ
@@ -71,7 +84,7 @@ void TutorialScene::Init(void)
 	players_.resize(2);
 
 	// グローバルカメラ
-	camera_ = new Camera();
+	camera_ = std::make_unique<Camera>();
 	camera_->Init();
 
 	// プレイヤー＆カメラ生成
@@ -112,13 +125,14 @@ void TutorialScene::Init(void)
 	// オブジェクト作成
 	objects_.reserve(3);
 
-	auto pushObject = [this](SceneBase::WORLD w, const VECTOR& ans, ObjectBase::OBJECT_TYPE type, const VECTOR& pos, const VECTOR& scl, bool placed = false) {
-		ObjectBase* o = new ObjectBase(w, ans, type);
-		o->Init();
-		o->SetPosition(pos);
-		o->SetScale(scl);
-		if (placed) o->SetPlaced(true);
-		objects_.push_back(o);
+	auto pushObject = [this](SceneBase::WORLD w, const VECTOR& ans, ObjectBase::OBJECT_TYPE type,
+		const VECTOR& pos, const VECTOR& scl, bool placed = false) {
+			auto o = std::make_unique<ObjectBase>(w, ans, type);
+			o->Init();
+			o->SetPosition(pos);
+			o->SetScale(scl);
+			if (placed) o->SetPlaced(true);
+			objects_.push_back(std::move(o));
 		};
 
 	// ボタンを左右両方に配置
@@ -148,7 +162,7 @@ void TutorialScene::Init(void)
 	// 各オブジェクトの衝突コライダをプレイヤーに登録
 	for (size_t i = 0; i < objects_.size(); ++i)
 	{
-		auto* obj = objects_[i];
+		auto& obj = objects_[i];
 		const auto* objCaps = obj->GetOwnCollider(static_cast<int>(ObjectBase::COLLIDER_TYPE::CAPSULE));
 		if (!objCaps) continue;
 
@@ -241,13 +255,13 @@ void TutorialScene::CheckCollisions(void)
 {
 	for (auto& player : players_) player.isPlayerHitObject_ = false;
 
-	std::vector<ObjectBase*> newObjects;  // 新規オブジェクト用
-	std::vector<int> removeIndices;       // 削除インデックス
+	std::vector<std::unique_ptr<ObjectBase>> newObjects;  // 新規オブジェクト用
+	std::vector<int> removeIndices;						  // 削除インデックス
 
 	// オブジェクト走査をインデックスベースに変更
 	for (size_t i = 0; i < objects_.size(); ++i)
 	{
-		auto* obj = objects_[i];
+		auto* obj = objects_[i].get();
 		if (!obj) continue;
 		const VECTOR objectPos = obj->GetTransform().pos;
 
@@ -286,7 +300,7 @@ void TutorialScene::CheckCollisions(void)
 			if (!isNearPlayer) continue;
 
 			// OPENCHESTを生成
-			newObjects.push_back(new ObjectBase(
+			newObjects.push_back(std::make_unique<ObjectBase>(
 				SceneBase::WORLD::LEFT,
 				ANSWER_VECTOR_LENGTH[1],
 				ObjectBase::OBJECT_TYPE::OPENCHEST));
@@ -298,7 +312,7 @@ void TutorialScene::CheckCollisions(void)
 			}
 
 			// AKEG を再度操作可能にする
-			for (auto* ao : objects_)
+			for (auto& ao : objects_)
 			{
 				if (ao && ao->GetObjectType() == ObjectBase::OBJECT_TYPE::AKEG)
 				{
@@ -333,43 +347,36 @@ void TutorialScene::CheckCollisions(void)
 
 		for (int idx : removeIndices)
 		{
-			if (idx >= 0 && idx < static_cast<int>(objects_.size()))
+			if (idx < 0 || idx >= static_cast<int>(objects_.size())) continue;
+
+			if (objects_[idx])
 			{
-				// オブジェクト
-				if (objects_[idx])
+				const auto& ownCols = objects_[idx]->GetOwnColliders();
+				for (const auto& ct : ownCols)
 				{
-					const auto& ownCols = objects_[idx]->GetOwnColliders();
-					for (const auto& ct : ownCols)
+					const ColliderBase* col = ct.second.get();
+					if (!col) continue;
+
+					for (auto& p : players_)
 					{
-						const ColliderBase* col = ct.second.get();
-						if (!col) continue;
-
-						// プレイヤーから解除
-						for (auto& p : players_)
-						{
-							if (p.player_) p.player_->RemoveHitCollider(col);
-						}
-
-						// 他のオブジェクトから解除
-						for (auto& otherObj : objects_)
-						{
-							if (!otherObj || otherObj == objects_[idx]) continue;
-							otherObj->RemoveHitCollider(col);
-						}
+						if (p.player_) p.player_->RemoveHitCollider(col);
 					}
-					// オブジェクト自身を delete（メモリ解放）
-					delete objects_[idx];
+					for (auto& otherObj : objects_)
+					{
+						if (!otherObj || otherObj == objects_[idx]) continue;  // unique_ptr 同士の比較は可
+						otherObj->RemoveHitCollider(col);
+					}
 				}
-
-				// vector から削除
-				objects_.erase(objects_.begin() + idx);
 			}
+			// erase で unique_ptr が破棄され、delete も自動で行われる
+			objects_.erase(objects_.begin() + idx);
 		}
 	}
+
 	if (!newObjects.empty()) MakeNewObject(newObjects);
 }
 
-void TutorialScene::ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*>& newObjects, std::vector<int>& removeIndices)
+void TutorialScene::ButtonProcess(ObjectBase& obj, std::vector<std::unique_ptr<ObjectBase>>& newObjects, std::vector<int>& removeIndices)
 {
 	const VECTOR objectPos = obj.GetTransform().pos;
 
@@ -530,31 +537,33 @@ void TutorialScene::Update(void)
 void TutorialScene::AnswerChack(void)
 {
 	// 全オブジェクトが答えの場所にあるか判定
-	bool isAnswer = true;
-	std::vector<ObjectBase*> notPlaced;
+	const bool isAnswer = std::all_of(objects_.begin(), objects_.end(),
+		[](const std::unique_ptr<ObjectBase>& obj) { return obj && obj->IsAnswerPosition(); });
 
-	for (auto& obj : objects_)
+	if (!isAnswer)
 	{
-		if (!obj->IsAnswerPosition())
-		{
-			isAnswer = false;
-			notPlaced.push_back(obj);
-		}
+		// 正解が崩れたらリセット
+		isPillar_ = false;
+		endTimer_ = 0.0f;
+		return;
 	}
 
-	if (isAnswer && !isPillar_)
+	// 正解状態が継続している場合、ライトピラーを表示
+	if (!isPillar_)
 	{
-		for (auto& obj : notPlaced) lightPillar_->Init(obj->GetPos());
+		for (const auto& obj : objects_)
+		{
+			lightPillar_->Init(obj->GetPos());
+		}
+
 		isPillar_ = true;
 	}
 
-	if (isAnswer && isEndTutorial_)
-	{
-		endTimer_ += SceneManager::GetInstance()->GetDeltaTime();
-	}
+	// 正解状態の継続時間
+	endTimer_ += SceneManager::GetInstance()->GetDeltaTime();
 }
 
-void TutorialScene::MakeNewObject(std::vector<ObjectBase*>& newObjects)
+void TutorialScene::MakeNewObject(std::vector<std::unique_ptr<ObjectBase>>& newObjects)
 {
 	for (auto& newObj : newObjects)
 	{
@@ -565,7 +574,6 @@ void TutorialScene::MakeNewObject(std::vector<ObjectBase*>& newObjects)
 		newObj->SetScale({ 0.6f, 0.6f, 0.6f });
 		newObj->SetPlaced(true);
 
-		// ステージコライダを追加
 		for (const auto& stage : stageManager_->GetStage())
 		{
 			const ColliderBase* stageCollider = stage->GetOwnCollider(static_cast<int>(Stage::COLLIDER_TYPE::MODEL));
@@ -573,231 +581,38 @@ void TutorialScene::MakeNewObject(std::vector<ObjectBase*>& newObjects)
 		}
 
 		const ColliderBase* objCaps = newObj->GetOwnCollider(static_cast<int>(ObjectBase::COLLIDER_TYPE::CAPSULE));
-		if (!objCaps)
-		{
-			// コライダが無ければこのオブジェクトは使えないため確実に破棄して続行（リーク防止）
-			delete newObj;
-			continue;
-		}
+		if (!objCaps) continue;
 
-		// プレイヤーにコライダ登録
 		for (auto& player : players_) player.player_->AddHitCollider(objCaps);
 
-		objects_.push_back(newObj);
+		objects_.push_back(std::move(newObj));
 	}
 }
 
 void TutorialScene::Draw(void)
 {
-	const int halfWidth = screenWidth_ / 2;
-	const int mainScreen = SceneManager::GetInstance()->GetMainScreen();
-
 	for (size_t i = 0; i < players_.size(); ++i)
 	{
-		const int screenHandle = (i == 0) ? screenHandle1_ : screenHandle2_;
-		SetDrawScreen(screenHandle);
-		ClearDrawScreen();
-
-		players_[i].camera_->SetBeforeDraw();
-
-		// 3D描画
-		skyDome_->Draw();
-		stageManager_->Draw();
-		lightPillar_->Draw();
-
-		for (auto& p : players_) p.player_->Draw();
-
-		// 答えのプレビュー表示
-		bool isHold = false;
-		for (size_t j = 0; j < objects_.size(); ++j)
-		{
-			auto* obj = objects_[j];
-			if (!obj || !obj->IsGrabbed()) continue;
-
-			isHold = true;
-			if (pinID_ == -1) pinID_ = MV1DuplicateModel(obj->GetTransform().modelId);
-
-			MV1SetDifColorScale(pinID_, COLOR_F(TutorialScene::PREVIEW_COLOR_R, TutorialScene::PREVIEW_COLOR_G, TutorialScene::PREVIEW_COLOR_B, TutorialScene::PREVIEW_COLOR_A));
-			MV1SetPosition(pinID_, ANSWER_VECTOR_LENGTH[j]);
-			MV1SetScale(pinID_, obj->GetTransform().scl);
-			MV1DrawModel(pinID_);
-		}
-
-		if (!isHold && pinID_ != -1)
-		{
-			MV1DeleteModel(pinID_);
-			pinID_ = -1;
-		}
-		for (auto& wall : walls_)
-		{
-			wall->Draw();
-		}
-
-		// 全オブジェクトを順に描画
-		for (auto& obj : objects_)
-		{
-			if (!obj) continue;
-			if (CheckCameraViewClip(obj->GetPos())) continue;
-
-			if (obj->GetObjectType() == ObjectBase::OBJECT_TYPE::BUTTON)
-				DrawNamePlate("ボタン", obj->GetPos());
-
-			obj->Draw();
-		}
-
-		// インタラクト文字表示
-		for (auto& obj : objects_)
-		{
-			if (!obj) continue;
-			// 既に掴んでいる物は表示しない
-			if (obj->IsGrabbed()) continue;
-			if (CheckCameraViewClip(obj->GetPos())) continue;
-
-			// 対象とするオブジェクト種類
-			const auto t = obj->GetObjectType();
-			if (t != ObjectBase::OBJECT_TYPE::AKEG &&
-				t != ObjectBase::OBJECT_TYPE::CHEST &&
-				t != ObjectBase::OBJECT_TYPE::WBOX &&
-				t != ObjectBase::OBJECT_TYPE::BUTTON)
-				continue;
-
-			// プレイヤーとの距離
-			const float dist = VSize(VSub(players_[i].player_->GetTransform().pos, obj->GetTransform().pos));
-			if (dist > TutorialScene::INTERACT_DISTANCE) continue;
-
-			// オブジェクト種類
-			std::string label;
-			switch (obj->GetObjectType())
-			{
-			case ObjectBase::OBJECT_TYPE::AKEG:
-				label = "Eで持つ";
-				break;
-			case ObjectBase::OBJECT_TYPE::BUTTON:
-				label = "Fで押す";
-				break;
-			case ObjectBase::OBJECT_TYPE::CHEST:
-				label = "Eで開ける";
-				break;
-			case ObjectBase::OBJECT_TYPE::WBOX:
-				label = "Eで開く、閉じる";
-				break;
-			default:
-				break;
-			}
-
-			// ワールド座標をスクリーンへ変換して描画
-			VECTOR screenPos = ConvWorldPosToScreenPos(obj->GetPos());
-			const int textW = GetDrawStringWidth(label.c_str(), static_cast<int>(label.length()));
-			const int drawX = static_cast<int>(screenPos.x) - (textW / 2);
-			const int drawY = static_cast<int>(screenPos.y) - 80; // 表示オフセット調整
-
-			// 背景ボックス（半透明黒）
-			const int pad = 6;
-			SetDrawBlendMode(DX_BLENDMODE_ALPHA, 200);
-			DrawBox(drawX - pad, drawY - pad, drawX + textW + pad, drawY + 18 + pad, GetColor(0, 0, 0), TRUE);
-			DrawFormatString(drawX, drawY, GetColor(255, 255, 255), label.c_str());
-			SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
-		}
-
-		if (EffekseerEffect::GetInstance()) EffekseerEffect::GetInstance()->Draw();
+		DrawPlayerView(i);
 	}
 
-	if (showHint_ && hintHandle_ != -1)
-	{
-		VECTOR screenPos = ConvWorldPosToScreenPos(hintWorldPos_);
-		int w = 0, h = 0;
-		GetGraphSize(hintHandle_, &w, &h);
-		// オブジェクト上に表示する
-		const int drawX1 = static_cast<int>(screenPos.x) - (w / 2);
-		const int drawY1 = static_cast<int>(screenPos.y) - h - 20;
-		const int drawX2 = drawX1 + w;
-		const int drawY2 = drawY1 + h;
-		DrawExtendGraph(drawX1, drawY1, drawX2, drawY2, hintHandle_, true);
-	}
-
-	// メイン画面に転送
-	SetDrawScreen(mainScreen);
-	ClearDrawScreen();
-
-	DrawExtendGraph(0, 0, halfWidth, screenHeight_, screenHandle1_, true);
-	DrawExtendGraph(halfWidth, 0, screenWidth_, screenHeight_, screenHandle2_, true);
-
-	// 非アクティブ側を薄暗く
-	const int dimAlpha = 150;
-	SetDrawBlendMode(DX_BLENDMODE_ALPHA, dimAlpha);
-	if (activePlayer_ == Player::PLAYER_NO::PLAYER1)
-		DrawBox(halfWidth, 0, screenWidth_, screenHeight_, GetColor(0, 0, 0), TRUE);
-	else
-		DrawBox(0, 0, halfWidth, screenHeight_, GetColor(0, 0, 0), TRUE);
-	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
-
-	// ポストエフェクトを廃止したため
-	SetDrawScreen(DX_SCREEN_BACK);
-	ClearDrawScreen();
-	DrawGraph(0, 0, mainScreen, FALSE);
+	DrawSplitScreen();
 
 #ifdef _DEBUG
-	// デバッグ表示
-	for (size_t i = 0; i < players_.size(); ++i)
-	{
-		const int w = halfWidth * static_cast<int>(i);
-		DrawFormatString(w, 0, GetColor(255, 255, 255), "P%d角度:(%.1f, %.1f, %.1f)",
-			static_cast<int>(i + 1),
-			players_[i].player_->GetTransform().quaRot.ToEuler().x,
-			players_[i].player_->GetTransform().quaRot.ToEuler().y,
-			players_[i].player_->GetTransform().quaRot.ToEuler().z);
+	DrawDebugInfo();
+#endif
 
-		if (players_[i].isPlayerHitObject_)
-			DrawFormatString(w, 40, GetColor(255, 0, 0), "P%d: オブジェクトと衝突中!", static_cast<int>(i + 1));
-		else
-			DrawFormatString(w, 40, GetColor(0, 255, 0), "P%d: 衝突なし", static_cast<int>(i + 1));
-	}
-
-	if (!objects_.empty() && objects_[0])
-	{
-		DrawFormatString(halfWidth, 80, GetColor(0, 0, 0), "座標:(%.1f, %.1f, %.1f)",
-			objects_[0]->GetTransform().pos.x,
-			objects_[0]->GetTransform().pos.y,
-			objects_[0]->GetTransform().pos.z);
-	}
-
-	int y = 120;
-	for (auto& object : objects_)
-	{
-		DrawFormatString(halfWidth, y, GetColor(255, 255, 255),
-			"Object情報:座標(%.1f, %.1f, %.1f) 回転(%.1f, %.1f, %.1f)\nViewWorld : %d isAnswer : %d",
-			object->GetTransform().pos.x,
-			object->GetTransform().pos.y,
-			object->GetTransform().pos.z,
-			object->GetTransform().quaRot.ToEuler().x,
-			object->GetTransform().quaRot.ToEuler().y,
-			object->GetTransform().quaRot.ToEuler().z,
-			static_cast<int>(object->GetWorld()),
-			object->IsAnswerPosition());
-		y += 40;
-	}
-
-	// アンサーポジションのオブジェクトの座標を表示
-	DrawFormatString(10, 240, GetColor(255, 255, 255), "Answer Position: (%.1f, %.1f, %.1f)",
-		ANSWER_VECTOR_LENGTH[0].x,
-		ANSWER_VECTOR_LENGTH[0].y,
-		ANSWER_VECTOR_LENGTH[0].z);
-
-	stageManager_->DrawDebug();
-#endif // _DEBUG
-
-	// チュートリアルUI表示
 	tutorial_.Draw();
 }
 
-void TutorialScene::DrawNamePlate(std::string str, VECTOR pos)
+void TutorialScene::DrawNamePlate(const std::string& str, VECTOR pos)
 {
 	const auto objectPos = ConvWorldPosToScreenPos(pos);
 	const int strWidth = GetDrawStringWidth(str.c_str(), static_cast<int>(str.length()));
 	const int drawX = static_cast<int>(objectPos.x) - (strWidth / 2);
 
-	DrawFormatString(drawX, static_cast<int>(objectPos.y) - 120, 0xffff00, str.c_str());
-	DrawFormatString(static_cast<int>(objectPos.x), static_cast<int>(objectPos.y) - 100, 0xffff00, "↓");
+	DrawString(drawX, static_cast<int>(objectPos.y) - 120, str.c_str(), 0xffff00);
+	DrawString(static_cast<int>(objectPos.x), static_cast<int>(objectPos.y) - 100, "↓", 0xffff00);
 }
 
 void TutorialScene::Release(void)
@@ -814,10 +629,6 @@ void TutorialScene::Release(void)
 	}
 
 	// 全オブジェクト解放
-	for (auto& obj : objects_)
-	{
-		if (obj) { delete obj; }
-	}
 	objects_.clear();
 
 	// プレイヤー配列をクリア
@@ -826,12 +637,6 @@ void TutorialScene::Release(void)
 	// スクリーンハンドルの削除
 	if (screenHandle1_ != -1) { DeleteGraph(screenHandle1_); screenHandle1_ = -1; }
 	if (screenHandle2_ != -1) { DeleteGraph(screenHandle2_); screenHandle2_ = -1; }
-
-	if (camera_)
-	{
-		delete camera_;
-		camera_ = nullptr;
-	}
 }
 
 void TutorialScene::Hint(void)
@@ -1017,3 +822,201 @@ void TutorialScene::TyutorialTEXT(void)
 		ResourceManager::GetInstance().Load(ResourceManager::SRC::ENOGU8).handleId_
 	);
 }
+
+void TutorialScene::DrawPlayerView(size_t playerIdx)
+{
+	const int screenHandle = (playerIdx == 0) ? screenHandle1_ : screenHandle2_;
+	SetDrawScreen(screenHandle);
+	ClearDrawScreen();
+
+	players_[playerIdx].camera_->SetBeforeDraw();
+
+	// 3D描画
+	skyDome_->Draw();
+	stageManager_->Draw();
+	lightPillar_->Draw();
+
+	for (auto& p : players_) p.player_->Draw();
+
+	DrawAnswerPreview();
+
+	for (auto& wall : walls_) wall->Draw();
+
+	DrawObjects();
+	DrawInteractLabels(playerIdx);
+
+	if (EffekseerEffect::GetInstance()) EffekseerEffect::GetInstance()->Draw();
+}
+
+void TutorialScene::DrawAnswerPreview(void)
+{
+	bool isHold = false;
+
+	for (const auto& obj : objects_)
+	{
+		if (!obj || !obj->IsGrabbed()) continue;
+
+		isHold = true;
+		if (pinID_ == -1) pinID_ = MV1DuplicateModel(obj->GetTransform().modelId);
+
+		MV1SetDifColorScale(pinID_, COLOR_F(
+			TutorialScene::PREVIEW_COLOR_R,
+			TutorialScene::PREVIEW_COLOR_G,
+			TutorialScene::PREVIEW_COLOR_B,
+			TutorialScene::PREVIEW_COLOR_A));
+		MV1SetPosition(pinID_, obj->GetAnswerPos());
+		MV1SetScale(pinID_, obj->GetTransform().scl);
+		MV1DrawModel(pinID_);
+	}
+
+	// 何も掴んでいなければ複製モデルを破棄
+	if (!isHold && pinID_ != -1)
+	{
+		MV1DeleteModel(pinID_);
+		pinID_ = -1;
+	}
+}
+
+void TutorialScene::DrawObjects(void)
+{
+	for (const auto& obj : objects_)
+	{
+		if (!obj) continue;
+		if (CheckCameraViewClip(obj->GetPos())) continue;
+
+		if (obj->GetObjectType() == ObjectBase::OBJECT_TYPE::BUTTON)
+			DrawNamePlate("ボタン", obj->GetPos());
+
+		obj->Draw();
+	}
+}
+
+void TutorialScene::DrawInteractLabels(size_t playerIdx)
+{
+	const VECTOR playerPos = players_[playerIdx].player_->GetTransform().pos;
+
+	for (const auto& obj : objects_)
+	{
+		if (!obj) continue;
+		if (obj->IsGrabbed()) continue;   // 掴んでいる物は表示しない
+		if (CheckCameraViewClip(obj->GetPos())) continue;
+
+		const char* label = GetInteractLabel(obj->GetObjectType());
+		if (!label) continue;
+
+		// プレイヤーとの距離
+		const float dist = VSize(VSub(playerPos, obj->GetTransform().pos));
+		if (dist > TutorialScene::INTERACT_DISTANCE) continue;
+
+		// ワールド座標をスクリーンへ変換して描画
+		const VECTOR screenPos = ConvWorldPosToScreenPos(obj->GetPos());
+		const int textW = GetDrawStringWidth(label, static_cast<int>(strlen(label)));
+		const int drawX = static_cast<int>(screenPos.x) - (textW / 2);
+		const int drawY = static_cast<int>(screenPos.y) - 80;   // 表示オフセット
+
+		// 背景ボックス(半透明黒)
+		const int pad = 6;
+		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 200);
+		DrawBox(drawX - pad, drawY - pad, drawX + textW + pad, drawY + 18 + pad, GetColor(0, 0, 0), true);
+		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+		DrawString(drawX, drawY, label, GetColor(255, 255, 255));
+	}
+}
+
+void TutorialScene::DrawHint(void)
+{
+	if (!showHint_ || hintHandle_ == -1) return;
+
+	int w = 0, h = 0;
+	GetGraphSize(hintHandle_, &w, &h);
+
+	const int drawX1 = (screenWidth_ - w) / 2;
+	const int drawY1 = (screenHeight_ - h) / 2;
+	DrawExtendGraph(drawX1, drawY1, drawX1 + w, drawY1 + h, hintHandle_, true);
+}
+
+void TutorialScene::DrawSplitScreen(void)
+{
+	const int halfWidth = screenWidth_ / 2;
+	const int mainScreen = SceneManager::GetInstance()->GetMainScreen();
+
+	// メイン画面に転送
+	SetDrawScreen(mainScreen);
+	ClearDrawScreen();
+
+	DrawExtendGraph(0, 0, halfWidth, screenHeight_, screenHandle1_, true);
+	DrawExtendGraph(halfWidth, 0, screenWidth_, screenHeight_, screenHandle2_, true);
+
+	// 非アクティブ側を薄暗く
+	const int dimAlpha = 150;
+	SetDrawBlendMode(DX_BLENDMODE_ALPHA, dimAlpha);
+	if (activePlayer_ == Player::PLAYER_NO::PLAYER1)
+		DrawBox(halfWidth, 0, screenWidth_, screenHeight_, GetColor(0, 0, 0), TRUE);
+	else
+		DrawBox(0, 0, halfWidth, screenHeight_, GetColor(0, 0, 0), TRUE);
+	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+	// ヒントはメイン画面(全体)に描く
+	DrawHint();
+
+	// バックバッファへ出力
+	SetDrawScreen(DX_SCREEN_BACK);
+	ClearDrawScreen();
+	DrawGraph(0, 0, mainScreen, FALSE);
+}
+
+#ifdef _DEBUG
+void TutorialScene::DrawDebugInfo(void)
+{
+	const int halfWidth = screenWidth_ / 2;
+
+	for (size_t i = 0; i < players_.size(); ++i)
+	{
+		const int w = halfWidth * static_cast<int>(i);
+		DrawFormatString(w, 0, GetColor(255, 255, 255), "P%d角度:(%.1f, %.1f, %.1f)",
+			static_cast<int>(i + 1),
+			players_[i].player_->GetTransform().quaRot.ToEuler().x,
+			players_[i].player_->GetTransform().quaRot.ToEuler().y,
+			players_[i].player_->GetTransform().quaRot.ToEuler().z);
+
+		if (players_[i].isPlayerHitObject_)
+			DrawFormatString(w, 40, GetColor(255, 0, 0), "P%d: オブジェクトと衝突中!", static_cast<int>(i + 1));
+		else
+			DrawFormatString(w, 40, GetColor(0, 255, 0), "P%d: 衝突なし", static_cast<int>(i + 1));
+	}
+
+	if (!objects_.empty() && objects_[0])
+	{
+		DrawFormatString(halfWidth, 80, GetColor(0, 0, 0), "座標:(%.1f, %.1f, %.1f)",
+			objects_[0]->GetTransform().pos.x,
+			objects_[0]->GetTransform().pos.y,
+			objects_[0]->GetTransform().pos.z);
+	}
+
+	int y = 120;
+	for (const auto& object : objects_)
+	{
+		if (!object) continue;   // 元のコードにはなかった null チェック
+
+		DrawFormatString(halfWidth, y, GetColor(255, 255, 255),
+			"Object情報:座標(%.1f, %.1f, %.1f) 回転(%.1f, %.1f, %.1f)\nViewWorld : %d isAnswer : %d",
+			object->GetTransform().pos.x,
+			object->GetTransform().pos.y,
+			object->GetTransform().pos.z,
+			object->GetTransform().quaRot.ToEuler().x,
+			object->GetTransform().quaRot.ToEuler().y,
+			object->GetTransform().quaRot.ToEuler().z,
+			static_cast<int>(object->GetWorld()),
+			object->IsAnswerPosition());
+		y += 40;
+	}
+
+	DrawFormatString(10, 240, GetColor(255, 255, 255), "Answer Position: (%.1f, %.1f, %.1f)",
+		ANSWER_VECTOR_LENGTH[0].x,
+		ANSWER_VECTOR_LENGTH[0].y,
+		ANSWER_VECTOR_LENGTH[0].z);
+
+	stageManager_->DrawDebug();
+}
+#endif // _DEBUG

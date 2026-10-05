@@ -52,6 +52,7 @@ public:
 
 	// コンストラクタ / デストラクタ
 	TutorialScene(void);
+
 	~TutorialScene(void) override;
 
 	// ライフサイクル
@@ -60,6 +61,7 @@ public:
 	void LoadEnd(void) override;
 	void Update(void) override;
 	void Draw(void) override;
+	void DrawNamePlate(const std::string& str, VECTOR pos);
 	void Release(void) override;
 
 	// チュートリアル関連
@@ -88,7 +90,7 @@ private:
 	const VECTOR ObjectScale = { 0.5f, 0.5f, 0.5f };
 
 	// カメラ
-	Camera* camera_ = nullptr;
+	std::unique_ptr<Camera> camera_;
 
 	// ゲームクリアまでの時間
 	constexpr static float END_TIME = 3.0f;
@@ -104,7 +106,7 @@ private:
 	std::vector<PlayerS> players_;
 
 	// 管理するオブジェクト
-	std::vector<ObjectBase*> objects_;
+	std::vector<std::unique_ptr<ObjectBase>> objects_;
 
 	// 分割スクリーン
 	int screenHandle1_ = -1;
@@ -126,16 +128,17 @@ private:
 	// 初期化補助
 	void TutorialInit(void);
 
-	// オブジェクト生成 / ボタン処理
-	void MakeNewObject(std::vector<ObjectBase*>& newObjects);
-	void ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*>& newObjects, std::vector<int>& removeIndices);
+	// オブジェクト生成 
+	void MakeNewObject(std::vector<std::unique_ptr<ObjectBase>>& newObjects);
+
+	// ボタン処理
+	void ButtonProcess(ObjectBase& obj,
+		std::vector<std::unique_ptr<ObjectBase>>& newObjects,
+		std::vector<int>& removeIndices);
 
 	// 衝突判定・解答判定
 	void CheckCollisions(void);
 	void AnswerChack(void);
-
-	// 表示補助
-	void DrawNamePlate(std::string str, VECTOR pos);
 
 	//-------------------------
 	// チュートリアル状態
@@ -166,4 +169,13 @@ private:
 	bool showHint_ = false;
 	VECTOR hintWorldPos_ = { 0.0f, 0.0f, 0.0f };
 	int hintHandle_ = -1;
+
+	// Draw関連
+	void DrawPlayerView(size_t playerIdx);
+	void DrawAnswerPreview(void);
+	void DrawObjects(void);
+	void DrawInteractLabels(size_t playerIdx);
+	void DrawHint(void);
+	void DrawSplitScreen(void);
+	void DrawDebugInfo(void);
 };

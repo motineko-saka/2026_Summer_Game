@@ -37,8 +37,8 @@ public:
 
 	void SetViewWorld(SceneBase::WORLD world) { viewWorld_ = world; }
 
-	Transform& GetTransform(void) { return transform_; }
-	VECTOR& GetPos(void) { return transform_.pos; }
+	const Transform& GetTransform(void) const { return transform_; }
+	const VECTOR& GetPos(void) const { return transform_.pos; }
 
 	// ƒvƒŒƒCƒ„[‚©‚ç‰Ÿ‚³‚ê‚éˆ—
 	void Push(const VECTOR& direction, float speed);
