@@ -26,6 +26,7 @@ public:
 	void Release(void);
 
 	const std::vector<StageBase*>& GetStage() const { return stages_; }
+
 private:
 	constexpr static int STAGE_NUM = 1;
 

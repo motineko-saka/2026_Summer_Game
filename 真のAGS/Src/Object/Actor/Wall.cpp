@@ -11,7 +11,15 @@ Wall::Wall(VECTOR pos, bool isRot, bool isHalf)
 	:
 	tempPos_(pos),
 	isRot_(isRot),
-	isHalf_(isHalf)
+	isHalf_(isHalf),
+	constBufFloat4Size_(0),
+	constBufFloat4SizeVS_(0),
+	constBufVS_(0),
+	constBuf_(0),
+	shaderVS_(0),
+	shader_(0),
+	time_(0.0f),
+	dissolveTime_(0.0f)
 {
 }
 

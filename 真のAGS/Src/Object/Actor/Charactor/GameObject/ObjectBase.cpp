@@ -1,5 +1,4 @@
 #include "ObjectBase.h"
-#include <memory>
 #include "../../../../Utility/AsoUtility.h"
 #include "../../../../Manager/ResourceManager.h"
 #include "../../../../Manager/Resource.h"
@@ -9,11 +8,11 @@
 #include "../../../Collider/ColliderCapsule.h"
 #include "../../../Collider/ColliderModel.h"
 #include "../../../../Manager/InputManager.h"
+#include <memory>
 
-ObjectBase::ObjectBase(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type, bool isHold)
+ObjectBase::ObjectBase(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type)
 	:
 	CharactorBase(),
-	isHoldAble_(isHold),
 	isAnswerPosition_(false),
 	isGrabbed_(false),
 	isPressButton_(false),
@@ -23,7 +22,9 @@ ObjectBase::ObjectBase(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type, 
 	type_(type),
 	pushPow_(AsoUtility::VECTOR_ZERO),
 	handFrame_(-1),
-	tag_()
+	isButtomPushed_(false),
+	isRot_(false),
+	tag_(ColliderBase::TAG::OBJECT)
 {
 }
 
@@ -86,7 +87,6 @@ void ObjectBase::InitLoad(void)
 	case OBJECT_TYPE::SCENE_PROP:
 		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::WALL));
 		break;
-	case OBJECT_TYPE::NUMBER_BUTTON:
 	case OBJECT_TYPE::BUTTON:
 		transform_.SetModel(resMng_.LoadModelDuplicate(ResourceManager::SRC::BUTTON));
 		break;
@@ -126,7 +126,7 @@ void ObjectBase::InitTransform(void)
 
 	transform_.quaRotLocal = Quaternion::Identity();
 
-	transform_.pos = AsoUtility::VECTOR_ZERO;
+	transform_.pos = { -1000.0f, 80.0f, -10.0f };
 
 	InitObjTrans();
 
@@ -158,12 +158,12 @@ void ObjectBase::InitCollider(void)
 	auto colCapsuleUP = std::make_unique<ColliderCapsule>(
 		tag_, &transform_,
 		COL_CAPSULE_TOP_LOCAL_POS, COL_CAPSULE_DOWN_LOCAL_POS,
-		capsule_radius_);
+		capsule_r);
 	ColliderCapsule* colCapsulePtr = colCapsuleUP.get();
 	ownColliders_.emplace(static_cast<int>(COLLIDER_TYPE::CAPSULE), std::move(colCapsuleUP));
 
 	// Ž‚Ä‚È‚­‚·‚é
-	if (isHoldAble_)
+	if (isHoldable_)
 	{
 		if (colLinePtr) colLinePtr->SetGrabbable(false);
 		if (colCapsulePtr) colCapsulePtr->SetGrabbable(false);
@@ -226,7 +226,7 @@ void ObjectBase::UpdateProcess(void)
 			transform_.quaRot = follow->quaRot;
 			transform_.quaRotLocal = Quaternion::AngleAxis(AsoUtility::Deg2RadD(-90.0f),
 				AsoUtility::AXIS_Z);
-			pushPow_ = AsoUtility::VECTOR_ZERO;
+			pushPow_ = { 0.0f, 0.0f, 0.0f };
 		}
 		else
 		{
@@ -234,7 +234,7 @@ void ObjectBase::UpdateProcess(void)
 			const VECTOR worldPos = VAdd(follow->pos, follow->quaRot.PosAxis(localPos));
 			transform_.pos = worldPos;
 			transform_.quaRot = follow->quaRot;
-			pushPow_ = AsoUtility::VECTOR_ZERO;
+			pushPow_ = { 0.0f, 0.0f, 0.0f };
 		}
 		break;
 	}

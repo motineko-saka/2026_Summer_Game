@@ -32,7 +32,6 @@ void Loading::Init(void)
 // “Ç‚İ‚İ
 void Loading::Load(void)
 {
-	handle_ = LoadGraph("Data/Image/Loading/Image/logo.png");
 }
 
 // XV

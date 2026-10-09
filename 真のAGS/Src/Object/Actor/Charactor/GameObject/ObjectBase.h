@@ -14,10 +14,7 @@ public:
 		WBOX,
 		AKEG,
 		SCENE_PROP,
-		OPEN_BUTTON,
-		NUMBER_BUTTON,
 		BUTTON,
-		GOAL_BUTTON,
 		PRESS_BUTTON,
 		GEAR,
 		GEAR_OBJECT,
@@ -28,53 +25,63 @@ public:
 	};
 
 	// world と種類を指定可能に
-	ObjectBase(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type = OBJECT_TYPE::DEFAULT, bool isHold = false);
+	ObjectBase(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type = OBJECT_TYPE::DEFAULT);
 	virtual ~ObjectBase(void);
 
-	//void Update(void)override;
 	void Draw(void)override;
 	void Release(void)override;
 
-	// ゲッター関数
-	const SceneBase::WORLD& GetWorld(void) const{ return world_; }
-	const Transform& GetTransform(void) const{ return transform_; }
-	const VECTOR& GetPos(void) const{ return transform_.pos; }
-	const OBJECT_TYPE& GetObjectType() const{ return type_; }
-	const OBJECT_TYPE& GetType() const{ return type_; }
-	const VECTOR& GetAnswerPos(void) const{ return ansVec_; }
+	SceneBase::WORLD GetViewWorld(void) const{ return viewWorld_; }
 
-	// セッター関数
+	SceneBase::WORLD GetWorld(void) const{ return world_; }
+
 	void SetViewWorld(SceneBase::WORLD world) { viewWorld_ = world; }
-	void SetPlaced(bool placed);
-	void SetObjectType(OBJECT_TYPE t) { type_ = t; }
-	void SetButtomPushed(bool isPush) { isButtomPushed_ = isPush; }
-	void SetPosition(const VECTOR& pos) { transform_.pos = pos; transform_.Update(); }
-	void SetScale(const VECTOR& scl) { transform_.scl = scl; transform_.Update(); }
-	void SetIsRot(const bool& is) { isRot_ = is; }
+
+	const Transform& GetTransform(void) const { return transform_; }
+	const VECTOR& GetPos(void) const { return transform_.pos; }
 
 	// プレイヤーから押される処理
 	void Push(const VECTOR& direction, float speed);
 
-	const bool& IsPlaced() const { return placed_; }
+	// 設置済みフラグ操作
+	void SetPlaced(bool placed);
+	bool IsPlaced() const { return placed_; }
 
-	const bool& IsAnswerPosition() const { return isAnswerPosition_; }
+	// 種類取得
+	OBJECT_TYPE GetObjectType() const { return type_; }
+	void SetObjectType(OBJECT_TYPE t) { type_ = t; }
 
-	const bool& isPushButtom(void) const{ return isButtomPushed_; }
+	void SetButtomPushed(bool isPush) { isButtomPushed_ = isPush; }
+	const OBJECT_TYPE GetType() const { return type_; }
 
-	const bool& IsGrabbed(void) const { return isGrabbed_; }
+	// 位置設定の簡易ヘルパ
+	void SetPosition(const VECTOR& pos) { transform_.pos = pos; transform_.Update(); }
+
+	bool IsAnswerPosition() const { return isAnswerPosition_; }
+
+	// スケール設定/取得
+	void SetScale(const VECTOR& scl) { transform_.scl = scl; transform_.Update(); }
+
+	const VECTOR GetAnswerPos(void)const { return ansVec_; }
+
+	bool isPushButtom(void) const{ return isButtomPushed_; }
+
+	const bool IsGrabbed(void) const { return isGrabbed_; }
 
 	void PushButton(void);
 	void PressButton(void);
 
 	// PUSH_BUTTON が踏まれているか取得
-	const bool& IsPushButtonPressed(void) const { return isPressButton_; }
+	bool IsPushButtonPressed(void) const { return isPressButton_; }
 
 	// PUSH_BUTTON のリセット（次のフレーム判定のため）
 	void ResetPushButton(void) { isPressButton_ = false; }
 
+	void SetIsRot(bool is) { isRot_ = is; }
+
 protected:
 	// 衝突判定用カプセルの半径
-	float capsule_radius_ = 30.0f;
+	float capsule_r = 30.0f;
 
 	// 答えにおいて正誤判定をするオブジェクトかどうか
 	bool isAnswerObject_ = true;
@@ -85,13 +92,9 @@ protected:
 	// BUTTON が押されているか
 	bool isButtomPushed_ = false;
 
-	// 持っているか
-	bool isHoldAble_ = false;
+	bool isHoldable_ = false;
 
 	int handFrame_;
-
-	// オブジェクト種類
-	OBJECT_TYPE type_{ OBJECT_TYPE::DEFAULT };
 
 	// リソースロード
 	void InitLoad(void)override;
@@ -120,8 +123,8 @@ protected:
 	virtual void ObjectUpdateProcess(void) {};
 
 	virtual void SetFlame(const Transform* follow) {};
-
 	ColliderBase::TAG tag_;
+
 private:
 	// 衝突判定用ライン開始
 	static constexpr VECTOR COL_LINE_START_LOCAL_POS = { 0.0f, 80.0f, 0.0f };
@@ -140,6 +143,9 @@ private:
 
 	SceneBase::WORLD world_;		// 
 	SceneBase::WORLD viewWorld_;	// 今写っている世界
+
+	// オブジェクト種類
+	OBJECT_TYPE type_{ OBJECT_TYPE::DEFAULT };
 
 	// 押されて移動する量
 	VECTOR pushPow_;

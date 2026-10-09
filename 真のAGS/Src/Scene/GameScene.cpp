@@ -18,6 +18,8 @@
 #include "../Object/Actor/Charactor/GameObject/Rock.h"
 #include "../Object/Actor/Charactor/GameObject/Axe.h"
 #include "../Object/Actor/Charactor/GameObject/Gate.h"
+#include "../Object/Actor/Charactor/GameObject/Panel.h"
+#include "../Object/Actor/Charactor/GameObject/Board.h"
 #include "../Object/Actor/Wall.h"
 #include "../Object/LightPillar.h"
 #include "../Object/Collider/ColliderBase.h"
@@ -30,21 +32,16 @@
 
 GameScene::GameScene(void)
 	:
-	SceneBase(),
 	stageManager_(nullptr),
 	skyDome_(nullptr),
 	screenHandle1_(-1),
 	screenHandle2_(-1),
 	screenWidth_(0),
 	screenHeight_(0),
-	answerSpotModelHandle_(-1),
-	isClear_(false),
-	isOpen_(false),
-	buttonPTarget_(5),
-	buttonPCount_(0),
-	buttonSP_(0),
-	butcount_(false),
-	shadowMapHandle_(-1)
+	pinID_(-1),
+	shadowMapHandle_(-1),
+	camera_(nullptr),
+	SceneBase()
 {
 }
 
@@ -63,9 +60,18 @@ void GameScene::Init(void)
 	screenHandle1_ = MakeScreen(halfWidth, screenHeight_, true);
 	screenHandle2_ = MakeScreen(halfWidth, screenHeight_, true);
 
+	isPause_ = false;
+	isClear_ = false;
+	isBreak_ = false;
+	isRot_ = false;
+
 	lightPillar_ = std::make_unique<LightPillar>();
 
 	players_.resize(PLAYER_NUM);
+
+	// グローバルカメラ
+	camera_ = new Camera();
+	camera_->Init();
 
 	// プレイヤー＆カメラ生成
 	for (size_t i = 0; i < players_.size(); ++i)
@@ -73,21 +79,19 @@ void GameScene::Init(void)
 		players_[i].camera_ = std::make_unique<Camera>();
 		players_[i].camera_->Init();
 
-		Player::PLAYER_NO pno = (i == static_cast<int>(Player::PLAYER_NO::PLAYER1)) ? 
-			Player::PLAYER_NO::PLAYER1 : Player::PLAYER_NO::PLAYER2;
-		players_[i].player_ = std::make_unique<Player>(pno, *players_[i].camera_, true);
+		Player::PLAYER_NO pno = (i == 0) ? Player::PLAYER_NO::PLAYER1 : Player::PLAYER_NO::PLAYER2;
+		players_[i].player_ = std::make_unique<Player>(pno, *players_[i].camera_);
 		players_[i].player_->Init();
 
 		players_[i].camera_->SetFollow(&players_[i].player_->GetTransform());
 		players_[i].camera_->ChangeMode(Camera::MODE::FOLLOW);
-
-		int width, height;
-		SetMouseCenterPos(static_cast<int>(i), width, height);
-		players_[i].camera_->SetMouseCenter(width, height);
 		players_[i].camera_->Update();
 
 		players_[i].isPlayerHitObject_ = false;
 	}
+
+	players_[0].camera_->SetMouseCenter(screenWidth_ / 4, screenHeight_ / 2);
+	players_[1].camera_->SetMouseCenter(screenWidth_ * 3 / 4, screenHeight_ / 2);
 
 	// ステージ
 	stageManager_ = std::make_unique<StageManager>(SceneManager::SCENE::MAIN);
@@ -100,22 +104,20 @@ void GameScene::Init(void)
 	CreateWallGame(*stageManager_);
 
 	// オブジェクト作成（複数）
-	objects_.reserve(OBJECT_NUM);
+	objects_.reserve(10);
 	
-	PushObject<Button>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[3], ObjectBase::OBJECT_TYPE::OPEN_BUTTON, INIT_BUTTON_POS, VScale(AsoUtility::VECTOR_ONE, 0.5f));
-	PushObject<Rock>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::ROCK, INIT_ROCK_POS, AsoUtility::VECTOR_ONE);
-	PushObject<Object>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::CHEST, INIT_CHEST_POS, VScale(AsoUtility::VECTOR_ONE, 0.5f));
-	PushObject<Axe>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::AXE, INIT_AXE_POS, VScale(AsoUtility::VECTOR_ONE, 8.0f));
-	PushObject<Gate>(GameScene::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::DEFAULT, INIT_GATE_POS, AsoUtility::VECTOR_ONE);
+	PushObject<Button>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[3], ObjectBase::OBJECT_TYPE::BUTTON, buttonPos_, VScale(AsoUtility::VECTOR_ONE, 0.5f));
+	PushObject<Rock>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::ROCK, rockPos_, AsoUtility::VECTOR_ONE);
+	PushObject<Axe>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::AXE, { -500.0f, 0.0f, 0.0f }, VScale(AsoUtility::VECTOR_ONE, 8.0f));
+	PushObject<Gate>(GameScene::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::DEFAULT, { 1300.0f, -320.0f, 500.0f }, AsoUtility::VECTOR_ONE);
 
-	PushObject<Object>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::GEAR_OBJECT, INIT_GEAR_POS, AsoUtility::VECTOR_ONE);
+	objects_.push_back(std::make_unique<Gaer>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::GEAR));
+	objects_.back()->Init();
+	objects_.back()->SetPosition({ -600.0f, -620.0f, 0.0f });
+	objects_.back()->SetScale(AsoUtility::VECTOR_ONE);
 
-	PushObject<Object>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::GEAR_OBJECT, INIT_GEAR_POS, AsoUtility::VECTOR_ONE);
-
-	PushObject<Button>(GameScene::WORLD::LEFT,  ANSWER_VECTOR_LENGTH[3], ObjectBase::OBJECT_TYPE::NUMBER_BUTTON, INIT_NUMBER_BUTTON_POS_ONE, VScale(AsoUtility::VECTOR_ONE, 0.5f));
-	PushObject<Button>(GameScene::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[3], ObjectBase::OBJECT_TYPE::NUMBER_BUTTON, INIT_NUMBER_BUTTON_POS_TWO, VScale(AsoUtility::VECTOR_ONE, 0.5f));
-
-	PushObject<Button>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[3], ObjectBase::OBJECT_TYPE::GOAL_BUTTON, INIT_GOAL_BUTTON_POS, VScale(AsoUtility::VECTOR_ONE, 0.5f));
+	PushObject<Object>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::GEAR_OBJECT, 
+		{ -600.0f, -620.0f, 0.0f }, AsoUtility::VECTOR_ONE);
 
 	for (const auto& obj : objects_)
 	{
@@ -139,6 +141,9 @@ void GameScene::Init(void)
 
 		gaer->AddObject(objects_[gaerObjectNumber].get());
 	}
+	// Board と Panel の初期化
+	InitializeBoardAndPanels();
+
 
 #pragma region コライダ登録
 
@@ -160,8 +165,6 @@ void GameScene::Init(void)
 		{
 			obj->AddHitCollider(stageCollider);
 		}
-
-		//if (stageCollider == nullptr) DrawFormatString(100, 100, 0xffffff, "stageCollider is null\n");
 	}
 
 	// 踏むButtonのindexをとる
@@ -221,6 +224,12 @@ void GameScene::Init(void)
 			player.player_->GetOwnCollider(static_cast<int>(ObjectBase::COLLIDER_TYPE::CAPSULE));
 
 		if (!playerCaps) continue;
+
+		for (auto& panel : panels_)
+		{
+			// ステージモデルのコライダーをプレイヤーに登録
+			panel->AddHitCollider(playerCaps);
+		}
 	}
 
 	const auto* objCaps = objects_[2]->GetOwnCollider(static_cast<int>(ObjectBase::COLLIDER_TYPE::CAPSULE));
@@ -289,166 +298,44 @@ void GameScene::CheckCollisions(void)
 		player.isPlayerHitObject_ = false;
 	}
 
-	std::vector<std::unique_ptr<ObjectBase>> newObjects;  // 新規オブジェクト用
+	std::vector<ObjectBase*> newObjects;  // 新規オブジェクト用
 
-	for (size_t i = 0; i < objects_.size(); ++i)
+	for (auto& obj : objects_)
 	{
-		auto& obj = objects_[i];
 		if (obj == nullptr) continue;
 
 		// ボタンタイプの場合は専用処理
 		if (!obj->isPushButtom() && (obj->GetType() == ObjectBase::OBJECT_TYPE::BUTTON))
 		{
-			if (ButtonProcess(*obj))
-			{
-				walls_.pop_back();
-				obj->SetButtomPushed(true);
-
-				for (const auto& object : objects_)
-				{
-					object->SetButtomPushed(true);
-				}
-
-				for (auto& player : players_)
-				{
-					player.player_->HitColliderErase(4);
-				}
-			}
-
-			continue;
-		}
-
-		// ゴールボタンタイプの場合は専用処理
-		if (!obj->isPushButtom() && (obj->GetType() == ObjectBase::OBJECT_TYPE::GOAL_BUTTON))
-		{
-			if (ButtonProcess(*obj))
-			{
-				ChangeScene(std::make_shared<GameClearScene>());
-			}
-
-			continue;
-		}
-
-		if (!obj->isPushButtom() && (obj->GetType() == ObjectBase::OBJECT_TYPE::OPEN_BUTTON))
-		{
-			if (ButtonProcess(*obj))
-			{
-				isOpen_ = true;
-			}
+			ButtonProcess(*obj, newObjects);
 			
+			continue;
 		}
 
-		std::vector<int> removeIndices;       // 削除インデックス
+		auto& objectPos = obj->GetPos();
 
-		const VECTOR objectPos = obj->GetTransform().pos;
-
-		// OPENCHESTを生成する処理
-		if (obj->GetType() == ObjectBase::OBJECT_TYPE::CHEST)
+		for (auto& player : players_)
 		{
-			// ボタンの正解が成立していなければチェストは開けない
-			if (!isOpen_) continue;
+			// ステージモデルのコライダーをプレイヤーに登録
+			VECTOR playerPos = player.player_->GetTransform().pos;
 
-			const bool isE = InputManager::GetInstance()->IsTrgDown(KEY_INPUT_E);
-			const bool isPadLeft = InputManager::GetInstance()->IsPadBtnTrgDown(
-				InputManager::JOYPAD_NO::PAD1,
-				InputManager::JOYPAD_BTN::LEFT);
-
-			// 入力が無ければ次へ
-			if (!isE && !isPadLeft) continue;
-
-			// どちらかのプレイヤーが近いか確認
-			bool isNearPlayer = false;
-			for (auto& p : players_)
+			float distance1 = VSize(VSub(playerPos, objectPos));
+			bool hit = (distance1 < 180.0f);
+			if (hit)
 			{
-				const float dist = VSize(VSub(p.player_->GetTransform().pos, objectPos));
-				if (dist < INTERACT_DISTANCE)
-				{
-					isNearPlayer = true;
-					break;
-				}
-			}
-			if (!isNearPlayer) continue;
-
-			// OPENCHESTを生成
-			newObjects.push_back(std::make_unique<Object>(
-				SceneBase::WORLD::LEFT,
-				ANSWER_VECTOR_LENGTH[1],
-				ObjectBase::OBJECT_TYPE::OPENCHEST));
-
-			// AKEG を再度操作可能にする
-			for (auto& object : objects_)
-			{
-				if (object && object->GetObjectType() == ObjectBase::OBJECT_TYPE::AXE)
-				{
-					object->SetPlaced(false);
-					break;
-				}
-			}
-
-			// CHESTを削除対象
-			removeIndices.push_back(static_cast<int>(i));
-
-			// 生成後はフラグをリセット
-			butcount_ = false;
-
-			// ボタン関連の進行リセット
-			buttonSP_ = 0;
-			buttonPCount_ = 0;
-
-			if (auto am = AudioManager::GetInstance())
-			{
-				am->PlaySE(SoundID::SE_SUCCESS);
+				player.isPlayerHitObject_ = true;
+				VECTOR pushDir = VSub(objectPos, playerPos);
+				pushDir.y = 0.0f; // Y軸(垂直方向)は無視
+				pushDir = VNorm(pushDir); // 正規化
 			}
 		}
-
-		if (!removeIndices.empty())
-		{
-			// 降順ソートして重複を除き、削除処理
-			std::sort(removeIndices.begin(), removeIndices.end(), std::greater<int>());
-			removeIndices.erase(std::unique(removeIndices.begin(), removeIndices.end()), removeIndices.end());
-
-			for (int idx : removeIndices)
-			{
-				if (idx >= 0 && idx < static_cast<int>(objects_.size()))
-				{
-					// オブジェクト
-					if (objects_[idx])
-					{
-						const auto& ownCols = objects_[idx]->GetOwnColliders();
-						for (const auto& ct : ownCols)
-						{
-							const ColliderBase* col = ct.second.get();
-							if (!col) continue;
-
-							// プレイヤーから解除
-							for (auto& p : players_)
-							{
-								if (p.player_) p.player_->RemoveHitCollider(col);
-							}
-
-							// 他のオブジェクトから解除
-							for (auto& otherObj : objects_)
-							{
-								if (!otherObj || otherObj == objects_[idx]) continue;
-								otherObj->RemoveHitCollider(col);
-							}
-						}
-					}
-					
-					// vector から削除
-					objects_.erase(objects_.begin() + idx);
-					//isClear_ = true;
-				}
-			}
-		}
-		if (!newObjects.empty()) MakeNewObject(newObjects);
 	}
 
 	// ループ終了後に追加
 	MakeNewObject(newObjects);
 }
 
-const bool GameScene::ButtonProcess(ObjectBase& obj)
+const void GameScene::ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*>& newObjects)
 {
 	VECTOR objectPos = obj.GetTransform().pos;
 
@@ -470,135 +357,59 @@ const bool GameScene::ButtonProcess(ObjectBase& obj)
 		(InputManager::GetInstance()->IsTrgDown(KEY_INPUT_F) || InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::RIGHT)))
 	{
 		// ボタンが押されたときの処理（例：ゲームクリア、ドアが開くなど）
-		return true;
-		// 直接追加せず、一時リストに格納
-		//ObjectBase* newObj = new ObjectBase(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[1], ObjectBase::OBJECT_TYPE::AKEG);
-		//newObjects.push_back(newObj);
-	}
-	return false;
-}
+		walls_.pop_back();
+		obj.SetButtomPushed(true);
 
-const void GameScene::ButtonProcess(ObjectBase& obj, std::vector<std::unique_ptr<ObjectBase>>& newObjects, std::vector<int>& removeIndices)
-{
-	const VECTOR objectPos = obj.GetTransform().pos;
-
-	// キー／パッド入力を判定（パッドは単一：PAD1 を想定）
-	const bool isKeyPush = InputManager::GetInstance()->IsTrgDown(KEY_INPUT_F);
-	const bool isPadPush = InputManager::GetInstance()->IsPadBtnTrgDown(
-		InputManager::JOYPAD_NO::PAD1,
-		InputManager::JOYPAD_BTN::RIGHT);
-
-	// 入力がなければ終了
-	if (!isKeyPush && !isPadPush)
-	{
-		return;
-	}
-
-	// 押したプレイヤーは「現在アクティブなプレイヤー」を基準にする
-	int playerNo = (activePlayer_ == Player::PLAYER_NO::PLAYER1) ? 0 : 1;
-
-	// ボタンとの距離チェック（アクティブプレイヤー基準）
-	const float distance = VSize(VSub(
-		players_[playerNo].player_->GetTransform().pos,
-		objectPos));
-
-	if (distance >= BUTTON_PUSH_RADIUS)
-	{
-		return;
-	}
-
-	// ボタンを押した
-	obj.SetButtomPushed(true);
-
-	SceneBase::WORLD pressed = obj.GetWorld();
-
-	if (buttonPTarget_ <= 0 || buttonPTarget_ != static_cast<int>(buttonRequiredPattern_.size()))
-		buttonPTarget_ = static_cast<int>(buttonRequiredPattern_.size());
-
-	if (buttonSP_ < buttonRequiredPattern_.size() && pressed == buttonRequiredPattern_[buttonSP_])
-	{
-		buttonSP_++;
-		if (buttonSP_ == buttonPTarget_)
+		objects_[0]->SetButtomPushed(true);
+		objects_[1]->SetButtomPushed(true);
+		objects_[2]->SetButtomPushed(true);
+		//objects_[2]->Release();
+		//objects_.erase(objects_.begin() + 2);
+		for (auto& player : players_)
 		{
-			// 正解を記録
-			buttonSP_ = 0;
-			buttonPCount_ = 0;
-
-			// 正解フラグ
-			butcount_ = true;
-			walls_.pop_back();
-
-			// 成功音のみ再生
-			if (auto am = AudioManager::GetInstance())
-			{
-				am->PlaySE(SoundID::SE_SUCCESS);
-			}
+			player.player_->HitColliderErase(4);
 		}
 	}
-	else
-	{
-		buttonSP_ = 0;
-		buttonPCount_++;
-	}
 }
 
-void GameScene::SetMouseCenterPos(int i, int& width, int& height)
-{
-	if (i == static_cast<int>(Player::PLAYER_NO::PLAYER1))
-	{
-		width = screenWidth_ / 4;
-	}
-	else
-	{
-		width = screenWidth_ * 3 / 4;
-	}
-	height = screenHeight_ / 2;
-}
-
-const void GameScene::MakeNewObject(std::vector<std::unique_ptr<ObjectBase>>& newObjects)
+const void GameScene::MakeNewObject(std::vector<ObjectBase*>& newObjects)
 {
 	for (auto& newObj : newObjects)
 	{
-		if (!newObj) continue;
-
 		newObj->Init();
-		newObj->SetPosition({ 1000.0f, -600.0f, 1000.0f });
-		newObj->SetScale({ 0.6f, 0.6f, 0.6f });
-		newObj->SetPlaced(true);
-
-		// ステージコライダを追加
+		newObj->SetPosition({ 0.0f, 200.0f, -0.5f });
+		newObj->SetScale({ 3.0, 3.0, 3.0 });
 		for (const auto& stage : stageManager_->GetStage())
 		{
-			const ColliderBase* stageCollider = stage->GetOwnCollider(static_cast<int>(Stage::COLLIDER_TYPE::MODEL));
+			// ステージモデルのコライダーをオブジェクトに登録
+			const ColliderBase* stageCollider =
+				stage->GetOwnCollider(static_cast<int>(Stage::COLLIDER_TYPE::MODEL));
+
 			newObj->AddHitCollider(stageCollider);
 		}
 
+		// オブジェクトの衝突コライダをプレイヤーに登録
 		const ColliderBase* objCaps = newObj->GetOwnCollider(static_cast<int>(ObjectBase::COLLIDER_TYPE::CAPSULE));
-		if (!objCaps)
+		if (!objCaps) return;
+
+		for (auto& player : players_)
 		{
-			// コライダが無ければこのオブジェクトは使えないため確実に破棄して続行（リーク防止）
-			continue;
+			player.player_->AddHitCollider(objCaps);
 		}
 
-		// プレイヤーにコライダ登録
-		for (auto& player : players_) player.player_->AddHitCollider(objCaps);
-
-		objects_.push_back(std::move(newObj));
+		objects_.push_back(std::unique_ptr<ObjectBase>(newObj));
 	}
 }
 
 void GameScene::Update(void)
 {
+	isPause_ = false;
+
 	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_ESCAPE) || 
 		InputManager::GetInstance()->IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::OPTION))
 	{
 		SceneManager::GetInstance()->PushScene(std::make_shared<PauseScene>());
-	}
-
-	if (isClear_)
-	{
-		ChangeScene(std::make_shared<GameClearScene>());
-		return;
+		isPause_ = true;
 	}
 
 #ifdef _DEBUG
@@ -640,10 +451,17 @@ void GameScene::Update(void)
 			Player::PLAYER_NO::PLAYER2 : Player::PLAYER_NO::PLAYER1;
 	}
 
+	// クリア判定
+	if (board_ && board_->CheckClear())
+	{
+		isClear_ = true;
+		return;
+	}
+
 	for (const auto& player : players_)
 	{
 		const auto& playerPos = player.player_->GetTransform().pos;
-		float distance = VSize(VSub(playerPos, INIT_END_POS));
+		float distance = VSize(VSub(playerPos, endPos_));
 		if (distance < 100.0f)
 		{
 			isClear_ = true;
@@ -662,6 +480,20 @@ void GameScene::Update(void)
 
 	lightPillar_->Update();
 
+	if (board_)
+	{
+		board_->Update();
+	}
+
+	for (auto& panel : panels_)
+	{
+		if (panel)
+		{
+			panel->Update();
+		}
+	}
+
+	// 既存のコード...
 	CheckCollisions();
 
 	for (auto& obj : objects_)
@@ -669,33 +501,28 @@ void GameScene::Update(void)
 		if (obj) obj->Update();
 	}
 
-	for (auto& obj : objects_)
-	{
-		// ボタンは専用処理へ委譲
-		if (obj->GetType() == ObjectBase::OBJECT_TYPE::BUTTON)
-		{
-			if (ButtonProcess(*obj))
-			{
-				walls_.pop_back();
-			}
-			continue;
-		}
-	}
 }
 
 void GameScene::Draw(void)
 {
 	ShadowMap_DrawSetup(shadowMapHandle_);
 
-	for (const auto& player : players_)
-	{
-		player.player_->Draw();
-	}
+	players_[0].player_->Draw();
+	players_[1].player_->Draw();
 	stageManager_->Draw();
 
 	for (auto& obj : objects_)
 	{
 		obj->Draw();
+	}
+
+	// Panel の描画
+	for (auto& panel : panels_)
+	{
+		if (panel)
+		{
+			panel->Draw();
+		}
 	}
 
 	ShadowMap_DrawEnd();
@@ -706,7 +533,6 @@ void GameScene::Draw(void)
 
 	for (int i = 0; i < players_.size(); i++)
 	{
-		// プレイヤーごとにシーン切り替え
 		auto& screenHandle_ = Player::PLAYER_NO::PLAYER1 == static_cast<Player::PLAYER_NO>(i) ?
 			screenHandle1_ : screenHandle2_;
 		SetDrawScreen(screenHandle_);
@@ -718,32 +544,18 @@ void GameScene::Draw(void)
 		stageManager_->Draw();
 		lightPillar_->Draw();
 
-		for (const auto& player : players_)
+		for (int j = 0; j < players_.size(); j++)
 		{
-			player.player_->Draw();
+			players_[j].player_->Draw();
 		}
 
-		for (int j = 0; j < objects_.size(); j++)
+		for (int i = 0; i < objects_.size(); i++)
 		{
-			auto& obj = objects_[j];
+			auto& obj = objects_[i];
 			if (!obj->IsGrabbed()) continue;
-			DrawSphere3D(ANSWER_VECTOR_LENGTH[j], 80.0f, 16, GetColor(255, 0, 0), GetColor(0, 0, 0), FALSE);
-			MV1SetPosition(answerSpotModelHandle_, ANSWER_VECTOR_LENGTH[j]);
-			MV1DrawModel(answerSpotModelHandle_);
-		}
-
-		for (int j = 0; j < objects_.size(); j++)
-		{
-			auto& obj = objects_[j];
-			if (!obj->IsGrabbed()) continue;
-			DrawSphere3D(ANSWER_VECTOR_LENGTH[j], 80.0f, 16, GetColor(255, 0, 0), GetColor(0, 0, 0), FALSE);
-			MV1SetPosition(answerSpotModelHandle_, ANSWER_VECTOR_LENGTH[j]);
-			MV1DrawModel(answerSpotModelHandle_);
-		}
-
-		for (auto& wall : walls_)
-		{
-			wall->Draw();
+			DrawSphere3D(ANSWER_VECTOR_LENGTH[i], 80.0f, 16, GetColor(255, 0, 0), GetColor(0, 0, 0), FALSE);
+			MV1SetPosition(pinID_, ANSWER_VECTOR_LENGTH[i]);
+			MV1DrawModel(pinID_);
 		}
 
 		for (auto& obj : objects_)
@@ -751,8 +563,6 @@ void GameScene::Draw(void)
 			if (obj == nullptr) continue;
 			obj->Draw();
 		}
-
-		DrawNamePlate("ゴール", INIT_END_POS);
 
 		// インタラクト文字表示
 		for (auto& obj : objects_)
@@ -781,9 +591,6 @@ void GameScene::Draw(void)
 			case ObjectBase::OBJECT_TYPE::ROCK:
 				label = "呼び設定";
 				break;
-			case ObjectBase::OBJECT_TYPE::OPEN_BUTTON:
-			case ObjectBase::OBJECT_TYPE::NUMBER_BUTTON:
-			case ObjectBase::OBJECT_TYPE::GOAL_BUTTON:
 			case ObjectBase::OBJECT_TYPE::BUTTON:
 				label = "Fで押す";
 				break;
@@ -812,8 +619,23 @@ void GameScene::Draw(void)
 		}
 
 		/*if (EffekseerEffect::GetInstance()) EffekseerEffect::GetInstance()->Draw();*/
+		DrawNamePlate("ゴール", endPos_);;
+		// Board の描画
+		if (board_)
+		{
+			board_->Draw();
+		}
 
-		DrawNamePlate("ゴール", INIT_END_POS);;
+		// Panel の描画
+		for (auto& panel : panels_)
+		{
+			if (panel)
+			{
+				panel->Draw();
+			}
+		}
+
+		DrawNamePlate("ゴール", endPos_);
 	}
 
 	SetDrawScreen(DX_SCREEN_BACK);
@@ -839,10 +661,11 @@ void GameScene::Draw(void)
 	for (int i = 0; i < players_.size(); i++)
 	{
 		int w = halfWidth * i;
-		DrawFormatString(halfWidth, 0, GetColor(255, 255, 255), "P1角度:(%.1f, %.1f, %.1f)",
-			players_[0].player_->GetTransform().pos.x,
-			players_[0].player_->GetTransform().pos.y,
-			players_[0].player_->GetTransform().pos.z);
+		DrawFormatString(halfWidth, 0, GetColor(255, 255, 255), "P%d角度:(%.1f, %.1f, %.1f)",
+			i + 1,
+			players_[i].player_->GetTransform().quaRot.ToEuler().x,
+			players_[i].player_->GetTransform().quaRot.ToEuler().y,
+			players_[i].player_->GetTransform().quaRot.ToEuler().z);
 	}
 
 	for (auto& player : players_)
@@ -938,12 +761,14 @@ void GameScene::Release(void)
 
 	// オブジェクトの破棄（unique_ptr がリソースを解放）
 	objects_.clear();
+	panels_.clear();
+	board_.reset();
 
-	// アンサーモデルを安全に削除
-	if (answerSpotModelHandle_ != -1)
+	// ピンモデルを安全に削除
+	if (pinID_ != -1)
 	{
-		MV1DeleteModel(answerSpotModelHandle_);
-		answerSpotModelHandle_ = -1;
+		MV1DeleteModel(pinID_);
+		pinID_ = -1;
 	}
 
 	// シャドウマップを安全に削除
@@ -951,6 +776,13 @@ void GameScene::Release(void)
 	{
 		DeleteShadowMap(shadowMapHandle_);
 		shadowMapHandle_ = -1;
+	}
+
+	// グローバル camera_ は raw pointer -> delete して nullptr に
+	if (camera_ != nullptr)
+	{
+		delete camera_;
+		camera_ = nullptr;
 	}
 
 	players_.clear();
@@ -962,6 +794,8 @@ void GameScene::Release(void)
 	if (lightPillar_) lightPillar_.reset();
 
 	// スクリーンハンドル削除
+	players_.clear();
+
 	if (screenHandle1_ != -1)
 	{
 		DeleteGraph(screenHandle1_);
@@ -971,5 +805,48 @@ void GameScene::Release(void)
 	{
 		DeleteGraph(screenHandle2_);
 		screenHandle2_ = -1;
+	}
+}
+
+void GameScene::InitializeBoardAndPanels(void)
+{
+	// Board の作成と初期化
+	board_ = std::make_unique<Board>();
+
+	// 初期状態
+	std::array<std::array<Board::ELEMENT, Board::STAGE_SIZE>, Board::STAGE_SIZE> initialBoard =
+	{ {
+		{{ Board::ELEMENT::ICE,  Board::ELEMENT::FIRE,  Board::ELEMENT::ICE  }},
+		{{ Board::ELEMENT::FIRE, Board::ELEMENT::WATER, Board::ELEMENT::FIRE }},
+		{{ Board::ELEMENT::ICE,  Board::ELEMENT::FIRE,  Board::ELEMENT::ICE  }}
+	} };
+
+	board_->Initialize(initialBoard);
+
+	// Panel の作成
+	panels_.clear();
+	panels_.reserve(Board::STAGE_SIZE * Board::STAGE_SIZE);
+
+	for (int y = 0; y < Board::STAGE_SIZE; ++y)
+	{
+		for (int x = 0; x < Board::STAGE_SIZE; ++x)
+		{
+			// Panel をワールド座標に配置
+			VECTOR panelPos = board_->GetPanelCenterPos(x, y);
+			panelPos.y = 0.0f;
+
+			auto panel = std::make_unique<Panel>(
+				SceneBase::WORLD::LEFT,
+				VECTOR{ 0.0f, 0.0f, 0.0f },
+				ObjectBase::OBJECT_TYPE::BUTTON
+			);
+
+			panel->SetIndex(x, y);
+			panel->SetBoard(board_.get());
+			panel->SetPosition(panelPos);
+			panel->Init();
+
+			panels_.push_back(std::move(panel));
+		}
 	}
 }

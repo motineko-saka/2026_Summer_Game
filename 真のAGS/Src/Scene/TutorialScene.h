@@ -26,17 +26,33 @@ class TutorialScene : public SceneBase
 
 public:
 	// 世界
-	enum class WORLD
-	{
-		LEFT = 0,
-		RIGHT,
-		ANSWER,
-	};
+	using WORLD = SceneBase::WORLD;
 
 	static constexpr float INTERACT_DISTANCE = 100.0f;
 
+	// マジックナンバーをヘッダーに集約
+	constexpr static float BUTTON_INTERACT_DISTANCE = 180.0f;
+	constexpr static float HINT_NEAR_DISTANCE = 60.0f;
+	constexpr static float PICKUP_DISTANCE = 90.0f;
+
+	// オブジェクト初期配置
+	constexpr static VECTOR BUTTON_LEFT_POS = { -700.0f, -520.0f, 500.0f };
+	constexpr static VECTOR BUTTON_RIGHT_POS = { 900.0f,  -520.0f, 100.0f };
+	constexpr static VECTOR AKEG_POS = { 900.0f,  -520.0f, 300.0f };
+	constexpr static VECTOR CHEST_POS = { 900.0f,  -520.0f, 300.0f };
+	constexpr static VECTOR WBOX_POS = { 800.0f,  -520.0f, 100.0f };
+	constexpr static VECTOR NEW_OBJECT_POS = { 900.0f,  -520.0f, 300.0f };
+	constexpr static VECTOR EFFECT_POS = { 900.0f,  -520.0f, 300.0f };
+
+	// プレビュー色（RGBA を分解して定義）
+	constexpr static float PREVIEW_COLOR_R = 0.0f;
+	constexpr static float PREVIEW_COLOR_G = 0.5f;
+	constexpr static float PREVIEW_COLOR_B = 1.0f;
+	constexpr static float PREVIEW_COLOR_A = 0.5f;
+
 	// コンストラクタ / デストラクタ
 	TutorialScene(void);
+
 	~TutorialScene(void) override;
 
 	// ライフサイクル
@@ -45,6 +61,7 @@ public:
 	void LoadEnd(void) override;
 	void Update(void) override;
 	void Draw(void) override;
+	void DrawNamePlate(const std::string& str, VECTOR pos);
 	void Release(void) override;
 
 	// チュートリアル関連
@@ -52,6 +69,7 @@ public:
 	void Hint(void);
 
 private:
+
 	// アンサーポジション
 	constexpr static VECTOR ANSWER_VECTOR_LENGTH[] = {
 		{760.0f, -520.0f, 600.0f},
@@ -59,8 +77,20 @@ private:
 		{300.0f,  -600.0f, 100.0f}
 	};
 
+	// オブジェクトスポーン位置 / 効果位置
+	const VECTOR kButtonLeftPos = { -700.0f, -520.0f, 500.0f };
+	const VECTOR kButtonRightPos = { 900.0f,  -520.0f, 100.0f };
+	const VECTOR kAkegPos = { 900.0f,  -520.0f, 300.0f };
+	const VECTOR kChestPos = { 900.0f,  -520.0f, 300.0f };
+	const VECTOR kWboxPos = { 800.0f,  -520.0f, 100.0f };
+	const VECTOR kNewObjectPos = { 900.0f,  -520.0f, 300.0f };
+	const VECTOR kEffectPos = { 900.0f,  -520.0f, 300.0f };
+
+	// オブジェクトスケール
+	const VECTOR ObjectScale = { 0.5f, 0.5f, 0.5f };
+
 	// カメラ
-	Camera* camera_ = nullptr;
+	std::unique_ptr<Camera> camera_;
 
 	// ゲームクリアまでの時間
 	constexpr static float END_TIME = 3.0f;
@@ -76,7 +106,7 @@ private:
 	std::vector<PlayerS> players_;
 
 	// 管理するオブジェクト
-	std::vector<ObjectBase*> objects_;
+	std::vector<std::unique_ptr<ObjectBase>> objects_;
 
 	// 分割スクリーン
 	int screenHandle1_ = -1;
@@ -98,16 +128,17 @@ private:
 	// 初期化補助
 	void TutorialInit(void);
 
-	// オブジェクト生成 / ボタン処理
-	const void MakeNewObject(std::vector<ObjectBase*>& newObjects);
-	const void ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*>& newObjects, std::vector<int>& removeIndices);
+	// オブジェクト生成 
+	void MakeNewObject(std::vector<std::unique_ptr<ObjectBase>>& newObjects);
+
+	// ボタン処理
+	void ButtonProcess(ObjectBase& obj,
+		std::vector<std::unique_ptr<ObjectBase>>& newObjects,
+		std::vector<int>& removeIndices);
 
 	// 衝突判定・解答判定
 	void CheckCollisions(void);
 	void AnswerChack(void);
-
-	// 表示補助
-	void DrawNamePlate(std::string str, VECTOR pos);
 
 	//-------------------------
 	// チュートリアル状態
@@ -122,15 +153,15 @@ private:
 	//-------------------------
 	// ボタンパターン
 	//-------------------------
-	std::vector<SceneBase::WORLD> buttonRequiredPattern_{ SceneBase::WORLD::RIGHT, SceneBase::WORLD::LEFT, SceneBase::WORLD::LEFT, SceneBase::WORLD::LEFT, SceneBase::WORLD::RIGHT };
+	std::vector<SceneBase::WORLD> buttonRequiredPattern_{ SceneBase::WORLD::LEFT, SceneBase::WORLD::RIGHT, SceneBase::WORLD::LEFT, SceneBase::WORLD::LEFT, SceneBase::WORLD::RIGHT };
 	std::vector<SceneBase::WORLD> buttonPressHistory_;
 	int buttonPTarget_ = 5;
 	int buttonPCount_ = 0;
 	size_t buttonSP_ = 0;
-	int butcount_ = false;
-	int TbutonCount_ = false;
-	bool buttonsLocked_ = false;  
-	bool chestOpenedOnce_ = false;  
+	bool butcount_ = false;
+	bool TbutonCount_ = false;
+	bool buttonsLocked_ = false;
+	bool chestOpenedOnce_ = false;
 
 	//-------------------------
 	// ヒント
@@ -138,4 +169,13 @@ private:
 	bool showHint_ = false;
 	VECTOR hintWorldPos_ = { 0.0f, 0.0f, 0.0f };
 	int hintHandle_ = -1;
+
+	// Draw関連
+	void DrawPlayerView(size_t playerIdx);
+	void DrawAnswerPreview(void);
+	void DrawObjects(void);
+	void DrawInteractLabels(size_t playerIdx);
+	void DrawHint(void);
+	void DrawSplitScreen(void);
+	void DrawDebugInfo(void);
 };

@@ -52,5 +52,4 @@ protected:
 
 	virtual void CreateWall(StageManager& stageM);
 	virtual void CreateWallGame(StageManager& stageM);
-
 };

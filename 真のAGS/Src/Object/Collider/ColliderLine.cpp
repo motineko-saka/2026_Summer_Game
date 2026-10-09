@@ -9,7 +9,8 @@ ColliderLine::ColliderLine(
 	:
 	ColliderBase(SHAPE::LINE, tag, follow),
 	localPosStart_(localPosStart),
-	localPosEnd_(localPosEnd)
+	localPosEnd_(localPosEnd),
+	isJump_(false)
 {
 }
 
@@ -49,10 +50,10 @@ VECTOR ColliderLine::GetPosEnd(void) const
 
 VECTOR ColliderLine::GetPosPushBackAlongNormal(const MV1_COLL_RESULT_POLY& hitColPoly, int maxTryCnt, float pushDistance) const
 {
-	return {0.0f,0.0f,0.0f};
+	return { 0.0f,0.0f,0.0f };
 }
 
-bool ColliderLine::PushBackUp(const ColliderModel* colliderModel, 
+bool ColliderLine::PushBackUp(const ColliderModel* colliderModel,
 	Transform& transform, bool isExclude, bool isTarget) const
 {
 	bool ret = false;

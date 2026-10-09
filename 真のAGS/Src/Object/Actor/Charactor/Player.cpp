@@ -1,5 +1,3 @@
-#include "Player.h"
-#include <memory>
 #include "../../../Utility/AsoUtility.h"
 #include "../../../Manager/ResourceManager.h"
 #include "../../../Manager/Resource.h"
@@ -11,6 +9,20 @@
 #include "../../Collider/ColliderCapsule.h"
 #include "../../Collider/ColliderModel.h"
 #include "../../../Audio/AudioManager.h"
+#include "Player.h"
+#include <memory>
+
+Player::Player(void)
+	:
+	CharactorBase(),
+	playerNo_(PLAYER_NO::PLAYER1),
+	heldCollider_(nullptr),
+	heldPrevFollow_(nullptr),
+	camera_(nullptr),
+	isActive_(true),
+	isGameScene_(false)
+{
+}
 
 Player::Player(PLAYER_NO playerNo, Camera& camera, bool isGameScene)
 	:
@@ -19,9 +31,9 @@ Player::Player(PLAYER_NO playerNo, Camera& camera, bool isGameScene)
 	heldCollider_(nullptr),
 	heldPrevFollow_(nullptr),
 	isActive_(true),
-	isGameScene_(isGameScene),
-	camera_(&camera)
+	isGameScene_(isGameScene)
 {
+	camera_ = &camera;
 }
 
 Player::~Player(void)
@@ -33,7 +45,7 @@ void Player::Draw(void)
 {
 	CharactorBase::Draw();
 #ifdef _DEBUG
-	//DrawDebug();
+	DrawDebug();
 #endif
 }
 
@@ -102,7 +114,7 @@ void Player::InitTransform(void)
 
 	transform_.pos = isGameScene_ ?
 		((playerNo_ == PLAYER_NO::PLAYER1) ?
-			PLAYER_ONE_INIT_POS : PLAYER_TWO_INIT_POS)
+			PLAYER_ONE__DEFAULT_POS : PLAYER_TWO__DEFAULT_POS)
 		:
 		((playerNo_ == PLAYER_NO::PLAYER1) ?
 			TUTORIAL_PLAYER_ONE_DEFAULT_POS : TUTORIAL_PLAYER_TWO_DEFAULT_POS);
@@ -249,6 +261,12 @@ void Player::ProcessMove(void)
 	{
 		dir = VNorm(dir);
 	}
+
+	//if (InputManager::GetInstance()->IsPadBtnNew(InputManager::JOYPAD_NO::PAD1,
+	//	InputManager::JOYPAD_BTN::R_TRIGGER))
+	//{
+	//	isDash = true;
+	//}
 
 	if (!AsoUtility::EqualsVZero(dir))
 	{
@@ -440,6 +458,7 @@ void Player::ProcessPickup(void)
 		}
 		else
 		{
+			const float PICKUP_DISTANCE = 90.0f;
 			const float pickDistSq = PICKUP_DISTANCE * PICKUP_DISTANCE;
 			const VECTOR plyPos = transform_.pos;
 
@@ -495,6 +514,11 @@ void Player::DropHeldObject(void)
 	heldCollider_->SetFollow(const_cast<Transform*>(heldPrevFollow_));
 	heldCollider_ = nullptr;
 	heldPrevFollow_ = nullptr;
+}
+
+void Player::DrawDebug(void)
+{
+	int offsetX = (playerNo_ == PLAYER_NO::PLAYER2) ? 400 : 15;
 }
 
 void Player::CollisionObject(void)

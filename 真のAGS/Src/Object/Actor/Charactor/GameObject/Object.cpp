@@ -1,10 +1,10 @@
-#include "Object.h"
 #include "../../../Collider/ColliderLine.h"
 #include "../../../Collider/ColliderCapsule.h"
 #include "../../../Collider/ColliderModel.h"
 #include "../../../../Manager/ResourceManager.h"
 #include "../../../../Utility/AsoUtility.h"
 #include "../../../../Common/Quaternion.h"
+#include "Object.h"
 
 Object::Object(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type)
 	:
@@ -33,11 +33,6 @@ void Object::InitLoad(void)
 		break;
 	case OBJECT_TYPE::CHEST:
 		transform_.SetModel(ResourceManager::GetInstance().LoadModelDuplicate(ResourceManager::SRC::Chest));
-		isHoldAble_ = true;
-		break;
-	case OBJECT_TYPE::OPENCHEST:
-		transform_.SetModel(ResourceManager::GetInstance().LoadModelDuplicate(ResourceManager::SRC::OPENCHEST));
-		isHoldAble_ = true;
 		break;
 	default:
 		break;
@@ -48,7 +43,7 @@ void Object::InitObjTrans(void)
 {
 	if (type_ == OBJECT_TYPE::DEFAULT)
 	{
-		capsule_radius_ = 60.0f;
+		capsule_r = 60.0f;
 	}
 }
 

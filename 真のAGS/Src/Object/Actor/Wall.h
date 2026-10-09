@@ -9,7 +9,6 @@ class Wall :
     public ActorBase
 {
 public:
-
 	// 衝突判定種別
 	enum class COLLIDER_TYPE
 	{
@@ -26,7 +25,6 @@ public:
 	void Update(void)override;
 	void Draw(void)override;
 	void Release(void)override;
-
 protected:
 
 	// リソースロード
@@ -45,7 +43,6 @@ protected:
 	void InitPost(void)override;
 
 private:
-
 	static constexpr VECTOR STAGE_DEFAULT_POS = { 0.0f, 0.0f, 0.0f };
 
 	static constexpr VECTOR STAGE_DEFAULT_SCALE = { 1.0f,1000.0f,1000.0f };
@@ -73,7 +70,6 @@ private:
 	// 定数バッファハンドル
 	int constBuf_;
 
-
 	// シェーダ
 	int shaderVS_;
 
@@ -84,5 +80,4 @@ private:
 	int constBufVS_;
 
 	const int CONSTANT_BUF_SLOT_BEGIN_VS = 1;
-
 };

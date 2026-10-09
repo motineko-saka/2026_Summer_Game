@@ -222,10 +222,6 @@ void Tutorial::Draw() const
 	FillBox(l.bubbleX, l.bubbleY, l.bubbleX + l.bubbleW, l.bubbleY + l.bubbleH, 30, 40, 60, 220);
 	StrokeBox(l.bubbleX, l.bubbleY, l.bubbleX + l.bubbleW, l.bubbleY + l.bubbleH, 200, 200, 220);
 
-	// ”ö
-	//FillBox(l.tailX, l.tailY, l.tailX + l.tailW, l.tailY + l.tailH, 30, 40, 60, 220);
-	//StrokeBox(l.tailX, l.tailY, l.tailX + l.tailW, l.tailY + l.tailH, 200, 200, 220);
-
 	// ŠG‚Ì‹ï‚Ì•`‰æ
 	int selectedHandle = -1;
 	const auto& cur = steps_[currentIndex_];

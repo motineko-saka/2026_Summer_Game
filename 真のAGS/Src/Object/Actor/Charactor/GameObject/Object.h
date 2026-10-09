@@ -9,6 +9,9 @@ public:
 	Object(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type);
 
 private:
+	// オブジェクト種類
+	OBJECT_TYPE type_{ OBJECT_TYPE::DEFAULT };
+
 	// リソースロード
 	void InitLoad(void)override;
 	void InitObjTrans(void)override;

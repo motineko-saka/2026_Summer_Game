@@ -114,8 +114,6 @@ void CharactorBase::CalcGravityPow(void)
 	VECTOR gravity = VScale(dirGravity, gravityPow);
 	jumpPow_ = VAdd(jumpPow_, gravity);
 
-	// ジャンプ量を加算
-	//transform_.pos = VAdd(transform_.pos, jumpPow_);
 	// 重力速度の制限
 	if (jumpPow_.y < MAX_FALL_SPEED)
 	{
@@ -143,7 +141,7 @@ void CharactorBase::CollisionCapsule(void)
 	int capsuleType = static_cast<int>(COLLIDER_TYPE::CAPSULE);
 	if (ownColliders_.count(capsuleType) == 0) return;
 
-	// 修正: unique_ptr 保持なら .get() で生ポインタを取得して dynamic_cast する
+	// unique_ptr から生ポインタを取得して dynamic_cast する
 	ColliderCapsule* colliderCapsule =
 		dynamic_cast<ColliderCapsule*>(ownColliders_.at(capsuleType).get());
 	if (colliderCapsule == nullptr) return;
@@ -169,7 +167,7 @@ void CharactorBase::CollisionGravity(void)
 	// 線分コライダが無ければ処理を抜ける
 	if (ownColliders_.count(lineType) == 0) return;
 
-	// 修正: unique_ptr 保持なら .get() で生ポインタを取得して dynamic_cast する
+	// unique_ptr から生ポインタを取得して dynamic_cast する
 	ColliderLine* colliderLine_ =
 		dynamic_cast<ColliderLine*>(ownColliders_.at(lineType).get());
 

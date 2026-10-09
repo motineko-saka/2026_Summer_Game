@@ -39,6 +39,5 @@ private:
 	{
 	"Ground",
 	};
-
 };
 

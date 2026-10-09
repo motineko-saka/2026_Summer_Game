@@ -46,5 +46,4 @@ private:
 
 	// ”¼Œa
 	float radius_;
-
 };

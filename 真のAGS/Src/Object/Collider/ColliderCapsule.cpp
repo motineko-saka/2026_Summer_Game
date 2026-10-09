@@ -102,7 +102,7 @@ VECTOR ColliderCapsule::GetPosPushBackAlongNormal(const MV1_COLL_RESULT_POLY& hi
 	return tmpTransform.pos;
 }
 
-void ColliderCapsule::PushBackAlongNormal(const ColliderModel* colliderModel, 
+void ColliderCapsule::PushBackAlongNormal(const ColliderModel* colliderModel,
 	Transform& transform, int maxTryCnt, float pushDistance, bool isExclude, bool isTarget, bool onlyYAxis) const
 {
 	// モデルとカプセルの衝突判定

@@ -1,5 +1,4 @@
 #pragma once
-
 #include "CharactorBase.h"
 
 class Camera;
@@ -15,7 +14,6 @@ public:
 		RUN,
 		FAST_RUN,
 		JUMP,
-		//MAX,
 	};
 
 	// プレイヤー番号
@@ -25,6 +23,7 @@ public:
 		PLAYER2,
 	};
 
+	Player(void);
 	Player(PLAYER_NO playerNo, Camera& camera, bool isGameScene = false); // プレイヤー番号付きコンストラクタ
 	virtual ~Player(void);
 
@@ -44,7 +43,8 @@ public:
 	bool IsActive() const { return isActive_; }
 
 	void HitColliderErase(int index) { 
-		hitColliders_.erase(hitColliders_.begin() + index); }
+		hitColliders_.erase(hitColliders_.begin() + index); 
+	}
 
 protected:
 
@@ -66,13 +66,13 @@ protected:
 	// 更新処理
 	void UpdateProcess(void) override;
 
+	// 更新後処理
 	void UpdateProcessPost(void) override;
 
 private:
 
-	// プレイヤー１の初期位置
-	static constexpr VECTOR PLAYER_ONE_INIT_POS = { -1000.0f, 0.0f, 1000.0f };
-	static constexpr VECTOR PLAYER_TWO_INIT_POS = { 1000.0f, 0.0f, 1000.0f };
+	static constexpr VECTOR PLAYER_ONE__DEFAULT_POS = { -1000.0f, 0.0f, 1000.0f };
+	static constexpr VECTOR PLAYER_TWO__DEFAULT_POS = { 1000.0f, 0.0f, 1000.0f };
 
 	static constexpr VECTOR TUTORIAL_PLAYER_ONE_DEFAULT_POS = { -800.0f, -520.0f, 200.0f };
 	static constexpr VECTOR TUTORIAL_PLAYER_TWO_DEFAULT_POS = { 1000.0f, -520.0f, 0.0f };
@@ -129,8 +129,6 @@ private:
 	static constexpr float PICKUP_FRONT_DIST = 60.0f;
 	static constexpr float PICKUP_UP_DIST = 30.0f;
 
-	static constexpr float PICKUP_DISTANCE = 90.0f;
-
 	// プレイヤー番号
 	PLAYER_NO playerNo_;
 
@@ -150,9 +148,13 @@ private:
 	// 衝突関連
 	void CollisionReserve(void) override;
 
-	// 掴んでいるコライダ（NULL=何も掴んでいない）
+	// デバッグ描画
+	void DrawDebug(void);
+
+	// 掴んでいるコライダ
 	ColliderBase* heldCollider_{ nullptr };
-	// 掴む前にコライダが追従していたTransform（戻すために保持）
+
+	// 掴む前にコライダが追従していたTransform
 	const Transform* heldPrevFollow_{ nullptr };
 
 	// 入力で掴む/放す処理
@@ -172,5 +174,4 @@ private:
 
 	// 歩行ループSE 再生フラグ
 	bool isWalkSePlaying_{ false };
-
 };

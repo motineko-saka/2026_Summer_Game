@@ -40,5 +40,4 @@ private:
 
     int timer_;
     bool isPlaying_;
-
 };
