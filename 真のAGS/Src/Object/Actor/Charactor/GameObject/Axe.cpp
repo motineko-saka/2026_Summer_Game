@@ -17,7 +17,7 @@ void Axe::InitLoad(void)
 void Axe::InitObjCol(void)
 {
 	tag_ = ColliderBase::TAG::KINOKO;
-	capsule_r = 5.0f;
+	capsule_radius_ = 5.0f;
 }
 
 void Axe::ObjectUpdateProcess(void)

@@ -48,7 +48,7 @@ void Object::InitObjTrans(void)
 {
 	if (type_ == OBJECT_TYPE::DEFAULT)
 	{
-		capsule_r = 60.0f;
+		capsule_radius_ = 60.0f;
 	}
 }
 

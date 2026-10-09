@@ -59,7 +59,7 @@ void Gate::InitLoad(void)
 void Gate::InitObjTrans(void)
 {
 	tag_ = ColliderBase::TAG::OBJECT;
-	capsule_r = 100.0f;
+	capsule_radius_ = 100.0f;
 }
 
 void Gate::InitPost(void)
