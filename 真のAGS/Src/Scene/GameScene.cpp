@@ -18,8 +18,6 @@
 #include "../Object/Actor/Charactor/GameObject/Rock.h"
 #include "../Object/Actor/Charactor/GameObject/Axe.h"
 #include "../Object/Actor/Charactor/GameObject/Gate.h"
-#include "../Object/Actor/Charactor/GameObject/Panel.h"
-#include "../Object/Actor/Charactor/GameObject/Board.h"
 #include "../Object/Actor/Wall.h"
 #include "../Object/LightPillar.h"
 #include "../Object/Collider/ColliderBase.h"
@@ -141,9 +139,6 @@ void GameScene::Init(void)
 
 		gaer->AddObject(objects_[gaerObjectNumber].get());
 	}
-	// Board と Panel の初期化
-	InitializeBoardAndPanels();
-
 
 #pragma region コライダ登録
 
@@ -224,12 +219,6 @@ void GameScene::Init(void)
 			player.player_->GetOwnCollider(static_cast<int>(ObjectBase::COLLIDER_TYPE::CAPSULE));
 
 		if (!playerCaps) continue;
-
-		for (auto& panel : panels_)
-		{
-			// ステージモデルのコライダーをプレイヤーに登録
-			panel->AddHitCollider(playerCaps);
-		}
 	}
 
 	const auto* objCaps = objects_[2]->GetOwnCollider(static_cast<int>(ObjectBase::COLLIDER_TYPE::CAPSULE));
@@ -451,13 +440,6 @@ void GameScene::Update(void)
 			Player::PLAYER_NO::PLAYER2 : Player::PLAYER_NO::PLAYER1;
 	}
 
-	// クリア判定
-	if (board_ && board_->CheckClear())
-	{
-		isClear_ = true;
-		return;
-	}
-
 	for (const auto& player : players_)
 	{
 		const auto& playerPos = player.player_->GetTransform().pos;
@@ -480,19 +462,6 @@ void GameScene::Update(void)
 
 	lightPillar_->Update();
 
-	if (board_)
-	{
-		board_->Update();
-	}
-
-	for (auto& panel : panels_)
-	{
-		if (panel)
-		{
-			panel->Update();
-		}
-	}
-
 	// 既存のコード...
 	CheckCollisions();
 
@@ -514,15 +483,6 @@ void GameScene::Draw(void)
 	for (auto& obj : objects_)
 	{
 		obj->Draw();
-	}
-
-	// Panel の描画
-	for (auto& panel : panels_)
-	{
-		if (panel)
-		{
-			panel->Draw();
-		}
 	}
 
 	ShadowMap_DrawEnd();
@@ -620,20 +580,6 @@ void GameScene::Draw(void)
 
 		/*if (EffekseerEffect::GetInstance()) EffekseerEffect::GetInstance()->Draw();*/
 		DrawNamePlate("ゴール", endPos_);;
-		// Board の描画
-		if (board_)
-		{
-			board_->Draw();
-		}
-
-		// Panel の描画
-		for (auto& panel : panels_)
-		{
-			if (panel)
-			{
-				panel->Draw();
-			}
-		}
 
 		DrawNamePlate("ゴール", endPos_);
 	}
@@ -761,8 +707,6 @@ void GameScene::Release(void)
 
 	// オブジェクトの破棄（unique_ptr がリソースを解放）
 	objects_.clear();
-	panels_.clear();
-	board_.reset();
 
 	// ピンモデルを安全に削除
 	if (pinID_ != -1)
@@ -805,48 +749,5 @@ void GameScene::Release(void)
 	{
 		DeleteGraph(screenHandle2_);
 		screenHandle2_ = -1;
-	}
-}
-
-void GameScene::InitializeBoardAndPanels(void)
-{
-	// Board の作成と初期化
-	board_ = std::make_unique<Board>();
-
-	// 初期状態
-	std::array<std::array<Board::ELEMENT, Board::STAGE_SIZE>, Board::STAGE_SIZE> initialBoard =
-	{ {
-		{{ Board::ELEMENT::ICE,  Board::ELEMENT::FIRE,  Board::ELEMENT::ICE  }},
-		{{ Board::ELEMENT::FIRE, Board::ELEMENT::WATER, Board::ELEMENT::FIRE }},
-		{{ Board::ELEMENT::ICE,  Board::ELEMENT::FIRE,  Board::ELEMENT::ICE  }}
-	} };
-
-	board_->Initialize(initialBoard);
-
-	// Panel の作成
-	panels_.clear();
-	panels_.reserve(Board::STAGE_SIZE * Board::STAGE_SIZE);
-
-	for (int y = 0; y < Board::STAGE_SIZE; ++y)
-	{
-		for (int x = 0; x < Board::STAGE_SIZE; ++x)
-		{
-			// Panel をワールド座標に配置
-			VECTOR panelPos = board_->GetPanelCenterPos(x, y);
-			panelPos.y = 0.0f;
-
-			auto panel = std::make_unique<Panel>(
-				SceneBase::WORLD::LEFT,
-				VECTOR{ 0.0f, 0.0f, 0.0f },
-				ObjectBase::OBJECT_TYPE::BUTTON
-			);
-
-			panel->SetIndex(x, y);
-			panel->SetBoard(board_.get());
-			panel->SetPosition(panelPos);
-			panel->Init();
-
-			panels_.push_back(std::move(panel));
-		}
 	}
 }

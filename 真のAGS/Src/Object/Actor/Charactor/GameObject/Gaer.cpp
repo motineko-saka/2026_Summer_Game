@@ -6,7 +6,7 @@
 Gaer::Gaer(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type)
 	:
 	object_(nullptr),
-	ObjectBase(world, ansVec, type, true),
+	ObjectBase(world, ansVec, type),
 	gearRot_(0.0f)
 {
 }

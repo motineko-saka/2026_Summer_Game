@@ -158,12 +158,12 @@ void ObjectBase::InitCollider(void)
 	auto colCapsuleUP = std::make_unique<ColliderCapsule>(
 		tag_, &transform_,
 		COL_CAPSULE_TOP_LOCAL_POS, COL_CAPSULE_DOWN_LOCAL_POS,
-		capsule_r);
+		capsuleRadius_);
 	ColliderCapsule* colCapsulePtr = colCapsuleUP.get();
 	ownColliders_.emplace(static_cast<int>(COLLIDER_TYPE::CAPSULE), std::move(colCapsuleUP));
 
 	// Ž‚Ä‚È‚­‚·‚é
-	if (isHoldable_)
+	if (isHoldAble_)
 	{
 		if (colLinePtr) colLinePtr->SetGrabbable(false);
 		if (colCapsulePtr) colCapsulePtr->SetGrabbable(false);

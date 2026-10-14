@@ -81,7 +81,7 @@ public:
 
 protected:
 	// 衝突判定用カプセルの半径
-	float capsule_r = 30.0f;
+	float capsuleRadius_ = 30.0f;
 
 	// 答えにおいて正誤判定をするオブジェクトかどうか
 	bool isAnswerObject_ = true;
@@ -92,7 +92,7 @@ protected:
 	// BUTTON が押されているか
 	bool isButtomPushed_ = false;
 
-	bool isHoldable_ = false;
+	bool isHoldAble_ = false;
 
 	int handFrame_;
 

@@ -30,7 +30,7 @@ void Rock::InitObjCol(void)
 {
 	tag_ = ColliderBase::TAG::OBJECT;
 
-	capsule_radius_ = 100.0f;
+	capsuleRadius_ = 100.0f;
 }
 
 void Rock::InitPost(void)

@@ -17,7 +17,7 @@ Gate::Gate(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type)
 	shaderVS_(-1),
 	constBufFloat4SizeVS_(0),
 	constBufVS_(-1),
-	ObjectBase(world, ansVec, type, true)
+	ObjectBase(world, ansVec, type)
 {
 }
 
@@ -59,7 +59,7 @@ void Gate::InitLoad(void)
 void Gate::InitObjTrans(void)
 {
 	tag_ = ColliderBase::TAG::OBJECT;
-	capsule_radius_ = 100.0f;
+	capsuleRadius_ = 100.0f;
 }
 
 void Gate::InitPost(void)

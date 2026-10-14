@@ -3,8 +3,6 @@
 #include "../Object/Common/Transform.h"
 #include "../Object/Actor/Charactor/Player.h"
 #include "../Object/Actor/Charactor/GameObject/ObjectBase.h"
-#include "../Object/Actor/Charactor/GameObject/Board.h"
-#include "../Object/Actor/Charactor/GameObject/Panel.h"
 #include <vector>
 #include <memory>
 #include <array>
@@ -16,8 +14,6 @@ class EnemyManager;
 class Camera;
 class ObjectBase;
 class LightPillar;
-class Board;
-class Panel;
 
 class GameScene : public SceneBase
 {
@@ -66,10 +62,6 @@ private:
 
 	std::vector<std::unique_ptr<ObjectBase>> objects_;
 
-	// Board Ç∆ Panel ÇÃä«óù
-	std::unique_ptr<Board> board_;
-	std::vector<std::unique_ptr<Panel>> panels_;
-
 	int screenHandle1_;
 	int screenHandle2_;
 	int screenWidth_;
@@ -94,9 +86,6 @@ private:
 	void DrawNamePlate(std::string str, VECTOR pos);
 	void ChangeScene(const std::shared_ptr<SceneBase>& scene) const;
 
-	// Board Ç∆ Panel ÇÃèâä˙âª
-	void InitializeBoardAndPanels(void);
-
 	template<class objectClass>
 	void PushObject(SceneBase::WORLD w, const VECTOR& ans, ObjectBase::OBJECT_TYPE type, const VECTOR& pos, const VECTOR& scl)
 	{
@@ -108,5 +97,4 @@ private:
 	}
 
 	int shadowMapHandle_;
-
 };

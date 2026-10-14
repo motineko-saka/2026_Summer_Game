@@ -8,7 +8,7 @@
 
 Button::Button(SceneBase::WORLD world, VECTOR ansVec, OBJECT_TYPE type)
 	: 
-	ObjectBase(world, ansVec, type, true)
+	ObjectBase(world, ansVec, type)
 {
 }
 
