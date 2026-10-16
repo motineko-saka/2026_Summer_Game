@@ -14,6 +14,7 @@ class EnemyManager;
 class Camera;
 class ObjectBase;
 class LightPillar;
+class ObjectFactory;
 
 class GameScene : public SceneBase
 {
@@ -32,6 +33,8 @@ public:
 	~GameScene(void) override;
 
 	void Init(void) override;
+	void InitCollider(void);
+
 	void Load(void) override;
 	void LoadEnd(void) override;
 	void Update(void) override;
@@ -40,13 +43,11 @@ public:
 
 private:
 
+	std::unique_ptr<ObjectFactory> objectFactory_;
+
 	// カメラ
 	Camera* camera_;
 
-	// プレイヤーの数
-	static constexpr int PLAYER_NUM = 2;
-
-	constexpr static VECTOR ANSWER_VECTOR = { 1260.0f, -720.0f, -50.5f };
 	constexpr static VECTOR ANSWER_VECTOR_LENGTH[] = {
 		{-1260.0f, -720.0f, -50.5f},
 		{-1260.0f, -720.0f, -50.5f},
@@ -85,16 +86,6 @@ private:
 	const void ButtonProcess(ObjectBase& obj, std::vector<ObjectBase*>& newObjects);
 	void DrawNamePlate(std::string str, VECTOR pos);
 	void ChangeScene(const std::shared_ptr<SceneBase>& scene) const;
-
-	template<class objectClass>
-	void PushObject(SceneBase::WORLD w, const VECTOR& ans, ObjectBase::OBJECT_TYPE type, const VECTOR& pos, const VECTOR& scl)
-	{
-		std::unique_ptr<objectClass> o = std::make_unique<objectClass>(w, ans, type);
-		o->Init();
-		o->SetPosition(pos);
-		o->SetScale(scl);
-		objects_.push_back(std::move(o));
-	}
 
 	int shadowMapHandle_;
 };

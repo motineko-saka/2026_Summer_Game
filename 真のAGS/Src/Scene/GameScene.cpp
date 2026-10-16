@@ -20,6 +20,7 @@
 #include "../Object/Actor/Charactor/GameObject/Gate.h"
 #include "../Object/Actor/Wall.h"
 #include "../Object/LightPillar.h"
+#include "../Object/Actor/Charactor/GameObject/ObjectFactory.h"
 #include "../Object/Collider/ColliderBase.h"
 #include "../Audio/AudioManager.h"
 #include "GameScene.h"
@@ -28,8 +29,28 @@
 #include "TitleScene.h"
 #include "GameOverScene.h"
 
+namespace
+{
+	// プレイヤーの数
+	constexpr int PLAYER_NUM = 2;
+	constexpr VECTOR INIT_BUTTON_POS = { -500.0f, -320.0f, 500.0f };
+	constexpr VECTOR INIT_ROCK_POS = { 1300.0f, -320.0f, 500.0f };
+	constexpr VECTOR INIT_AXE_POS = { -500.0f, 0.0f, 0.0f };
+	constexpr VECTOR INIT_GATE_POS = { 1300.0f, -320.0f, 500.0f };
+	constexpr VECTOR INIT_GEAR_POS_ONE = { -600.0f, -620.0f, 0.0f };
+	constexpr VECTOR INIT_GEAR_POS_TWO = { -600.0f, -620.0f, 0.0f };
+	constexpr VECTOR ANSWER_VECTOR_LENGTH[5] = {
+		{ 0.0f, 0.0f, 0.0f },
+		{ 100.0f, 100.0f, 100.0f },
+		{ 200.0f, 200.0f, 200.0f },
+		{ 300.0f, 300.0f, 300.0f },
+		{ 400.0f, 400.0f, 400.0f }
+	};
+}
+
 GameScene::GameScene(void)
 	:
+	objectFactory_(nullptr),
 	stageManager_(nullptr),
 	skyDome_(nullptr),
 	screenHandle1_(-1),
@@ -102,20 +123,17 @@ void GameScene::Init(void)
 	CreateWallGame(*stageManager_);
 
 	// オブジェクト作成（複数）
+	objectFactory_ = std::make_unique<ObjectFactory>();
+
 	objects_.reserve(10);
+
+	objects_.emplace_back(objectFactory_->Create<Button>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[3], ObjectBase::OBJECT_TYPE::BUTTON, buttonPos_, VScale(AsoUtility::VECTOR_ONE, 0.5f)));
+	objects_.emplace_back(objectFactory_->Create<Rock>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::ROCK, rockPos_, AsoUtility::VECTOR_ONE));
+	objects_.emplace_back(objectFactory_->Create<Axe>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::AXE, INIT_AXE_POS, VScale(AsoUtility::VECTOR_ONE, 8.0f)));
+	objects_.emplace_back(objectFactory_->Create<Gate>(GameScene::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::DEFAULT, INIT_GATE_POS, AsoUtility::VECTOR_ONE));
 	
-	PushObject<Button>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[3], ObjectBase::OBJECT_TYPE::BUTTON, buttonPos_, VScale(AsoUtility::VECTOR_ONE, 0.5f));
-	PushObject<Rock>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::ROCK, rockPos_, AsoUtility::VECTOR_ONE);
-	PushObject<Axe>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::AXE, { -500.0f, 0.0f, 0.0f }, VScale(AsoUtility::VECTOR_ONE, 8.0f));
-	PushObject<Gate>(GameScene::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::DEFAULT, { 1300.0f, -320.0f, 500.0f }, AsoUtility::VECTOR_ONE);
-
-	objects_.push_back(std::make_unique<Gaer>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::GEAR));
-	objects_.back()->Init();
-	objects_.back()->SetPosition({ -600.0f, -620.0f, 0.0f });
-	objects_.back()->SetScale(AsoUtility::VECTOR_ONE);
-
-	PushObject<Object>(GameScene::WORLD::LEFT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::GEAR_OBJECT, 
-		{ -600.0f, -620.0f, 0.0f }, AsoUtility::VECTOR_ONE);
+	objects_.emplace_back(objectFactory_->Create<Gaer>(GameScene::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::GEAR, INIT_GEAR_POS_ONE, AsoUtility::VECTOR_ONE));
+	objects_.emplace_back(objectFactory_->Create<Gaer>(GameScene::WORLD::RIGHT, ANSWER_VECTOR_LENGTH[4], ObjectBase::OBJECT_TYPE::GEAR_OBJECT, INIT_GEAR_POS_TWO, AsoUtility::VECTOR_ONE));
 
 	for (const auto& obj : objects_)
 	{
@@ -141,7 +159,43 @@ void GameScene::Init(void)
 	}
 
 #pragma region コライダ登録
+	InitCollider();
 
+#pragma endregion
+
+	// 初期アクティブ状態（プレイヤー1 を操作）
+	activePlayer_ = Player::PLAYER_NO::PLAYER1;
+	for (int i = 0; i < players_.size(); i++)
+	{
+		bool isActive = i == 0 ? true : false;
+		players_[i].player_->SetActive(isActive);
+		players_[i].camera_->SetControlEnabled(isActive);
+	}
+
+	// シャドウマップ作成
+	shadowMapHandle_ = MakeShadowMap(8192, 8192);
+
+	// ライトの方向 
+	SetShadowMapLightDirection(shadowMapHandle_, VGet(0.3f, -0.7f, 0.8f));
+
+	// 影を描画する空間範囲
+	SetShadowMapDrawArea(shadowMapHandle_,
+		VGet(-5000.0f, -1.0f, -5000.0f),
+		VGet(5000.0f, 5000.0f, 5000.0f));
+
+	// オーディオマネージャーのインスタンスの生成
+	AudioManager::GetInstance()->CreateInstance();
+
+	// シーンのサウンドを読み込み、BGM を再生
+	if (AudioManager::GetInstance())
+	{
+		AudioManager::GetInstance()->LoadSceneSound(LoadScene::GAME);
+		AudioManager::GetInstance()->PlayBGM(SoundID::BGM_GAME);
+	}
+}
+
+void GameScene::InitCollider(void)
+{
 	// ステージの各コライダをプレイヤー／カメラ／オブジェクトに登録
 	for (const auto& stage : stageManager_->GetStage())
 	{
@@ -191,7 +245,7 @@ void GameScene::Init(void)
 	{
 		auto& obj = objects_[i];
 
-		const auto* objCaps = 
+		const auto* objCaps =
 			obj->GetOwnCollider(static_cast<int>(ObjectBase::COLLIDER_TYPE::CAPSULE));
 
 		if (!objCaps) continue;
@@ -235,38 +289,6 @@ void GameScene::Init(void)
 			// 壁モデルのコライダーをプレイヤーに登録
 			players_[i].player_->AddHitCollider(wallCollider);
 		}
-	}
-
-#pragma endregion
-
-	// 初期アクティブ状態（プレイヤー1 を操作）
-	activePlayer_ = Player::PLAYER_NO::PLAYER1;
-	for (int i = 0; i < players_.size(); i++)
-	{
-		bool isActive = i == 0 ? true : false;
-		players_[i].player_->SetActive(isActive);
-		players_[i].camera_->SetControlEnabled(isActive);
-	}
-
-	// シャドウマップ作成
-	shadowMapHandle_ = MakeShadowMap(8192, 8192);
-
-	// ライトの方向 
-	SetShadowMapLightDirection(shadowMapHandle_, VGet(0.3f, -0.7f, 0.8f));
-
-	// 影を描画する空間範囲
-	SetShadowMapDrawArea(shadowMapHandle_,
-		VGet(-5000.0f, -1.0f, -5000.0f),
-		VGet(5000.0f, 5000.0f, 5000.0f));
-
-	// オーディオマネージャーのインスタンスの生成
-	AudioManager::GetInstance()->CreateInstance();
-
-	// シーンのサウンドを読み込み、BGM を再生
-	if (AudioManager::GetInstance())
-	{
-		AudioManager::GetInstance()->LoadSceneSound(LoadScene::GAME);
-		AudioManager::GetInstance()->PlayBGM(SoundID::BGM_GAME);
 	}
 }
 
