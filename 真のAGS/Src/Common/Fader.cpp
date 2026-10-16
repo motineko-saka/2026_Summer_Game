@@ -1,107 +1,43 @@
- #include <DxLib.h>
+#include <DxLib.h>
+#include <algorithm>
 #include "../Application.h"
 #include "Fader.h"
-
-Fader::Fader(void)
-	:
-	state_(STATE::NONE),
-	alpha_(0.0f),
-	isPreEnd_(true),
-	isEnd_(true)
-{
-}
-
-Fader::~Fader(void)
-{
-}
-
-Fader::STATE Fader::GetState(void) const
-{
-	return state_;
-}
-
-bool Fader::IsEnd(void) const
-{
-	return isEnd_;
-}
 
 void Fader::SetFade(STATE state)
 {
 	state_ = state;
-	if (state_ != STATE::NONE)
-	{
-		isPreEnd_ = false;
-		isEnd_ = false;
-	}
-}
+	if (state_ == STATE::NONE) return;
 
-void Fader::Init(void)
-{
+	isPreEnd_ = false;
+	isEnd_ = false;
 }
 
 void Fader::Update(void)
 {
-	if (isEnd_)
-	{
-		return;
-	}
+	if (isEnd_ || state_ == STATE::NONE) return;
 
-	switch (state_)
-	{
-	case STATE::NONE:
-		return;
+	// 暗転なら不透明へ、明転なら透明へ向かう
+	const bool isFadeOut = (state_ == STATE::FADE_OUT);
+	const float target = isFadeOut ? MAX_ALPHA : 0.0f;
+	const float delta = isFadeOut ? SPEED_ALPHA : -SPEED_ALPHA;
 
-	case STATE::FADE_OUT:
-		alpha_ += SPEED_ALPHA;
-		if (alpha_ > 255)
-		{
-			// フェード終了
-			alpha_ = 255;
-			if (isPreEnd_)
-			{
-				// 1フレーム後(Draw後)に終了とする
-				isEnd_ = true;
-			}
-			isPreEnd_ = true;
-		}
+	alpha_ = std::clamp(alpha_ + delta, 0.0f, MAX_ALPHA);
+	if (alpha_ != target) return;
 
-		break;
-
-	case STATE::FADE_IN:
-		alpha_ -= SPEED_ALPHA;
-		if (alpha_ < 0)
-		{
-			// フェード終了
-			alpha_ = 0;
-			if (isPreEnd_)
-			{
-				// 1フレーム後(Draw後)に終了とする
-				isEnd_ = true;
-			}
-			isPreEnd_ = true;
-		}
-		break;
-
-	default:
-		return;
-	}
+	// 目標に到達したら、1フレーム後(Draw後)に終了とする
+	if (isPreEnd_) isEnd_ = true;
+	isPreEnd_ = true;
 }
 
 void Fader::Draw(void)
 {
-	switch (state_)
-	{
-	case STATE::NONE:
-		return;
-	case STATE::FADE_OUT:
-	case STATE::FADE_IN:
-		SetDrawBlendMode(DX_BLENDMODE_ALPHA, (int)alpha_);
-		DrawBox(
-			0, 0,
-			Application::SCREEN_SIZE_X,
-			Application::SCREEN_SIZE_Y,
-			0x000000, true);
-		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
-		break;
-	}
+	if (state_ == STATE::NONE) return;
+
+	SetDrawBlendMode(DX_BLENDMODE_ALPHA, static_cast<int>(alpha_));
+	DrawBox(
+		0, 0,
+		Application::SCREEN_SIZE_X,
+		Application::SCREEN_SIZE_Y,
+		0x000000, TRUE);
+	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 }

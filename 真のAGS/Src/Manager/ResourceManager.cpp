@@ -1,18 +1,108 @@
 #include <DxLib.h>
+#include <sstream>
+#include <Windows.h>
 #include "../Application.h"
 #include "Resource.h"
 #include "ResourceManager.h"
-#include <sstream>
-#include <Windows.h>
 
 ResourceManager* ResourceManager::instance_ = nullptr;
 
+namespace
+{
+	using SRC = ResourceManager::SRC;
+	using RES_T = Resource::TYPE;
+
+	// リソースの登録情報
+	struct ResourceDef
+	{
+		SRC src;
+		RES_T type;
+		const char* path;	// 種類ごとのフォルダからの相対パス
+	};
+
+	const ResourceDef RESOURCE_DEFS[] =
+	{
+		// タイトル
+		{ SRC::TITLE_IMG,        RES_T::IMG,   "Title.png" },
+		{ SRC::TITLE_PUSH_SPACE, RES_T::IMG,   "PushSpace.png" },
+		{ SRC::TITLE_MOV,        RES_T::MOVIE, "Title.mp4" },
+		{ SRC::HONDANA_IMG,      RES_T::IMG,   "hondanaTitle.png" },
+
+		// UI
+		{ SRC::UI_GAMESTART, RES_T::IMG, "GameStart.png" },
+		{ SRC::UI_TUTORIAL,  RES_T::IMG, "Tyutoriar.png" },
+		{ SRC::UI_EXIT,      RES_T::IMG, "End.png" },
+		{ SRC::GAME_CLEAR,   RES_T::IMG, "GameClear.png" },
+		{ SRC::GAME_OVER,    RES_T::IMG, "GameOver.png" },
+
+		// ステージ
+		{ SRC::PIT_FALL_PLANET, RES_T::MODEL, "Stage/PitfallPlanet/PitfallPlanet.mv1" },
+		{ SRC::SPHERE_PLANET,   RES_T::MODEL, "Stage/SpherePlanet/SpherePlanet.mv1" },
+		{ SRC::TUTORIAL_STAGE,  RES_T::MODEL, "Stage/NOMOTOAREN 1.mv1" },
+		{ SRC::MAIN_STAGE,      RES_T::MODEL, "Stage/nomotoarena.mv1" },
+		{ SRC::SKY_DOME,        RES_T::MODEL, "SkyDome/Skydome.mv1" },
+
+		// プレイヤー
+		{ SRC::PLAYER,        RES_T::MODEL, "Player/boy.mv1" },
+		{ SRC::PLAYER_SHADOW, RES_T::IMG,   "Shadow.png" },
+
+		// 敵
+		{ SRC::ENEMY_RAT,   RES_T::MODEL, "Enemy/Rat/Rat.mv1" },
+		{ SRC::ENEMY_ROBOT, RES_T::MODEL, "Enemy/Robot/Robot.mv1" },
+		{ SRC::VIEW_RANGE,  RES_T::MODEL, "Enemy/Robot/Cone.mv1" },
+
+		// オブジェクト
+		{ SRC::BARREL,       RES_T::MODEL, "Object/barrel.mv1" },
+		{ SRC::CUBE,         RES_T::MODEL, "Object/mokuba.mv1" },
+		{ SRC::WALL,         RES_T::MODEL, "Cube.mv1" },
+		{ SRC::WOODBOX,      RES_T::MODEL, "Object/wooden_box.mv1" },
+		{ SRC::BUTTON,       RES_T::MODEL, "Cube.mv1" },
+		{ SRC::PRESS_BUTTON, RES_T::MODEL, "Object/mokuba.mv1" },
+		{ SRC::GEAR,         RES_T::MODEL, "Object/Gear.mv1" },
+		{ SRC::ROCK,         RES_T::MODEL, "Object/tree01.mv1" },
+		{ SRC::AXE,          RES_T::MODEL, "Object/Axe.mv1" },
+		{ SRC::GATE,         RES_T::MODEL, "Object/Gate/GateMist.mv1" },
+		{ SRC::Chest,        RES_T::MODEL, "Object/Chest.mv1" },
+		{ SRC::OPENCHEST,    RES_T::MODEL, "Object/ChestOpen.mv1" },
+
+		// 絵の具
+		{ SRC::ENOGU1, RES_T::IMG, "enogu/tewofutu.png" },
+		{ SRC::ENOGU2, RES_T::IMG, "enogu/kakunin.png" },
+		{ SRC::ENOGU3, RES_T::IMG, "enogu/yubisasi.png" },
+		{ SRC::ENOGU4, RES_T::IMG, "enogu/gimon.png" },
+		{ SRC::ENOGU5, RES_T::IMG, "enogu/2.png" },
+		{ SRC::ENOGU6, RES_T::IMG, "enogu/tarumoti.png" },
+		{ SRC::ENOGU7, RES_T::IMG, "enogu/happy2.png" },
+		{ SRC::ENOGU8, RES_T::IMG, "enogu/clir.png" },
+
+		// ヒント
+		{ SRC::HINTO,  RES_T::IMG, "enogu/Hinto3.png" },
+		{ SRC::HINTO2, RES_T::IMG, "enogu/Hinto4.png" },
+	};
+
+	// 種類ごとの基準フォルダ
+	std::string GetBasePath(RES_T type)
+	{
+		switch (type)
+		{
+		case RES_T::IMG:
+		case RES_T::IMGS:		return Application::PATH_IMAGE;
+		case RES_T::MODEL:		return Application::PATH_MODEL;
+		case RES_T::EFFEKSEER:	return Application::PATH_EFFECT;
+		case RES_T::MOVIE:		return Application::PATH_MOV;
+		default:				return "";
+		}
+	}
+}
+
+// ---------------------------------------------------------------
+// シングルトン
+// ---------------------------------------------------------------
 void ResourceManager::CreateInstance(void)
 {
-	if (instance_ == nullptr)
-	{
-		instance_ = new ResourceManager();
-	}
+	if (instance_ != nullptr) return;
+
+	instance_ = new ResourceManager();
 	instance_->Init();
 }
 
@@ -21,279 +111,111 @@ ResourceManager& ResourceManager::GetInstance(void)
 	return *instance_;
 }
 
+// ---------------------------------------------------------------
+// 登録・解放
+// ---------------------------------------------------------------
 void ResourceManager::Init(void)
 {
-	using RES = Resource;
-	using RES_T = RES::TYPE;
-	static std::string PATH_IMG = Application::PATH_IMAGE;
-	static std::string PATH_MDL = Application::PATH_MODEL;
-	static std::string PATH_EFF = Application::PATH_EFFECT;
-	static std::string PATH_MOV = Application::PATH_MOV;
-
-	Resource* res;
-
-	// タイトル画像
-	res = new RES(RES_T::IMG, PATH_IMG + "Title.png");
-	resourcesMap_.emplace(SRC::TITLE_IMG, res);
-
-	// 
-	res = new RES(RES_T::IMG, PATH_IMG + "PushSpace.png");
-	resourcesMap_.emplace(SRC::TITLE_PUSH_SPACE, res);
-
-	// 
-	res = new RES(RES_T::MODEL, PATH_MDL + "Stage/PitfallPlanet/PitfallPlanet.mv1");
-	resourcesMap_.emplace(SRC::PIT_FALL_PLANET, res);
-
-	// 
-	res = new RES(RES_T::MODEL, PATH_MDL + "Stage/SpherePlanet/SpherePlanet.mv1");
-	resourcesMap_.emplace(SRC::SPHERE_PLANET, res);
-
-	// プレイヤーモデル
-	res = new RES(RES_T::MODEL, PATH_MDL + "Player/boy.mv1");
-	resourcesMap_.emplace(SRC::PLAYER, res);
-
-	// ステージモデル
-	//チュートリアルステージ
-	res = new RES(RES_T::MODEL, PATH_MDL + "Stage/NOMOTOAREN 1.mv1");
-	resourcesMap_.emplace(SRC::TUTORIAL_STAGE, res);
-
-	// メインステージ
-	//res = new RES(RES_T::MODEL, PATH_MDL + "Stage/Stage.mv1");
-	res = new RES(RES_T::MODEL, PATH_MDL + "Stage/nomotoarena.mv1");
-	resourcesMap_.emplace(SRC::MAIN_STAGE, res);
-
-	// スカイドーム
-	res = new RES(RES_T::MODEL, PATH_MDL + "SkyDome/Skydome.mv1");
-	resourcesMap_.emplace(SRC::SKY_DOME, res);
-
-	// プレイヤー影
-	res = new RES(RES_T::IMG, PATH_IMG + "Shadow.png");
-	resourcesMap_.emplace(SRC::PLAYER_SHADOW, res);
-
-	// ネズミ
-	res = new RES(RES_T::MODEL, PATH_MDL + "Enemy/Rat/Rat.mv1");
-	resourcesMap_.emplace(SRC::ENEMY_RAT, res);
-
-	// ロボット
-	res = new RES(RES_T::MODEL, PATH_MDL + "Enemy/Robot/Robot.mv1");
-	resourcesMap_.emplace(SRC::ENEMY_ROBOT, res);
-
-	// 視野
-	res = new RES(RES_T::MODEL, PATH_MDL + "Enemy/Robot/Cone.mv1");
-	resourcesMap_.emplace(SRC::VIEW_RANGE, res);
-
-	// 樽
-	res = new RES(RES_T::MODEL, PATH_MDL + "Object/barrel.mv1");
-	resourcesMap_.emplace(SRC::BARREL, res);
-
-	// 四角
-	res = new RES(RES_T::MODEL, PATH_MDL + "Object/mokuba.mv1");
-	resourcesMap_.emplace(SRC::CUBE, res);
-
-	// 壁
-	res = new RES(RES_T::MODEL, PATH_MDL + "Cube.mv1");
-	resourcesMap_.emplace(SRC::WALL, res);
-
-	// 木箱
-	res = new RES(RES_T::MODEL, PATH_MDL + "Object/wooden_box.mv1");
-	resourcesMap_.emplace(SRC::WOODBOX, res);
-
-	// ボタン
-	res = new RES(RES_T::MODEL, PATH_MDL + "Cube.mv1");
-	resourcesMap_.emplace(SRC::BUTTON, res);
-
-	// 踏むボタン
-	res = new RES(RES_T::MODEL, PATH_MDL + "Object / mokuba.mv1");
-	resourcesMap_.emplace(SRC::PRESS_BUTTON, res);
-
-	// 歯車
-	res = new RES(RES_T::MODEL, PATH_MDL + "Object/Gear.mv1");
-	resourcesMap_.emplace(SRC::GEAR, res);
-
-	// 岩
-	res = new RES(RES_T::MODEL, PATH_MDL + "Object/tree01.mv1");
-	resourcesMap_.emplace(SRC::ROCK, res);
-
-	// 斧
-	res = new RES(RES_T::MODEL, PATH_MDL + "Object/Axe.mv1");
-	resourcesMap_.emplace(SRC::AXE, res);
-
-	// ゲート
-	res = new RES(RES_T::MODEL, PATH_MDL + "Object/Gate/GateMist.mv1");
-	resourcesMap_.emplace(SRC::GATE, res);
-
-	// タイトルムービー
-	res = new RES(RES_T::MOVIE, PATH_MOV + "Title.mp4");
-	resourcesMap_.emplace(SRC::TITLE_MOV, res);
-
-	// 本棚画像
-	res = new RES(RES_T::IMG, PATH_IMG + "hondanaTitle.png");
-	resourcesMap_.emplace(SRC::HONDANA_IMG, res);
-
-	// UIゲームスタート
-	res = new RES(RES_T::IMG, PATH_IMG + "GameStart.png");
-	resourcesMap_.emplace(SRC::UI_GAMESTART, res);
-
-	// UIチュートリアル
-	res = new RES(RES_T::IMG, PATH_IMG + "Tyutoriar.png");
-	resourcesMap_.emplace(SRC::UI_TUTORIAL, res);
-
-	// UI終了
-	res = new RES(RES_T::IMG, PATH_IMG + "End.png");
-	resourcesMap_.emplace(SRC::UI_EXIT, res);
-
-	// 宝箱
-	res = new RES(RES_T::MODEL, PATH_MDL + "Object/Chest.mv1");
-	resourcesMap_.emplace(SRC::Chest, res);
-
-	// 開いた宝箱
-	res = new RES(RES_T::MODEL, PATH_MDL + "Object/ChestOpen.mv1");
-	resourcesMap_.emplace(SRC::OPENCHEST, res);
-
-	// 絵の具
-	res = new RES(RES_T::IMG, PATH_IMG + "enogu/tewofutu.png");
-	resourcesMap_.emplace(SRC::ENOGU1, res);
-
-	// 絵の具2
-	res = new RES(RES_T::IMG, PATH_IMG + "enogu/kakunin.png");
-	resourcesMap_.emplace(SRC::ENOGU2, res);
-
-	// 絵の具3
-	res = new RES(RES_T::IMG, PATH_IMG + "enogu/yubisasi.png");
-	resourcesMap_.emplace(SRC::ENOGU3, res);
-
-	// 絵の具4
-	res = new RES(RES_T::IMG, PATH_IMG + "enogu/gimon.png");
-	resourcesMap_.emplace(SRC::ENOGU4, res);
-
-	// 絵の具5
-	res = new RES(RES_T::IMG, PATH_IMG + "enogu/2.png");
-	resourcesMap_.emplace(SRC::ENOGU5, res);
-
-	// 絵の具6
-	res = new RES(RES_T::IMG, PATH_IMG + "enogu/tarumoti.png");
-	resourcesMap_.emplace(SRC::ENOGU6, res);
-
-	// 絵の具7
-	res = new RES(RES_T::IMG, PATH_IMG + "enogu/happy2.png");
-	resourcesMap_.emplace(SRC::ENOGU7, res);
-
-	// 絵の具8
-	res = new RES(RES_T::IMG, PATH_IMG + "enogu/clir.png");
-	resourcesMap_.emplace(SRC::ENOGU8, res);
-
-	// ゲームクリア
-	res = new RES(RES_T::IMG, PATH_IMG + "GameClear.png");
-	resourcesMap_.emplace(SRC::GAME_CLEAR, res);
-
-	// ゲームオーバー
-	res = new RES(RES_T::IMG, PATH_IMG + "GameOver.png");
-	resourcesMap_.emplace(SRC::GAME_OVER, res);
-
-	// ヒント
-	res = new RES(RES_T::IMG, PATH_IMG + "enogu/Hinto3.png");
-	resourcesMap_.emplace(SRC::HINTO, res);
-
-	// ヒント2
-	res = new RES(RES_T::IMG, PATH_IMG + "enogu/Hinto4.png");
-	resourcesMap_.emplace(SRC::HINTO2, res);
+	for (const auto& def : RESOURCE_DEFS)
+	{
+		resourcesMap_.emplace(
+			def.src,
+			std::make_unique<Resource>(def.type, GetBasePath(def.type) + def.path));
+	}
 }
 
 void ResourceManager::Release(void)
 {
-	for (auto& p : loadedMap_)
+	for (SRC src : loadedSrcs_)
 	{
-		p.second.Release();
+		auto it = resourcesMap_.find(src);
+		if (it != resourcesMap_.end())
+		{
+			it->second->Release();
+		}
 	}
-
-	loadedMap_.clear();
+	loadedSrcs_.clear();
 }
 
 void ResourceManager::Destroy(void)
 {
 	Release();
-	for (auto& res : resourcesMap_)
+
+	for (auto& [src, res] : resourcesMap_)
 	{
-		res.second->Release();
-		delete res.second;
+		res->Release();
 	}
 	resourcesMap_.clear();
-	delete instance_;
+
+	// 自分自身を削除する
+	if (instance_ == this) instance_ = nullptr;
+	delete this;
 }
 
+// ---------------------------------------------------------------
+// ロード
+// ---------------------------------------------------------------
 const Resource& ResourceManager::Load(SRC src)
 {
-	const Resource& res = _Load(src);
-	if (res.type_ == Resource::TYPE::NONE)
-	{
-		return dummy_;
-	}
-	return res;
+	return LoadInternal(src);
 }
 
 int ResourceManager::LoadModelDuplicate(SRC src)
 {
-	Resource& res = _Load(src);
-	if (res.type_ == Resource::TYPE::NONE)
+	Resource& res = LoadInternal(src);
+
+	// モデル以外、または読み込み失敗時は複製しない
+	if (res.type_ != Resource::TYPE::MODEL || res.handleId_ == -1)
 	{
 		return -1;
 	}
 
-	int duId = MV1DuplicateModel(res.handleId_);
-	res.duplicateModelIds_.push_back(duId);
-
-	return duId;
-}
-
-ResourceManager::ResourceManager(void)
-{
-}
-
-// デバッグ用のリソースマネージャの状態を出力する
-void ResourceManager::DebugDump() const
-{
-	std::ostringstream oss;
-	oss << "ResourceManager Dump: resourcesMap_=" << resourcesMap_.size()
-		<< " loadedMap_=" << loadedMap_.size() << "\n";
-
-	for (const auto& p : resourcesMap_)
+	const int duplicateId = MV1DuplicateModel(res.handleId_);
+	if (duplicateId != -1)
 	{
-		const auto src = static_cast<int>(p.first);
-		const Resource* r = p.second;
-		oss << " SRC=" << src
-			<< " path=" << r->path_
-			<< " type=" << static_cast<int>(r->type_)
-			<< " handle=" << r->handleId_
-			<< " dupCount=" << r->duplicateModelIds_.size()
-			<< "\n";
+		res.duplicateModelIds_.push_back(duplicateId);
 	}
-
-	std::string s = oss.str();
-	OutputDebugStringA(s.c_str());
+	return duplicateId;
 }
 
-Resource& ResourceManager::_Load(SRC src)
+Resource& ResourceManager::LoadInternal(SRC src)
 {
-	// ロード済みチェック
-	const auto& lPair = loadedMap_.find(src);
-	if (lPair != loadedMap_.end())
-	{
-		return *resourcesMap_.find(src)->second;
-	}
-
-	// リソース登録チェック
-	const auto& rPair = resourcesMap_.find(src);
-	if (rPair == resourcesMap_.end())
+	auto it = resourcesMap_.find(src);
+	if (it == resourcesMap_.end())
 	{
 		// 登録されていない
 		return dummy_;
 	}
 
-	// ロード処理
-	rPair->second->Load();
+	Resource& res = *it->second;
 
-	// 念のためコピーコンストラクタ
-	loadedMap_.emplace(src, *rPair->second);
+	// 初回のみ読み込む
+	if (loadedSrcs_.insert(src).second)
+	{
+		res.Load();
+	}
 
-	return *rPair->second;
+	return res;
+}
+
+// ---------------------------------------------------------------
+// デバッグ
+// ---------------------------------------------------------------
+void ResourceManager::DebugDump(void) const
+{
+	std::ostringstream oss;
+	oss << "ResourceManager Dump: resourcesMap_=" << resourcesMap_.size()
+		<< " loaded=" << loadedSrcs_.size() << "\n";
+
+	for (const auto& [src, res] : resourcesMap_)
+	{
+		oss << " SRC=" << static_cast<int>(src)
+			<< " path=" << res->path_
+			<< " type=" << static_cast<int>(res->type_)
+			<< " handle=" << res->handleId_
+			<< " dupCount=" << res->duplicateModelIds_.size()
+			<< "\n";
+	}
+
+	OutputDebugStringA(oss.str().c_str());
 }

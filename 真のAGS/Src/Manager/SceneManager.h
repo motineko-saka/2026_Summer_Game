@@ -1,11 +1,10 @@
 #pragma once
 
-#include<memory>
-#include<list>
-#include<chrono>
+#include <chrono>
+#include <list>
+#include <memory>
 
 class SceneBase;
-class Fader;
 class SceneTransition;
 
 class SceneManager
@@ -13,25 +12,10 @@ class SceneManager
 public:
 	static constexpr float DEFAULT_FPS = 60.0f;
 
-public:
 	// シングルトン（生成・取得・削除）
-	static void CreateInstance(void) { if (instance_ == nullptr) { instance_ = new SceneManager(); } };
-	static SceneManager* GetInstance(void) { return instance_; };
-	static void DeleteInstance(void) { if (instance_ != nullptr) { delete instance_; instance_ = nullptr; } }
-
-private:
-	// デフォルトコンストラクタをprivateにして、
-	// 外部から生成できない様にする
-	SceneManager(void);
-	// デストラクタも同様
-	~SceneManager(void);
-
-	// コピー・ムーブ操作を禁止
-	SceneManager(const SceneManager&) = delete;
-	SceneManager& operator=(const SceneManager&) = delete;
-	SceneManager(SceneManager&&) = delete;
-	SceneManager& operator=(SceneManager&&) = delete;
-public:
+	static void CreateInstance(void) { if (instance_ == nullptr) instance_ = new SceneManager(); }
+	static SceneManager* GetInstance(void) { return instance_; }
+	static void DeleteInstance(void) { delete instance_; instance_ = nullptr; }
 
 	enum SCENE
 	{
@@ -43,63 +27,82 @@ public:
 	void Init(void);
 
 	// 更新
-	void Update(void);	
+	void Update(void);
 
 	// 描画
-	void Draw(void);	
+	void Draw(void);
 
 	// 解放
-	void Release(void);	
+	void Release(void);
 
-	// 状態遷移
+	// シーンを切り替える（積まれているシーンは全て破棄して読み込み直す）
 	void ChangeScene(std::shared_ptr<SceneBase> scene);
 
-	// シーンを新しく積む
+	// シーンを新しく積む（ポーズ画面など）
 	void PushScene(std::shared_ptr<SceneBase> scene);
 
-	// 最後に追加したシーンを削除する。
+	// 最後に積んだシーンを取り除く
 	void PopScene(void);
 
-	// 強制的に特定のシーンに飛ぶ。リセットをかけ特定のシーンのみにする。
+	// 強制的に特定のシーンに飛ぶ（読み込みは行わない）
 	void JumpScene(std::shared_ptr<SceneBase> scene);
+
+	// トランジション演出付きでシーンを切り替える
+	void ChangeSceneTransition(std::shared_ptr<SceneBase> scene);
 
 	// ゲーム終了
 	void GameEnd(void) { isGameEnd_ = true; }
-
-	// ゲーム終了取得
-	bool GetGameEnd(void) { return isGameEnd_; }
+	bool GetGameEnd(void) const { return isGameEnd_; }
 
 	// デルタタイムの取得
-	float GetDeltaTime(void) const;
+	float GetDeltaTime(void) const { return deltaTime_; }
 
-	int GetMainScreen(void) const;
-
-	void ChangeSceneTransition(std::shared_ptr<SceneBase> scene);
+	// メインスクリーンの取得
+	int GetMainScreen(void) const { return mainScreen_; }
 
 private:
+	using Clock = std::chrono::steady_clock;
+
+	SceneManager(void);
+	~SceneManager(void);
+
+	// コピー・ムーブ禁止
+	SceneManager(const SceneManager&) = delete;
+	SceneManager& operator=(const SceneManager&) = delete;
+	SceneManager(SceneManager&&) = delete;
+	SceneManager& operator=(SceneManager&&) = delete;
 
 	// 静的インスタンス
 	static SceneManager* instance_;
 
+	// シーン切替演出
 	std::unique_ptr<SceneTransition> sceneTransition_;
 
+	// 演出後に切り替えるシーン
 	std::shared_ptr<SceneBase> nextScene_;
 
+	// 演出中か
 	bool isTransition_ = false;
 
-	//Drawの関係上Backを最新のシーンとする
-	//基本的には要素は一つだけだがポーズシーンなどが積み重なる形
-	std::list<std::shared_ptr<SceneBase>>scenes_;
+	// back が最新のシーン（基本は1つ、ポーズなどが積み重なる）
+	std::list<std::shared_ptr<SceneBase>> scenes_;
 
 	// ゲーム終了
-	bool isGameEnd_;
+	bool isGameEnd_ = false;
 
-	std::chrono::system_clock::time_point preTime_;
-	float deltaTime_;
+	// デルタタイム計測用
+	Clock::time_point preTime_;
+	float deltaTime_ = 1.0f / DEFAULT_FPS;
 
 	// メインスクリーン
-	int mainScreen_;
+	int mainScreen_ = -1;
+
+	// デルタタイムを更新する
+	void UpdateDeltaTime(void);
 
 	// デルタタイムをリセットする
 	void ResetDeltaTime(void);
+
+	// 切替演出の更新
+	void UpdateTransition(void);
 };

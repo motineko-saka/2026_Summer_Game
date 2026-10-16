@@ -2,289 +2,210 @@
 
 #include <DxLib.h>
 #include <algorithm>
-#include "SoundTable.cpp"
 
 AudioManager* AudioManager::instance_ = nullptr;
 
-AudioManager::AudioManager(void)
+// ---------------------------------------------------------------
+// シングルトン
+// ---------------------------------------------------------------
+void AudioManager::CreateInstance(void)
 {
-	currentBgm_ = static_cast<SoundID>(-1);
-	currentLoopSe_ = static_cast<SoundID>(-1);
-	bgmVolume_ = 255;	
-	seVolume_ = 255;
-	masterVolume_ = 255;
+	if (instance_ == nullptr) instance_ = new AudioManager();
 }
 
-AudioManager::~AudioManager()
+void AudioManager::DeleteInstance(void)
 {
-	// 念のため削除関数
+	delete instance_;
+	instance_ = nullptr;
+}
+
+AudioManager::AudioManager(void) = default;
+
+AudioManager::~AudioManager(void)
+{
+	// 念のため全削除
 	DeleteAll();
 }
 
 void AudioManager::Init(void)
 {
-	// 現在再生されているBGM
-	currentBgm_ = static_cast<SoundID>(-1);
-	currentLoopSe_ = static_cast<SoundID>(-1);
+	currentBgm_ = SoundID::NONE;
+	currentLoopSe_ = SoundID::NONE;
 
-	bgmVolume_ = 255;		// bgm音量
-	seVolume_ = 255;		// se音量
-	masterVolume_ = 255;	// master音量
+	bgmVolume_ = kMaxVolume;
+	seVolume_ = kMaxVolume;
+	masterVolume_ = kMaxVolume;
 }
 
+// ---------------------------------------------------------------
+// 読み込み・削除
+// ---------------------------------------------------------------
 void AudioManager::LoadSceneSound(LoadScene scene)
 {
-	// 空のテーブルを用意
-	const std::unordered_map<SoundID, std::string>* table = nullptr;
-
-	// シーンで読み込みたいテーブルを切り替える
-	switch (scene)
-	{
-	case LoadScene::SYSTEM: table = &SoundTable_System::Table; break;
-	case LoadScene::TITLE: table = &SoundTable_Title::Table; break;
-	case LoadScene::GAME:  table = &SoundTable_Game::Table; break;
-	case LoadScene::GAME_CLEAR: table = &SoundTable_GameClear::Table; break;
-	case LoadScene::GAME_OVER: table = &SoundTable_GameOver::Table; break;
-	case LoadScene::GAME_TUTORIAL: table = &SoundTable_Tutorial::Table; break;
-	}
-
-	// 存在しないテーブルを選んでいたら処理しない
+	const SoundPathTable* table = GetSoundTable(scene);
 	if (!table) return;
 
-	// 指定したテーブルのサウンドを全て読み込む
-	for (auto& [id, path] : *table) 
+	// 同じシーンの二重読み込みは無視
+	if (!loadedScenes_.insert(scene).second) return;
+
+	for (const auto& [id, path] : *table)
 	{
-		// サウンドを読み込む
-		handles_[id] = LoadSoundMem(path.c_str());
+		// 他シーンで読み込み済みなら参照を増やすだけ
+		auto it = sounds_.find(id);
+		if (it != sounds_.end())
+		{
+			++it->second.refCount;
+			continue;
+		}
+
+		const int handle = LoadSoundMem(path.c_str());
+		if (handle == -1) continue;	// 読み込み失敗
+
+		sounds_.emplace(id, SoundEntry{ handle, 1 });
 	}
 }
 
 void AudioManager::DeleteSceneSound(LoadScene scene)
 {
-	// 空のテーブルを用意
-	const std::unordered_map<SoundID, std::string>* table = nullptr;
-
-	// シーンで削除したいテーブルを切り替える
-	switch (scene)
-	{
-	case LoadScene::SYSTEM: table = &SoundTable_System::Table; break;
-	case LoadScene::TITLE: table = &SoundTable_Title::Table; break;
-	case LoadScene::GAME:  table = &SoundTable_Game::Table; break;
-	case LoadScene::GAME_CLEAR: table = &SoundTable_GameClear::Table; break;
-	case LoadScene::GAME_OVER: table = &SoundTable_GameOver::Table; break;
-	case LoadScene::GAME_TUTORIAL: table = &SoundTable_Tutorial::Table; break;
-	}
-
-	// 存在しないテーブルを選んでいたら処理しない
+	const SoundPathTable* table = GetSoundTable(scene);
 	if (!table) return;
 
-	// 指定したテーブルのサウンドを削除する
-	for (auto& [id, _] : *table)
+	// 読み込んでいないシーンは処理しない
+	if (loadedScenes_.erase(scene) == 0) return;
+
+	for (const auto& [id, _] : *table)
 	{
-		// IDからサウンドハンドルを抽出
-		auto it = handles_.find(id);
-
-		// サウンドが読み込まれているか？
-		if (it != handles_.end())
-		{
-			// 削除する
-			DeleteSoundMem(it->second);
-			// 配列からも削除
-			handles_.erase(it);
-		}
+		ReleaseSound(id);
 	}
-}
-
-void AudioManager::PlayBGM(SoundID id)
-{
-	// IDからサウンドハンドルを抽出
-	auto it = handles_.find(id);
-
-	// サウンドが読み込まれているか？
-	if (it == handles_.end())
-		// 読み込まれていないので終了
-		return;
-
-	// 現在のBGMが同じならスキップ
-	if (currentBgm_ == id && CheckSoundMem(it->second))
-		return;
-
-	// 別のBGMが再生中なら停止
-	if (currentBgm_ != static_cast<SoundID>(-1))
-		StopBGM();
-
-	// BGMを更新
-	currentBgm_ = id;
-
-	// 実音量を計算
-	int volume = static_cast<int>(bgmVolume_ * (masterVolume_ / 255.0f));
-
-	// 音量を変更
-	ChangeVolumeSoundMem(volume, it->second);
-
-	// BGMなのでループ再生
-	PlaySoundMem(it->second, DX_PLAYTYPE_LOOP, true);
-}
-
-void AudioManager::StopBGM()
-{
-	// 何も再生されていないなら何もしない
-	if (currentBgm_ == static_cast<SoundID>(-1))
-		return;
-
-	// IDからサウンドハンドルを抽出
-	auto it = handles_.find(currentBgm_);
-
-	// サウンドが読み込まれているか？
-	if (it != handles_.end())
-		// 読み込まれているのでサウンドを止める
-		StopSoundMem(it->second);
-
-	// 現在のBGMを再生していない状態に更新
-	currentBgm_ = static_cast<SoundID>(-1);
-}
-
-void AudioManager::PlaySE(SoundID id)
-{
-	// IDからサウンドハンドルを抽出
-	auto it = handles_.find(id);
-
-	// サウンドが読み込まれているか？
-	if (it == handles_.end())
-		// 読み込まれていないので終了
-		return;
-
-	// 実音量を計算
-	int volume = static_cast<int>(seVolume_ * (masterVolume_ / 255.0f));
-
-	// 音量を変更
-	ChangeVolumeSoundMem(volume, it->second);
-
-	// SEは複数同時再生を許可
-	PlaySoundMem(it->second, DX_PLAYTYPE_BACK, true);
-}
-
-void AudioManager::LoopSE(SoundID id)
-{
-	// IDからサウンドハンドルを抽出
-	auto it = handles_.find(id);
-
-	// サウンドが読み込まれているか？
-	if (it == handles_.end())
-		return;
-
-	// 同じループSEが既に再生中ならスキップ
-	if (currentLoopSe_ == id && CheckSoundMem(it->second))
-		return;
-
-	// 既に別のループSEが再生中なら止める
-	if (currentLoopSe_ != static_cast<SoundID>(-1))
-	{
-		auto itPrev = handles_.find(currentLoopSe_);
-		if (itPrev != handles_.end())
-		{
-			StopSoundMem(itPrev->second);
-		}
-	}
-
-	// ループSEを更新
-	currentLoopSe_ = id;
-
-	// 実音量を計算（SE用）
-	int volume = static_cast<int>(seVolume_ * (masterVolume_ / 255.0f));
-	ChangeVolumeSoundMem(volume, it->second);
-
-	// ループ再生
-	PlaySoundMem(it->second, DX_PLAYTYPE_LOOP, true);
-}
-
-void AudioManager::StopSE(void)
-{
-	// 何も再生されていないなら何もしない
-	if (currentLoopSe_ == static_cast<SoundID>(-1))
-		return;
-
-	// IDからサウンドハンドルを抽出
-	auto it = handles_.find(currentLoopSe_);
-
-	// サウンドが読み込まれているか？
-	if (it != handles_.end())
-		// 読み込まれているのでサウンドを止める
-		StopSoundMem(it->second);
-
-	// 現在のBGMを再生していない状態に更新
-	currentLoopSe_ = static_cast<SoundID>(-1);
 }
 
 void AudioManager::DeleteAll(void)
 {
-	// サウンドが1つも読み込まれてないなら処理しない
-	if (handles_.empty()) 
-		return;
-
-	// 全てのサウンドを検索
-	for (auto& [id, handle] : handles_)
+	for (const auto& [id, entry] : sounds_)
 	{
-		// エラーサウンドかをチェック
-		if (CheckSoundMem(handle) != -1)
-		{
-			// 削除する
-			DeleteSoundMem(handle);
-		}
+		DeleteSoundMem(entry.handle);
 	}
 
-	// 配列をクリア
-	handles_.clear();
+	sounds_.clear();
+	loadedScenes_.clear();
+	currentBgm_ = SoundID::NONE;
+	currentLoopSe_ = SoundID::NONE;
 }
 
+// ---------------------------------------------------------------
+// 再生・停止
+// ---------------------------------------------------------------
+void AudioManager::PlayBGM(SoundID id)
+{
+	StartLoop(id, currentBgm_, bgmVolume_);
+}
+
+void AudioManager::StopBGM(void)
+{
+	StopLoop(currentBgm_);
+}
+
+void AudioManager::PlaySE(SoundID id)
+{
+	const int handle = FindHandle(id);
+	if (handle == -1) return;
+
+	ChangeVolumeSoundMem(CalcVolume(seVolume_), handle);
+	PlaySoundMem(handle, DX_PLAYTYPE_BACK, TRUE);
+}
+
+void AudioManager::LoopSE(SoundID id)
+{
+	StartLoop(id, currentLoopSe_, seVolume_);
+}
+
+void AudioManager::StopSE(void)
+{
+	StopLoop(currentLoopSe_);
+}
+
+// ---------------------------------------------------------------
+// 音量
+// ---------------------------------------------------------------
 void AudioManager::SetBgmVolume(int volume)
 {
-	// 0 ～ 255 までに収める
-	bgmVolume_ = std::clamp(volume, 0, 255);
-
-	// 別のBGMが再生中
-	if (currentBgm_ != static_cast<SoundID>(-1))
-	{
-		// IDからサウンドハンドルを抽出
-		auto it = handles_.find(currentBgm_);
-
-		// サウンドが読み込まれているか？
-		if (it != handles_.end())
-		{
-			// 実音量を計算
-			int volume = static_cast<int>(bgmVolume_ * (masterVolume_ / 255.0f));
-
-			// 音量を変更
-			ChangeVolumeSoundMem(volume, it->second);
-		}
-	}
+	bgmVolume_ = std::clamp(volume, 0, kMaxVolume);
+	ApplyVolume(currentBgm_, bgmVolume_);
 }
 
 void AudioManager::SetSeVolume(int volume)
 {
-	// 0 ～ 255 までに収める
-	seVolume_ = std::clamp(volume, 0, 255);
+	seVolume_ = std::clamp(volume, 0, kMaxVolume);
+	ApplyVolume(currentLoopSe_, seVolume_);
 }
 
 void AudioManager::SetMasterVolume(int volume)
 {
-	// 0 ～ 255 までに収める
-	masterVolume_ = std::clamp(volume, 0, 255);
+	masterVolume_ = std::clamp(volume, 0, kMaxVolume);
+	ApplyVolume(currentBgm_, bgmVolume_);
+	ApplyVolume(currentLoopSe_, seVolume_);
+}
 
-	// 再生中のBGMに即時反映
-	if (currentBgm_ != static_cast<SoundID>(-1))
-	{
-		// IDからサウンドハンドルを抽出
-		auto it = handles_.find(currentBgm_);
+// ---------------------------------------------------------------
+// 内部処理
+// ---------------------------------------------------------------
+int AudioManager::FindHandle(SoundID id) const
+{
+	auto it = sounds_.find(id);
+	return (it != sounds_.end()) ? it->second.handle : -1;
+}
 
-		// サウンドが読み込まれているか？
-		if (it != handles_.end())
-		{
-			// 実音量を計算
-			int volume = static_cast<int>(bgmVolume_ * (masterVolume_ / 255.0f));
+int AudioManager::CalcVolume(int categoryVolume) const
+{
+	return categoryVolume * masterVolume_ / kMaxVolume;
+}
 
-			// 音量を変更
-			ChangeVolumeSoundMem(volume, it->second);
-		}
-	}
+void AudioManager::ApplyVolume(SoundID id, int categoryVolume)
+{
+	const int handle = FindHandle(id);
+	if (handle == -1) return;
+
+	ChangeVolumeSoundMem(CalcVolume(categoryVolume), handle);
+}
+
+void AudioManager::StartLoop(SoundID id, SoundID& current, int categoryVolume)
+{
+	const int handle = FindHandle(id);
+	if (handle == -1) return;
+
+	// 同じサウンドが再生中ならスキップ
+	if (current == id && CheckSoundMem(handle) == 1) return;
+
+	// 別のサウンドが再生中なら停止
+	StopLoop(current);
+
+	current = id;
+	ChangeVolumeSoundMem(CalcVolume(categoryVolume), handle);
+	PlaySoundMem(handle, DX_PLAYTYPE_LOOP, TRUE);
+}
+
+void AudioManager::StopLoop(SoundID& current)
+{
+	if (current == SoundID::NONE) return;
+
+	const int handle = FindHandle(current);
+	if (handle != -1) StopSoundMem(handle);
+
+	current = SoundID::NONE;
+}
+
+void AudioManager::ReleaseSound(SoundID id)
+{
+	auto it = sounds_.find(id);
+	if (it == sounds_.end()) return;
+
+	// まだ他のシーンが使っているなら残す
+	if (--it->second.refCount > 0) return;
+
+	// 再生中のものを削除するなら状態もリセット
+	if (currentBgm_ == id) StopBGM();
+	if (currentLoopSe_ == id) StopSE();
+
+	DeleteSoundMem(it->second.handle);
+	sounds_.erase(it);
 }

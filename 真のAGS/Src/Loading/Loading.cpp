@@ -1,95 +1,86 @@
 #include <DxLib.h>
 #include "Loading.h"
-
 #include "../Application.h"
 
-// 最低でもロード画面を表示する時間
-static constexpr int MIN_LOAD_TIME = 30;	// 60fps(1秒) * x
+namespace
+{
+	// 最低でもロード画面を表示する時間(フレーム)
+	// 60fps なら 30 フレーム = 0.5 秒
+	constexpr int MIN_LOAD_FRAME = 30;
+
+	// 背景色
+	constexpr unsigned int BG_COLOR = 0xFFFFFF;
+}
 
 Loading* Loading::instance_ = nullptr;
 
-// コンストラクタ
-Loading::Loading()
-	: handle_(-1)
-	, pos_(0.0f, 0.0f)
-	, isLoading_(false)
-	, loadTimer_(0)
-{}
-
-// デストラクタ
-Loading::~Loading()
-{}
-
-// 初期化
 void Loading::Init(void)
 {
 	loadTimer_ = 0;
 	isLoading_ = false;
-	pos_.x = Application::SCREEN_SIZE_X / 2;
-	pos_.y = Application::SCREEN_SIZE_Y / 2;
+	pos_ = Vector2(Application::SCREEN_SIZE_X / 2, Application::SCREEN_SIZE_Y / 2);
 }
 
-// 読み込み
 void Loading::Load(void)
 {
+	// ロード画面用の画像があればここで読み込む
+	// 例) handle_ = LoadGraph("Data/Image/Loading.png");
 }
 
-// 更新
 void Loading::Update(void)
 {
+	if (!isLoading_) return;
+
 	loadTimer_++;
 
-	// 読込中のものがなくなったら and 最低ロード時間経過
-	if (GetASyncLoadNum() == 0 && loadTimer_ >= MIN_LOAD_TIME)
+	// 読み込み中のものが無くなり、かつ最低表示時間を過ぎたら終了
+	if (GetASyncLoadNum() == 0 && loadTimer_ >= MIN_LOAD_FRAME)
 	{
-		// ロード終了
-		Init();
+		FinishLoad();
+		return;
 	}
-	// 読み込み中
-	else
-	{
-		// ロード画面を動作させるならここに記述
-	}
+
+	// ロード画面を動かす処理はここに記述
 }
 
-// 描画
-void Loading::Draw(void)
+void Loading::Draw(void) const
 {
-	DrawBox(
-		0,
-		0,
-		Application::SCREEN_SIZE_X,
-		Application::SCREEN_SIZE_Y,
-		0xFFFFFF,
-		true
-	);
+	DrawBox(0, 0, Application::SCREEN_SIZE_X, Application::SCREEN_SIZE_Y, BG_COLOR, TRUE);
+
+	// 画像が読み込まれていなければ描かない
+	if (handle_ == -1) return;
 
 	DrawRotaGraphF(
-		pos_.x, pos_.y,	// 座標
-		1.0,			// 拡大値
-		0.0,			// 回転値
-		handle_,		// ハンドル
-		true			// 透過フラグ
-	);
+		static_cast<float>(pos_.x), static_cast<float>(pos_.y),
+		1.0,		// 拡大率
+		0.0,		// 回転角
+		handle_,
+		TRUE);		// 透過
 }
 
-// 解放
 void Loading::Release(void)
 {
+	if (handle_ == -1) return;
+
 	DeleteGraph(handle_);
+	handle_ = -1;
 }
 
-// 非同期読み込みに切り替える
 void Loading::StartAsyncLoad(void)
 {
 	isLoading_ = true;
-	// 非同期読み込み開始
-	SetUseASyncLoadFlag(true);
+	loadTimer_ = 0;
+	SetUseASyncLoadFlag(TRUE);
 }
 
-// 同期読み込みに切り替える
 void Loading::EndAsyncLoad(void)
 {
-	// 非同期読み込み終了
-	SetUseASyncLoadFlag(false);
+	// 以降の読み込みを同期に戻す（読み込み中のものは継続）
+	SetUseASyncLoadFlag(FALSE);
+}
+
+void Loading::FinishLoad(void)
+{
+	isLoading_ = false;
+	loadTimer_ = 0;
 }

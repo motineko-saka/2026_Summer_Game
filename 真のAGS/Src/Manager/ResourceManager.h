@@ -1,11 +1,12 @@
 #pragma once
 #include <map>
+#include <memory>
+#include <set>
 #include <string>
 #include "Resource.h"
 
 class ResourceManager
 {
-
 public:
 
 	// リソース名
@@ -54,47 +55,53 @@ public:
 		HINTO2,
 	};
 
-	// 明示的にインステンスを生成する
+	// 明示的にインスタンスを生成する
 	static void CreateInstance(void);
 
 	// 静的インスタンスの取得
 	static ResourceManager& GetInstance(void);
 
-	// 初期化
+	// 初期化（リソースの登録）
 	void Init(void);
 
-	// 解放(シーン切替時に一旦解放)
+	// 解放（シーン切替時に一旦解放）
 	void Release(void);
 
-	// リソースの完全破棄
+	// リソースの完全破棄（インスタンスも削除される）
 	void Destroy(void);
 
 	// リソースのロード
 	const Resource& Load(SRC src);
 
-	// リソースの複製ロード(モデル用)
+	// リソースの複製ロード（モデル用）
 	int LoadModelDuplicate(SRC src);
-	void DebugDump() const;
+
+	// デバッグ出力
+	void DebugDump(void) const;
+
 private:
 
 	// 静的インスタンス
 	static ResourceManager* instance_;
 
 	// リソース管理の対象
-	std::map<SRC, Resource*> resourcesMap_;
+	std::map<SRC, std::unique_ptr<Resource>> resourcesMap_;
 
 	// 読み込み済みリソース
-	std::map<SRC, Resource&> loadedMap_;
+	std::set<SRC> loadedSrcs_;
 
+	// 未登録時に返すダミー
 	Resource dummy_;
 
-	// デフォルトコンストラクタをprivateにして、
-	// 外部から生成できない様にする
-	ResourceManager(void);
-	ResourceManager(const ResourceManager& manager) = default;
+	ResourceManager(void) = default;
 	~ResourceManager(void) = default;
 
-	// 内部ロード
-	Resource& _Load(SRC src);
+	// コピー・ムーブ禁止
+	ResourceManager(const ResourceManager&) = delete;
+	ResourceManager& operator=(const ResourceManager&) = delete;
+	ResourceManager(ResourceManager&&) = delete;
+	ResourceManager& operator=(ResourceManager&&) = delete;
 
+	// 内部ロード
+	Resource& LoadInternal(SRC src);
 };

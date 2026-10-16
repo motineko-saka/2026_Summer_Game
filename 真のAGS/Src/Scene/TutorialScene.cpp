@@ -924,7 +924,7 @@ void TutorialScene::DrawInteractLabels(size_t playerIdx)
 	}
 }
 
-void TutorialScene::DrawHint(void)
+void TutorialScene::DrawHint(void)const
 {
 	if (!showHint_ || hintHandle_ == -1) return;
 

@@ -1,99 +1,78 @@
+ï»¿#include <DxLib.h>
+#include <algorithm>
 #include "../Application.h"
 #include "FpsController.h"
 
+namespace
+{
+	// æ™‚åˆ»ã®å·®ã‚’ç§’ã«å¤‰æ›
+	double ToSeconds(std::chrono::steady_clock::duration d)
+	{
+		return std::chrono::duration<double>(d).count();
+	}
+}
+
 FpsController::FpsController(int fixedFps)
-    :
-	// Å‘åFPS‚ğ’´‚¦‚È‚¢‚æ‚¤‚É§ŒÀ
-    fixedFps_(fixedFps > MAX_FPS ? MAX_FPS : fixedFps),
-	// 1ƒtƒŒ[ƒ€‚Ì—‘zŠÔ‚ğŒvZ
-	idealFrameTime_(1.0f / static_cast<double>(fixedFps_)),
-    fps_(0.0f),
-	timeList_(),
-	prevTime_()
+	:
+	// 1 ã€œ æœ€å¤§FPS ã®ç¯„å›²ã«åã‚ã‚‹ï¼ˆ0ä»¥ä¸‹ã«ã‚ˆã‚‹0é™¤ç®—ã‚’é˜²ãï¼‰
+	fixedFps_(std::clamp(fixedFps, 1, MAX_FPS)),
+	// 1ãƒ•ãƒ¬ãƒ¼ãƒ ã®ç†æƒ³æ™‚é–“ã‚’è¨ˆç®—
+	idealFrameTime_(1.0 / fixedFps_),
+	prevTime_(Clock::now())
 {
-
-    prevTime_ = std::chrono::high_resolution_clock::now();
-
-	// DxLib‚Ì‚’¼“¯Šú‘Ò‚¿‚ğ–³Œø‰»
-    SetWaitVSyncFlag(false);
-
+	// DxLibã®å‚ç›´åŒæœŸå¾…ã¡ã‚’ç„¡åŠ¹åŒ–
+	SetWaitVSyncFlag(FALSE);
 }
 
-FpsController::~FpsController(void)
+void FpsController::Wait(void)
 {
+	auto now = Clock::now();
+	double deltaTime = ToSeconds(now - prevTime_);
+
+	// ç†æƒ³æ™‚é–“ã‚ˆã‚Šæ—©ã‘ã‚Œã°å¾…æ©Ÿ
+	if (deltaTime < idealFrameTime_)
+	{
+		// 1msä»¥ä¸Šã‚ã‚Œã°ã€ã¾ãšã‚¹ãƒªãƒ¼ãƒ—ã§å¤§ã¾ã‹ã«å¾…ã¤
+		const double waitMs = (idealFrameTime_ - deltaTime) * 1000.0;
+		if (waitMs >= 1.0)
+		{
+			WaitTimer(static_cast<int>(waitMs));
+		}
+
+		// æ®‹ã‚Šã¯ãƒ“ã‚¸ãƒ¼ã‚¦ã‚§ã‚¤ãƒˆã§æ­£ç¢ºã«åˆã‚ã›ã‚‹
+		while (deltaTime < idealFrameTime_)
+		{
+			now = Clock::now();
+			deltaTime = ToSeconds(now - prevTime_);
+		}
+	}
+
+	prevTime_ = now;
+	UpdateAverage(deltaTime);
 }
 
-void FpsController::Wait()
+void FpsController::UpdateAverage(double deltaTime)
 {
+	// åˆè¨ˆã‚’ä¿æŒã—ã¦ãŠãã€æ¯ãƒ•ãƒ¬ãƒ¼ãƒ ã®å…¨ä»¶ãƒ«ãƒ¼ãƒ—ã‚’é¿ã‘ã‚‹
+	timeList_.push_back(deltaTime);
+	totalTime_ += deltaTime;
 
-    // Œ»İŠÔ
-    auto nowTime = std::chrono::high_resolution_clock::now();
+	if (timeList_.size() > AVG_FPS_COUNT)
+	{
+		totalTime_ -= timeList_.front();
+		timeList_.pop_front();
+	}
 
-	// ‘O‰ñ‚©‚ç‚ÌŒo‰ßŠÔ
-    std::chrono::duration<double> delta = nowTime - prevTime_;
-
-	// Œo‰ßŠÔ(•b)
-    double deltaTime = delta.count();
-
-    // Œo‰ßŠÔ‚ª—‘zŠÔ‚æ‚è‚à’Z‚¯‚ê‚Î‘Ò‹@
-    if (deltaTime < idealFrameTime_)
-    {
-
-		// ‘Ò‚Â‚×‚«ŠÔ(ƒ~ƒŠ•b)
-        double waitMiliSecond = (idealFrameTime_ - deltaTime) * 1000.0;
-
-        // Sleep‚Å‘Ò‚¿ŠÔ•ª‚ğ‘Ò‹@
-        if (waitMiliSecond >= 1.0)
-        {
-            // w’èƒ~ƒŠ•b”‘Ò‚Â(DxLibŠÖ”)
-            WaitTimer(static_cast<int>(waitMiliSecond));
-
-        }
-
-        // w’èŠÔ‚É‚È‚é‚Ü‚Åbusy‚É‚È‚é‚ª‘Ò‚Â
-        while (deltaTime < idealFrameTime_)
-        {
-            // ÄŒv‘ª
-            nowTime = std::chrono::high_resolution_clock::now();
-            delta = nowTime - prevTime_;
-            deltaTime = delta.count();
-        }
-
-    }
-
-	// ‘O‰ñŠÔ‚ğXV
-    prevTime_ = nowTime;
-
-    // FPSŒv‘ª(w’è‚³‚ê‚½ÅVƒtƒŒ[ƒ€”•ª‚Ì•½‹Ïj
-    timeList_.emplace_back(deltaTime);
-    if (timeList_.size() > AVG_FPS_COUNT)
-    {
-        timeList_.erase(timeList_.begin());
-    }
-
-    // ‡ŒvŠÔ
-    double total = 0.0;
-    for (double time : timeList_)
-    {
-        total += time;
-    }
-
-    // •½‹ÏFPS
-    fps_ = static_cast<float>(timeList_.size() / total);
-
+	fps_ = (totalTime_ > 0.0)
+		? static_cast<float>(timeList_.size() / totalTime_)
+		: 0.0f;
 }
 
-void FpsController::Draw()
+void FpsController::Draw(void) const
 {
+	// æç”»ã™ã‚‹æ–‡å­—åˆ—ã®å¹…ã‚’å–å¾—ã—ã€å³å¯„ã›ä½ç½®ã‚’è¨ˆç®—
+	const int textWidth = GetDrawFormatStringWidth(TEXT_FORMAT, fps_);
+	const int x = Application::SCREEN_SIZE_X - textWidth - MARGIN;
 
-    // •`‰æ‚·‚é•¶š—ñ‚Ì•‚ğæ“¾(ƒfƒtƒHƒ‹ƒgƒtƒHƒ“ƒg‚Ìê‡)
-    int textWidth = GetDrawFormatStringWidth(TEXT_FORMAT.c_str(), fps_);
-
-    // ‰EãˆÊ’u‚ğŒvZ
-    int x = Application::SCREEN_SIZE_X - textWidth - MARGIN;
-    int y = MARGIN;
-
-    // ‰EŠñ‚¹•`‰æ
-    DrawFormatString(x, y, COLOR, TEXT_FORMAT.c_str(), fps_);
-
+	DrawFormatString(x, MARGIN, GetColor(255, 255, 255), TEXT_FORMAT, fps_);
 }
