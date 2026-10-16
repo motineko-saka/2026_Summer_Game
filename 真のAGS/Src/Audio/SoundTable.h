@@ -5,6 +5,8 @@
 // サウンドID
 enum class SoundID
 {
+	NONE = -1,	// 未再生・無効値
+
 	BGM_TITLE,
 	BGM_GAME,
 	BGM_TUTORIAL,
@@ -27,31 +29,21 @@ enum class SoundID
 	SE_GAME_OVER,
 
 	SE_TUTORIAL_WALK,
-
 };
 
 // 読み込むシーン
 enum class LoadScene
 {
-	SYSTEM,		// システム
-	TITLE,		// タイトル
-	GAME,		// ゲーム
-	GAME_CLEAR,	// ゲームクリア
-	GAME_OVER,	// ゲームオーバー
-	GAME_TUTORIAL,
+	SYSTEM,			// システム
+	TITLE,			// タイトル
+	GAME,			// ゲーム
+	GAME_CLEAR,		// ゲームクリア
+	GAME_OVER,		// ゲームオーバー
+	GAME_TUTORIAL,	// チュートリアル
 };
 
-// サウンド属性
-struct SoundData
-{
-	std::string path;	// サウンドのパス
-};
+// サウンドID → ファイルパス
+using SoundPathTable = std::unordered_map<SoundID, std::string>;
 
-// サウンドテーブル（名称被りや拡張性の為にクラス化)
-class SoundTable
-{
-public:
-	// サウンドテーブルのマップ
-	// サウンドID から サウンドパスを取得
-	static const std::unordered_map<SoundID, SoundData> Table;
-};
+// 指定シーンのサウンドテーブルを取得（存在しなければ nullptr）
+const SoundPathTable* GetSoundTable(LoadScene scene);

@@ -1,119 +1,96 @@
-#include <DxLib.h>
+Ôªø#include <DxLib.h>
+#include <cmath>
 #include "InputManager.h"
 
 InputManager* InputManager::instance_ = nullptr;
 
+namespace
+{
+	// „Ç≤„Éº„É†„Åß‰ΩøÁî®„Åó„Åü„ÅÑ„Ç≠„Éº„ÅØ„Åì„Åì„Å´ÁôªÈå≤„Åó„Å¶„Åä„Åè
+	constexpr int USE_KEYS[] =
+	{
+		KEY_INPUT_0, KEY_INPUT_1, KEY_INPUT_2, KEY_INPUT_3, KEY_INPUT_4,
+		KEY_INPUT_5, KEY_INPUT_6, KEY_INPUT_7, KEY_INPUT_8, KEY_INPUT_9,
+
+		KEY_INPUT_RETURN, KEY_INPUT_SPACE,
+
+		KEY_INPUT_W, KEY_INPUT_A, KEY_INPUT_S, KEY_INPUT_D,
+
+		KEY_INPUT_UP, KEY_INPUT_DOWN, KEY_INPUT_LEFT, KEY_INPUT_RIGHT,
+
+		KEY_INPUT_Q, KEY_INPUT_E, KEY_INPUT_R, KEY_INPUT_F,
+		KEY_INPUT_Z, KEY_INPUT_X, KEY_INPUT_P, KEY_INPUT_H,
+
+		KEY_INPUT_ESCAPE, KEY_INPUT_TAB, KEY_INPUT_LSHIFT, KEY_INPUT_LCONTROL,
+	};
+}
+
+// ---------------------------------------------------------------
+// ÂàùÊúüÂåñ„ÉªÊõ¥Êñ∞
+// ---------------------------------------------------------------
 void InputManager::Init(void)
 {
-	// ÉQÅ[ÉÄÇ≈égópÇµÇΩÇ¢ÉLÅ[ÇÅA
-	// éñëOÇ…Ç±Ç±Ç≈ìoò^ÇµÇƒÇ®Ç¢ÇƒÇ≠ÇæÇ≥Ç¢
-	Add(KEY_INPUT_0);
-	Add(KEY_INPUT_1);
-	Add(KEY_INPUT_2);
-	Add(KEY_INPUT_3);
-	Add(KEY_INPUT_4);
-	Add(KEY_INPUT_5);
-	Add(KEY_INPUT_6);
-	Add(KEY_INPUT_7);
-	Add(KEY_INPUT_8);
-	Add(KEY_INPUT_8);
-	Add(KEY_INPUT_9);
+	for (int key : USE_KEYS)
+	{
+		Add(key);
+	}
 
-	Add(KEY_INPUT_RETURN);
-	Add(KEY_INPUT_SPACE);
-
-	Add(KEY_INPUT_W);
-	Add(KEY_INPUT_A);
-	Add(KEY_INPUT_S);
-	Add(KEY_INPUT_D);
-
-	Add(KEY_INPUT_UP);
-	Add(KEY_INPUT_DOWN);
-	Add(KEY_INPUT_LEFT);
-	Add(KEY_INPUT_RIGHT);
-
-	Add(KEY_INPUT_Q);
-	Add(KEY_INPUT_E);
-	Add(KEY_INPUT_R);
-	Add(KEY_INPUT_F);
-	Add(KEY_INPUT_Z);
-	Add(KEY_INPUT_X);
-	Add(KEY_INPUT_P);
-	Add(KEY_INPUT_H);
-
-	Add(KEY_INPUT_ESCAPE);
-	Add(KEY_INPUT_TAB);
-	Add(KEY_INPUT_LSHIFT);
-	Add(KEY_INPUT_LCONTROL);
-
-	InputManager::MouseInfo info;
-
-	// ç∂ÉNÉäÉbÉN
-	info = InputManager::MouseInfo();
-	info.key = MOUSE_INPUT_LEFT;
-	info.keyOld = false;
-	info.keyNew = false;
-	info.keyTrgDown = false;
-	info.keyTrgUp = false;
-	mouseInfos_.emplace(info.key, info);
-
-	// âEÉNÉäÉbÉN
-	info = InputManager::MouseInfo();
-	info.key = MOUSE_INPUT_RIGHT;
-	info.keyOld = false;
-	info.keyNew = false;
-	info.keyTrgDown = false;
-	info.keyTrgUp = false;
-	mouseInfos_.emplace(info.key, info);
-
+	AddMouse(MOUSE_INPUT_LEFT);
+	AddMouse(MOUSE_INPUT_RIGHT);
 }
 
 void InputManager::Update(void)
 {
-	// ÉLÅ[É{Å[Éhåüím
-	for (auto& p : keyInfos_)
+	// „Ç≠„Éº„Éú„Éº„Éâ
+	for (auto& [key, info] : keyInfos_)
 	{
-		p.second.keyOld = p.second.keyNew;
-		p.second.keyNew = CheckHitKey(p.second.key);
-		p.second.keyTrgDown = p.second.keyNew && !p.second.keyOld;
-		p.second.keyTrgUp = !p.second.keyNew && p.second.keyOld;
+		UpdateInfo(info, CheckHitKey(key) != 0);
 	}
 
-	// É}ÉEÉXåüím
+	// „Éû„Ç¶„Çπ
 	mouseInput_ = GetMouseInput();
 
-	// int å^Ç≈éÊìæ
-	int x, y;
+	int x = 0;
+	int y = 0;
 	GetMousePoint(&x, &y);
+	mousePos_ = Vector2(x, y);
 
-	mousePos_.x = x;
-	mousePos_.y = y;
-
-	for (auto& p : mouseInfos_)
+	for (auto& [button, info] : mouseInfos_)
 	{
-		p.second.keyOld = p.second.keyNew;
-		p.second.keyNew = mouseInput_ == p.second.key;
-		p.second.keyTrgDown = p.second.keyNew && !p.second.keyOld;
-		p.second.keyTrgUp = !p.second.keyNew && p.second.keyOld;
+		// Â∑¶Âè≥ÂêåÊôÇÊäº„Åó„Å´„ÇÇÂØæÂøú„Åô„Çã„Åü„ÇÅ„Éì„ÉÉ„Éà„ÅßÂà§ÂÆö
+		UpdateInfo(info, (mouseInput_ & button) != 0);
 	}
 
-	// ÉpÉbÉhèÓïÒ
-	SetJPadInState(JOYPAD_NO::KEY_PAD1);
-	SetJPadInState(JOYPAD_NO::PAD1);
-	SetJPadInState(JOYPAD_NO::PAD2);
-	SetJPadInState(JOYPAD_NO::PAD3);
-	SetJPadInState(JOYPAD_NO::PAD4);
+	// „Éë„ÉÉ„Éâ
+	for (int i = 0; i < PAD_NUM; i++)
+	{
+		SetJPadInState(static_cast<JOYPAD_NO>(i));
+	}
 }
 
+void InputManager::UpdateInfo(Info& info, bool isPressed)
+{
+	info.keyOld = info.keyNew;
+	info.keyNew = isPressed;
+	info.keyTrgDown = info.keyNew && !info.keyOld;
+	info.keyTrgUp = !info.keyNew && info.keyOld;
+}
+
+// ---------------------------------------------------------------
+// „Ç≠„Éº„Éú„Éº„Éâ
+// ---------------------------------------------------------------
 void InputManager::Add(int key)
 {
-	InputManager::Info info = InputManager::Info();
+	Info info;
 	info.key = key;
-	info.keyOld = false;
-	info.keyNew = false;
-	info.keyTrgDown = false;
-	info.keyTrgUp = false;
 	keyInfos_.emplace(key, info);
+}
+
+void InputManager::AddMouse(int button)
+{
+	MouseInfo info;
+	info.key = button;
+	mouseInfos_.emplace(button, info);
 }
 
 void InputManager::Clear(void)
@@ -136,24 +113,23 @@ bool InputManager::IsTrgUp(int key) const
 	return Find(key).keyTrgUp;
 }
 
-Vector2 InputManager::GetMousePos(void) const
+const InputManager::Info& InputManager::Find(int key) const
 {
-	return mousePos_;
+	auto it = keyInfos_.find(key);
+	return (it != keyInfos_.end()) ? it->second : infoEmpty_;
 }
 
-int InputManager::GetMouse(void) const
-{
-	return mouseInput_;
-}
-
+// ---------------------------------------------------------------
+// „Éû„Ç¶„Çπ
+// ---------------------------------------------------------------
 bool InputManager::IsClickMouseLeft(void) const
 {
-	return mouseInput_ == MOUSE_INPUT_LEFT;
+	return (mouseInput_ & MOUSE_INPUT_LEFT) != 0;
 }
 
 bool InputManager::IsClickMouseRight(void) const
 {
-	return mouseInput_ == MOUSE_INPUT_RIGHT;
+	return (mouseInput_ & MOUSE_INPUT_RIGHT) != 0;
 }
 
 bool InputManager::IsTrgMouseLeft(void) const
@@ -166,243 +142,163 @@ bool InputManager::IsTrgMouseRight(void) const
 	return FindMouse(MOUSE_INPUT_RIGHT).keyTrgDown;
 }
 
-InputManager::InputManager(void)
-{
-	mouseInput_ = -1;
-}
-
-InputManager::InputManager(const InputManager& manager)
-{
-}
-
-InputManager::~InputManager(void)
-{
-}
-
-const InputManager::Info& InputManager::Find(int key) const
-{
-	auto it = keyInfos_.find(key);
-	if (it != keyInfos_.end())
-	{
-		return it->second;
-	}
-
-	return infoEmpty_;
-}
-
 const InputManager::MouseInfo& InputManager::FindMouse(int key) const
 {
 	auto it = mouseInfos_.find(key);
-	if (it != mouseInfos_.end())
-	{
-		return it->second;
-	}
-
-	return mouseInfoEmpty_;
+	return (it != mouseInfos_.end()) ? it->second : mouseInfoEmpty_;
 }
 
-InputManager::JOYPAD_TYPE InputManager::GetJPadType(JOYPAD_NO no)
+// ---------------------------------------------------------------
+// „Ç≤„Éº„É†„Éë„ÉÉ„Éâ
+// ---------------------------------------------------------------
+InputManager::JOYPAD_TYPE InputManager::GetJPadType(JOYPAD_NO no) const
 {
-	return static_cast<InputManager::JOYPAD_TYPE>(GetJoypadType(static_cast<int>(no)));
+	return static_cast<JOYPAD_TYPE>(GetJoypadType(static_cast<int>(no)));
 }
 
-DINPUT_JOYSTATE InputManager::GetJPadDInputState(JOYPAD_NO no)
+DINPUT_JOYSTATE InputManager::GetJPadDInputState(JOYPAD_NO no) const
 {
-	// ÉRÉìÉgÉçÅ[ÉâèÓïÒ
-	GetJoypadDirectInputState(static_cast<int>(no), &joyDInState_);
-	return joyDInState_;
+	DINPUT_JOYSTATE state = {};
+	GetJoypadDirectInputState(static_cast<int>(no), &state);
+	return state;
 }
 
-XINPUT_STATE InputManager::GetJPadXInputState(JOYPAD_NO no)
+XINPUT_STATE InputManager::GetJPadXInputState(JOYPAD_NO no) const
 {
-	// ÉRÉìÉgÉçÅ[ÉâèÓïÒ
-	GetJoypadXInputState(static_cast<int>(no), &joyXInState_);
-	return joyXInState_;
+	XINPUT_STATE state = {};
+	GetJoypadXInputState(static_cast<int>(no), &state);
+	return state;
 }
 
 void InputManager::SetJPadInState(JOYPAD_NO jpNo)
 {
-	int no = static_cast<int>(jpNo);
-	auto stateNew = GetJPadInputState(jpNo);
-	auto& stateNow = padInfos_[no];
+	const int no = static_cast<int>(jpNo);
+	if (no < 0 || no >= PAD_NUM) return;
 
-	int max = static_cast<int>(JOYPAD_BTN::MAX);
-	for (int i = 0; i < max; i++)
+	const JOYPAD_IN_STATE stateNew = GetJPadInputState(jpNo);
+	JOYPAD_IN_STATE& stateNow = padInfos_[no];
+
+	for (int i = 0; i < BTN_NUM; i++)
 	{
 		stateNow.ButtonsOld[i] = stateNow.ButtonsNew[i];
 		stateNow.ButtonsNew[i] = stateNew.ButtonsNew[i];
 
 		stateNow.IsOld[i] = stateNow.IsNew[i];
-		//stateNow.IsNew[i] = stateNow.ButtonsNew[i] == 128 || stateNow.ButtonsNew[i] == 255;
 		stateNow.IsNew[i] = stateNow.ButtonsNew[i] > 0;
 
 		stateNow.IsTrgDown[i] = stateNow.IsNew[i] && !stateNow.IsOld[i];
 		stateNow.IsTrgUp[i] = !stateNow.IsNew[i] && stateNow.IsOld[i];
-
-		stateNow.AKeyLX = stateNew.AKeyLX;
-		stateNow.AKeyLY = stateNew.AKeyLY;
-		stateNow.AKeyRX = stateNew.AKeyRX;
-		stateNow.AKeyRY = stateNew.AKeyRY;
 	}
+
+	stateNow.AKeyLX = stateNew.AKeyLX;
+	stateNow.AKeyLY = stateNew.AKeyLY;
+	stateNow.AKeyRX = stateNew.AKeyRX;
+	stateNow.AKeyRY = stateNew.AKeyRY;
 }
 
 InputManager::JOYPAD_IN_STATE InputManager::GetJPadInputState(JOYPAD_NO no)
 {
-	JOYPAD_IN_STATE ret = JOYPAD_IN_STATE();
+	JOYPAD_IN_STATE ret;
 
-	auto type = GetJPadType(no);
-
-	switch (type)
-	{
-	case InputManager::JOYPAD_TYPE::XBOX_ONE:
-	{
-		auto d = GetJPadDInputState(no);
-		auto x = GetJPadXInputState(no);
-
-		for (int i = 0; i < 32; i++)
+	auto set = [&ret](JOYPAD_BTN btn, unsigned char value)
 		{
-			if (d.Buttons[i] > 0)
-			{
-				printf("d.Buttons[%d] = %d\n", i, d.Buttons[i]);
-			}
-		}
+			ret.ButtonsNew[static_cast<int>(btn)] = value;
+		};
 
-		int idx;
+	switch (GetJPadType(no))
+	{
+	case JOYPAD_TYPE::XBOX_ONE:
+	{
+		const DINPUT_JOYSTATE d = GetJPadDInputState(no);
+		const XINPUT_STATE x = GetJPadXInputState(no);
 
 		//   Y
 		// X   B
 		//   A
+		set(JOYPAD_BTN::TOP, d.Buttons[3]);		// Y
+		set(JOYPAD_BTN::LEFT, d.Buttons[2]);	// X
+		set(JOYPAD_BTN::RIGHT, d.Buttons[1]);	// B
+		set(JOYPAD_BTN::DOWN, d.Buttons[0]);	// A
 
-		idx = static_cast<int>(JOYPAD_BTN::TOP);
-		ret.ButtonsNew[idx] = d.Buttons[3];// Y
+		set(JOYPAD_BTN::R_TRIGGER, x.RightTrigger);	// RT
+		set(JOYPAD_BTN::L_TRIGGER, x.LeftTrigger);	// LT
+		set(JOYPAD_BTN::L2_TRIGGER, d.Buttons[4]);	// LB
+		set(JOYPAD_BTN::R2_TRIGGER, d.Buttons[5]);	// RB
+		set(JOYPAD_BTN::OPTION, d.Buttons[7]);		// MENU
 
-		idx = static_cast<int>(JOYPAD_BTN::LEFT);
-		ret.ButtonsNew[idx] = d.Buttons[2];// X
-
-		idx = static_cast<int>(JOYPAD_BTN::RIGHT);
-		ret.ButtonsNew[idx] = d.Buttons[1];// B
-
-		idx = static_cast<int>(JOYPAD_BTN::DOWN);
-		ret.ButtonsNew[idx] = d.Buttons[0];// A
-
-		idx = static_cast<int>(JOYPAD_BTN::R_TRIGGER);
-		ret.ButtonsNew[idx] = x.RightTrigger;// R_TRIGGER
-
-		idx = static_cast<int>(JOYPAD_BTN::L_TRIGGER);
-		ret.ButtonsNew[idx] = x.LeftTrigger; // L_TRIGGER
-
-		idx = static_cast<int>(JOYPAD_BTN::L2_TRIGGER);
-		ret.ButtonsNew[idx] = d.Buttons[4];// L2_TRIGGER
-
-		idx = static_cast<int>(JOYPAD_BTN::R2_TRIGGER);
-		ret.ButtonsNew[idx] = d.Buttons[5];// R2_TRIGGER
-	
-		idx = static_cast<int>(JOYPAD_BTN::OPTION);
-		ret.ButtonsNew[idx] = d.Buttons[7];// OPTION
-
-		// ç∂ÉXÉeÉBÉbÉN
 		ret.AKeyLX = d.X;
 		ret.AKeyLY = d.Y;
-
-		// âEÉXÉeÉBÉbÉN
 		ret.AKeyRX = d.Rx;
 		ret.AKeyRY = d.Ry;
+		break;
 	}
-	break;
-	case InputManager::JOYPAD_TYPE::DUAL_SENSE:
+
+	case JOYPAD_TYPE::DUAL_SENSE:
 	{
+		const DINPUT_JOYSTATE d = GetJPadDInputState(no);
 
-		auto d = GetJPadDInputState(no);
-		int idx;
+		//   ‚ñ≥
+		// ‚ñ°  ‚óã
+		//   √ó
+		set(JOYPAD_BTN::TOP, d.Buttons[3]);		// ‚ñ≥
+		set(JOYPAD_BTN::LEFT, d.Buttons[0]);	// ‚ñ°
+		set(JOYPAD_BTN::RIGHT, d.Buttons[2]);	// ‚óã
+		set(JOYPAD_BTN::DOWN, d.Buttons[1]);	// √ó
 
-		//   Å¢
-		// Å†  ÅZ
-		//   Å~
-
-		idx = static_cast<int>(JOYPAD_BTN::TOP);
-		ret.ButtonsNew[idx] = d.Buttons[3];// Å¢
-
-		idx = static_cast<int>(JOYPAD_BTN::LEFT);
-		ret.ButtonsNew[idx] = d.Buttons[0];// Å†
-
-		idx = static_cast<int>(JOYPAD_BTN::RIGHT);
-		ret.ButtonsNew[idx] = d.Buttons[2];// ÅZ
-
-		idx = static_cast<int>(JOYPAD_BTN::DOWN);
-		ret.ButtonsNew[idx] = d.Buttons[1];// Å~
-
-		// ç∂ÉXÉeÉBÉbÉN
 		ret.AKeyLX = d.X;
 		ret.AKeyLY = d.Y;
-
-		// âEÉXÉeÉBÉbÉN
 		ret.AKeyRX = d.Z;
 		ret.AKeyRY = d.Rz;
+		break;
 	}
-	break;
-	case InputManager::JOYPAD_TYPE::OTHER:
-	case InputManager::JOYPAD_TYPE::XBOX_360:
-	case InputManager::JOYPAD_TYPE::DUAL_SHOCK_4:
-	case InputManager::JOYPAD_TYPE::SWITCH_JOY_CON_L:
-	case InputManager::JOYPAD_TYPE::SWITCH_JOY_CON_R:
-	case InputManager::JOYPAD_TYPE::SWITCH_PRO_CTRL:
-	case InputManager::JOYPAD_TYPE::MAX:
+
+	default:
+		// Êú™ÂØæÂøú„ÅÆ„Ç≥„É≥„Éà„É≠„Éº„É©
 		break;
 	}
 
 	return ret;
 }
 
+const InputManager::JOYPAD_IN_STATE* InputManager::FindPad(JOYPAD_NO no) const
+{
+	const int idx = static_cast<int>(no);
+	if (idx < 0 || idx >= PAD_NUM) return nullptr;
+	return &padInfos_[idx];
+}
+
 bool InputManager::IsPadBtnNew(JOYPAD_NO no, JOYPAD_BTN btn) const
 {
-	return padInfos_[static_cast<int>(no)].IsNew[static_cast<int>(btn)];
+	const JOYPAD_IN_STATE* pad = FindPad(no);
+	return pad != nullptr && pad->IsNew[static_cast<int>(btn)];
 }
 
 bool InputManager::IsPadBtnTrgDown(JOYPAD_NO no, JOYPAD_BTN btn) const
 {
-	return padInfos_[static_cast<int>(no)].IsTrgDown[static_cast<int>(btn)];
+	const JOYPAD_IN_STATE* pad = FindPad(no);
+	return pad != nullptr && pad->IsTrgDown[static_cast<int>(btn)];
 }
 
 bool InputManager::IsPadBtnTrgUp(JOYPAD_NO no, JOYPAD_BTN btn) const
 {
-	return padInfos_[static_cast<int>(no)].IsTrgUp[static_cast<int>(btn)];
+	const JOYPAD_IN_STATE* pad = FindPad(no);
+	return pad != nullptr && pad->IsTrgUp[static_cast<int>(btn)];
 }
 
 VECTOR InputManager::GetDirectionXZAKey(int aKeyX, int aKeyY) const
 {
+	// „Çπ„ÉÜ„Ç£„ÉÉ„ÇØ„ÅÆÂÖ•ÂäõÂÄ§„ÅØ -1000 „Äú 1000 „Å™„ÅÆ„Åß -1.0 „Äú 1.0 „Å´Ê≠£Ë¶èÂåñ
+	const float dirX = static_cast<float>(aKeyX) / AKEY_VAL_MAX;
+	const float dirZ = static_cast<float>(aKeyY) / AKEY_VAL_MAX;
 
-	VECTOR ret = { 0.0f, 0.0f, 0.0f };
-
-	// ÉXÉeÉBÉbÉNÇÃå¬ÅXÇÃì¸óÕílÇÕÅA
-	// -1000.0f Å` 1000.0f ÇÃîÕàÕÇ≈ï‘Ç¡ÇƒÇ≠ÇÈÇ™ÅA
-	// X:1000.0fÅAY:1000.0fÇ…Ç»ÇÈÇ±Ç∆ÇÕñ≥Ç¢(1000Ç∆500Ç≠ÇÁÇ¢Ç™ç≈ëÂ)
-
-	// ÉXÉeÉBÉbÉNÇÃì¸óÕílÇ -1.0 Å` 1.0 Ç…ê≥ãKâª
-	float dirX = static_cast<float>(aKeyX) / AKEY_VAL_MAX;
-	float dirZ = static_cast<float>(aKeyY) / AKEY_VAL_MAX;
-
-	// ÉsÉ^ÉSÉâÉXÇÃíËóùÇ≈ÉjÉÖÅ[ÉgÉâÉãèÛë‘Ç©ÇÁÇÃí∑Ç≥ÉxÉNÉgÉãÇ…Ç∑ÇÈ
-	// ( â~å`ÇÃÉfÉbÉhÉ]Å[ÉìÇ…Ç»ÇÈ )
-
-	// ïΩï˚ç™Ç…ÇÊÇËÅAÇ®Ç®ÇÊÇªÇÃç≈ëÂílÇ™1.0Ç∆Ç»ÇÈ
-	float len = sqrtf(dirX * dirX + dirZ * dirZ);
+	// ÂÜÜÂΩ¢„ÅÆ„Éá„ÉÉ„Éâ„Çæ„Éº„É≥
+	const float len = sqrtf(dirX * dirX + dirZ * dirZ);
 	if (len < THRESHOLD)
 	{
-		// (0.0f, 0.0f, 0.0f)
-		return ret;
+		return VGet(0.0f, 0.0f, 0.0f);
 	}
 
-	// ÉfÉbÉhÉ]Å[Éìã´äEÇ©ÇÁÇ…çƒÉXÉPÅ[ÉäÉìÉO(â¬ïœÉfÉbÉhÉ]Å[Éì)
-	// ( ÇµÇ´Ç¢íl 0.35 ÇÃèÍçáÇÕÅA 0.0 Å` 0.65 / 0.65 Ç…Ç»ÇÈ )
-	float scale = (len - THRESHOLD) / (1.0f - THRESHOLD);
-	dirX = (dirX / len) * scale;
-	dirZ = (dirZ / len) * scale;
-
-	// ZÇÕëOÇ…ì|Ç∑Ç∆É}ÉCÉiÉXílÇ™ï‘Ç¡ÇƒÇ≠ÇÈÇÃÇ≈îΩì]
-	ret = VNorm({ dirX, 0.0f, -dirZ });
-
-	return ret;
-
+	// ÊñπÂêë„ÅÆ„Åø„ÇíËøî„ÅôÔºàÂÄí„ÅóÂÖ∑Âêà„ÅÆÂº∑„Åï„ÅØÂê´„Åæ„Å™„ÅÑÔºâ
+	// Y „ÅØÂâç„Å´ÂÄí„Åô„Å®„Éû„Ç§„Éä„Çπ„Å™„ÅÆ„ÅßÂèçËª¢„Åó„Å¶ Z „Å´„Åô„Çã
+	return VGet(dirX / len, 0.0f, -dirZ / len);
 }
-
-

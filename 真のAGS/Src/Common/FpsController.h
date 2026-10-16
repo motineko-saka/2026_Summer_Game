@@ -1,61 +1,61 @@
 #pragma once
-#include <vector>
 #include <chrono>
-#include <string>
-#include <DxLib.h>
+#include <cstddef>
+#include <deque>
 
 class FpsController
 {
-
 public:
 
 	// コンストラクタ
 	// ( DxLib_Init前に呼ぶこと )
-    FpsController(int fixedFps);
+	FpsController(int fixedFps);
+	~FpsController(void) = default;
 
-    // デストラクタ
-    ~FpsController(void);
+	// 1フレームごとのFPS調整
+	// ( ScreenFlip後に呼ぶこと )
+	void Wait(void);
 
-    // 1フレームごとのFPS制御
-    // ( ScreenFlip後に呼ぶこと ）
-    void Wait(void);
+	// 画面右上にFPSを表示
+	void Draw(void) const;
 
-    // 画面にFPSを表示
-    void Draw(void);
-
-    // 現在のFPSを取得
-    float GetFPS(void) const { return fps_; }
+	// 現在の平均FPSを取得
+	float GetFPS(void) const { return fps_; }
 
 private:
 
-    // 最大FPS
-    const int MAX_FPS = 1200;
+	using Clock = std::chrono::steady_clock;
+
+	// 最大FPS
+	static constexpr int MAX_FPS = 1200;
 
 	// 平均FPS計算に使用するフレーム数
-	const int AVG_FPS_COUNT = 60;
+	static constexpr std::size_t AVG_FPS_COUNT = 60;
 
-	// 平均FPSの描画色
-	const unsigned int COLOR = GetColor(255, 255, 255);
+	// 平均FPSの右上描画位置調整
+	static constexpr int MARGIN = 20;
 
-    // 平均FPSの右上描画位置調整
-    const int MARGIN = 20;
+	// 描画フォーマット
+	static constexpr const char* TEXT_FORMAT = "FPS : %.2f";
 
-    // 描画フォーマット
-    const std::string TEXT_FORMAT = "FPS : %.2f";
+	// 平均FPSを更新
+	void UpdateAverage(double deltaTime);
 
-    // 指定された固定フレームレート
-    const int fixedFps_;
+	// 指定された固定フレームレート
+	const int fixedFps_;
 
 	// 1フレームの理想時間(秒)
 	const double idealFrameTime_;
 
-    // 計測用FPS
-    float fps_;
+	// 計測した平均FPS
+	float fps_ = 0.0f;
 
-    // 平均FPS計測用)(秒単位)
-    std::vector<double> timeList_;
+	// 直近フレームの経過時間(秒)
+	std::deque<double> timeList_;
 
-    // 前フレームの時間
-    std::chrono::high_resolution_clock::time_point prevTime_;
+	// timeList_ の合計(秒)
+	double totalTime_ = 0.0;
 
+	// 前フレームの時刻
+	Clock::time_point prevTime_;
 };

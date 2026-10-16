@@ -1,103 +1,75 @@
+#include <iterator>
+#include <string>
 #include "EffekseerEffect.h"
 #include "../Application.h"
 
 EffekseerEffect* EffekseerEffect::instance_ = nullptr;
 
-EffekseerEffect::EffekseerEffect(void)
-	:
-	shalshutEffectId_(-1),
-	PlayshalshuEffectHandle(-1),
-	slashHandle_(-1),
-	isSlashing_(false),
-	tutorialEffectId_(-1),
-	playTutorialHandle(-1),
-	finisyuId(-1),
-	finisyu2Id(-1),
-	finisyu3Id(-1),
-	finisyu4Id(-1),
-	finisyu5Id(-1),
-	finisyu6Id(-1),
-	playFinisyuHandle(-1),
-	playFinisyu2Handle(-1),
-	playFinisyu3Handle(-1),
-	playFinisyu4Handle(-1),
-	playFinisyu5Handle(-1),
-	playFinisyu6Handle(-1)
+namespace
 {
+	// エフェクトごとの設定
+	struct EffectInfo
+	{
+		const char* file;	// ファイル名
+		float scale;		// 拡大率
+		float speed;		// 再生速度
+	};
+
+	// EFFECT の並び順と一致させること
+	constexpr EffectInfo EFFECT_INFOS[] =
+	{
+		{ "slashu.efkefc",     1.0f,  1.0f },	// SLASH
+		{ "nomotoaren.efkefc", 50.0f, 0.2f },	// TUTORIAL
+		{ "Fiyaer.efkefc",     5.0f,  0.2f },	// FIRE
+		{ "mizu.efkefc",       50.0f, 0.2f },	// WATER
+		{ "kori.efkefc",       50.0f, 0.2f },	// ICE
+		{ "bakuhatu.efkefc",   50.0f, 0.2f },	// EXPLOSION
+		{ "comboLast.efkefc",  50.0f, 0.2f },	// COMBO_LAST
+		{ "meteo.efkefc",      50.0f, 0.2f },	// METEOR
+	};
+
+	static_assert(
+		std::size(EFFECT_INFOS) == static_cast<size_t>(EffekseerEffect::EFFECT::MAX),
+		"EFFECT_INFOS と EFFECT の数が一致していません");
+
+	// 読み込み失敗時のメッセージ
+	void ShowLoadError(const std::string& path)
+	{
+		std::wstring msg = L"エフェクトの読み込みに失敗しました。パスやファイル名を確認してください。\n";
+		msg += std::wstring(path.begin(), path.end());
+		MessageBoxW(nullptr, msg.c_str(), L"エラー", MB_OK);
+	}
 }
 
-EffekseerEffect::~EffekseerEffect(void)
+EffekseerEffect::EffekseerEffect(void)
 {
-
+	resourceIds_.fill(-1);
+	playHandles_.fill(-1);
 }
 
 void EffekseerEffect::Init(void)
 {
 	SetUseDirect3DVersion(DX_DIRECT3D_11);
 
-	if (Effekseer_Init(8000) == -1) {
+	if (Effekseer_Init(MAX_PARTICLE) == -1)
+	{
 		DxLib_End();
 		return;
 	}
 
-	SetChangeScreenModeGraphicsSystemResetFlag(false);
-
+	SetChangeScreenModeGraphicsSystemResetFlag(FALSE);
 	Effekseer_SetGraphicsDeviceLostCallbackFunctions();
 
-	shalshutEffectId_ = LoadEffekseerEffect(
-		(Application::PATH_EFFECT + "slashu.efkefc").c_str());
+	// 全エフェクトを読み込む
+	for (int i = 0; i < EFFECT_NUM; i++)
+	{
+		const std::string path = Application::PATH_EFFECT + EFFECT_INFOS[i].file;
+		resourceIds_[i] = LoadEffekseerEffect(path.c_str());
 
-	if (shalshutEffectId_ == -1) {
-		MessageBoxA(NULL, "エフェクトの読み込みに失敗しました。パスやファイルを確認してください。", "エラー", MB_OK);
-	}
-
-	finisyuId = LoadEffekseerEffect(
-		(Application::PATH_EFFECT + "Fiyaer.efkefc").c_str());
-
-	if (finisyuId == -1) {
-		MessageBoxA(NULL, "エフェクトの読み込みに失敗しました。パスやファイルを確認してください。", "エラー", MB_OK);
-	}
-
-	finisyu2Id = LoadEffekseerEffect(
-		(Application::PATH_EFFECT + "mizu.efkefc").c_str());
-
-	if (finisyu2Id == -1) {
-		MessageBoxA(NULL, "エフェクトの読み込みに失敗しました。パスやファイルを確認してください。", "エラー", MB_OK);
-	}
-
-	finisyu3Id = LoadEffekseerEffect(
-		(Application::PATH_EFFECT + "kori.efkefc").c_str());
-
-	if (finisyu3Id == -1) {
-		MessageBoxA(NULL, "エフェクトの読み込みに失敗しました。パスやファイルを確認してください。", "エラー", MB_OK);
-	}
-
-	finisyu4Id = LoadEffekseerEffect(
-		(Application::PATH_EFFECT + "bakuhatu.efkefc").c_str());
-
-	if (finisyu4Id == -1) {
-		MessageBoxA(NULL, "エフェクトの読み込みに失敗しました。パスやファイルを確認してください。", "エラー", MB_OK);
-	}
-
-	finisyu5Id = LoadEffekseerEffect(
-		(Application::PATH_EFFECT + "comboLast.efkefc").c_str());
-
-	if (finisyu5Id == -1) {
-		MessageBoxA(NULL, "エフェクトの読み込みに失敗しました。パスやファイルを確認してください。", "エラー", MB_OK);
-	}
-
-	finisyu6Id = LoadEffekseerEffect(
-		(Application::PATH_EFFECT + "meteo.efkefc").c_str());
-
-	if (finisyu6Id == -1) {
-		MessageBoxA(NULL, "エフェクトの読み込みに失敗しました。パスやファイルを確認してください。", "エラー", MB_OK);
-	}
-
-	tutorialEffectId_ = LoadEffekseerEffect(
-		(Application::PATH_EFFECT + "nomotoaren.efkefc").c_str());
-
-	if (tutorialEffectId_ == -1) {
-		MessageBoxA(NULL, "エフェクトの読み込みに失敗しました。パスやファイルを確認してください。", "エラー", MB_OK);
+		if (resourceIds_[i] == -1)
+		{
+			ShowLoadError(path);
+		}
 	}
 }
 
@@ -113,209 +85,50 @@ void EffekseerEffect::Draw(void)
 
 void EffekseerEffect::Release(void)
 {
+	// 再生中のものを止める
+	for (int i = 0; i < EFFECT_NUM; i++)
+	{
+		Stop(static_cast<EFFECT>(i));
+	}
+
+	// 読み込んだエフェクトを削除
+	for (int& id : resourceIds_)
+	{
+		if (id != -1) DeleteEffekseerEffect(id);
+		id = -1;
+	}
+
+	// ※ Effekseer側の関数名が Effkseer_End（綴りはこれで正しい）
 	Effkseer_End();
 }
 
 void EffekseerEffect::Delete(void)
 {
-	DeleteEffekseerEffect(playTutorialHandle);
+	Stop(EFFECT::TUTORIAL);
 }
 
-void EffekseerEffect::PlayTutorialEffect(const VECTOR& pos, float rotY)
+void EffekseerEffect::Play(EFFECT type, const VECTOR& pos, float rotY)
 {
-	playTutorialHandle = PlayEffekseer3DEffect(tutorialEffectId_);
-	SetPosPlayingEffekseer3DEffect(
-		playTutorialHandle,
-		pos.x,
-		pos.y,
-		pos.z
-	);
-	SetRotationPlayingEffekseer3DEffect(
-		playTutorialHandle,
-		0.0f,
-		rotY,
-		0.0f
-	);
-	SetScalePlayingEffekseer3DEffect(
-		playTutorialHandle,
-		50.0f, 50.0f, 50.0f
-	);
-	SetSpeedPlayingEffekseer3DEffect(
-		playTutorialHandle,
-		0.2f
-	);
+	const int idx = static_cast<int>(type);
+	if (idx < 0 || idx >= EFFECT_NUM) return;
+	if (resourceIds_[idx] == -1) return;
+
+	const EffectInfo& info = EFFECT_INFOS[idx];
+	const int handle = PlayEffekseer3DEffect(resourceIds_[idx]);
+	playHandles_[idx] = handle;
+
+	SetPosPlayingEffekseer3DEffect(handle, pos.x, pos.y, pos.z);
+	SetRotationPlayingEffekseer3DEffect(handle, 0.0f, rotY, 0.0f);
+	SetScalePlayingEffekseer3DEffect(handle, info.scale, info.scale, info.scale);
+	SetSpeedPlayingEffekseer3DEffect(handle, info.speed);
 }
 
-void EffekseerEffect::PlayComboEffect(const VECTOR& pos, float rotY)
+void EffekseerEffect::Stop(EFFECT type)
 {
-	playFinisyuHandle = PlayEffekseer3DEffect(finisyuId);
+	const int idx = static_cast<int>(type);
+	if (idx < 0 || idx >= EFFECT_NUM) return;
 
-	SetPosPlayingEffekseer3DEffect(
-		playFinisyuHandle,
-		pos.x,
-		pos.y,
-		pos.z
-	);
-
-	SetRotationPlayingEffekseer3DEffect(
-		playFinisyuHandle,
-		0.0f,
-		rotY,
-		0.0f
-	);
-
-	SetScalePlayingEffekseer3DEffect(
-		playFinisyuHandle,
-		5.0f, 5.0f, 5.0f
-	);
-
-	SetSpeedPlayingEffekseer3DEffect(
-		playFinisyuHandle,
-		0.2f
-	);
-}
-
-void EffekseerEffect::PlayComboEffect2(const VECTOR& pos, float rotY)
-{
-	playFinisyu2Handle = PlayEffekseer3DEffect(finisyu2Id);
-
-	SetPosPlayingEffekseer3DEffect(
-		playFinisyu2Handle,
-		pos.x,
-		pos.y,
-		pos.z
-	);
-
-	SetRotationPlayingEffekseer3DEffect(
-		playFinisyu2Handle,
-		0.0f,
-		rotY,
-		0.0f
-	);
-
-	SetScalePlayingEffekseer3DEffect(
-		playFinisyu2Handle,
-		50.0f, 50.0f, 50.0f
-	);
-
-	SetSpeedPlayingEffekseer3DEffect(
-		playFinisyu2Handle,
-		0.2f
-	);
-}
-
-void EffekseerEffect::PlayComboEffect3(const VECTOR& pos, float rotY)
-{
-	playFinisyu3Handle = PlayEffekseer3DEffect(finisyu3Id);
-
-	SetPosPlayingEffekseer3DEffect(
-		playFinisyu3Handle,
-		pos.x,
-		pos.y,
-		pos.z
-	);
-
-	SetRotationPlayingEffekseer3DEffect(
-		playFinisyu3Handle,
-		0.0f,
-		rotY,
-		0.0f
-	);
-
-	SetScalePlayingEffekseer3DEffect(
-		playFinisyu3Handle,
-		50.0f, 50.0f, 50.0f
-	);
-
-	SetSpeedPlayingEffekseer3DEffect(
-		playFinisyu3Handle,
-		0.2f
-	);
-}
-
-void EffekseerEffect::PlayComboEffect4(const VECTOR& pos, float rotY)
-{
-	playFinisyu4Handle = PlayEffekseer3DEffect(finisyu4Id);
-
-	SetPosPlayingEffekseer3DEffect(
-		playFinisyu4Handle,
-		pos.x,
-		pos.y,
-		pos.z
-	);
-
-	SetRotationPlayingEffekseer3DEffect(
-		playFinisyu4Handle,
-		0.0f,
-		rotY,
-		0.0f
-	);
-
-	SetScalePlayingEffekseer3DEffect(
-		playFinisyu4Handle,
-		50.0f, 50.0f, 50.0f
-	);
-
-	SetSpeedPlayingEffekseer3DEffect(
-		playFinisyu4Handle,
-		0.2f
-	);
-}
-
-void EffekseerEffect::PlayComboEffect5(const VECTOR& pos, float rotY)
-{
-	playFinisyu5Handle = PlayEffekseer3DEffect(finisyu5Id);
-
-	SetPosPlayingEffekseer3DEffect(
-		playFinisyu5Handle,
-		pos.x,
-		pos.y,
-		pos.z
-	);
-
-	SetRotationPlayingEffekseer3DEffect(
-		playFinisyu5Handle,
-		0.0f,
-		rotY,
-		0.0f
-	);
-
-	SetScalePlayingEffekseer3DEffect(
-		playFinisyu5Handle,
-		50.0f, 50.0f, 50.0f
-	);
-
-	SetSpeedPlayingEffekseer3DEffect(
-		playFinisyu5Handle,
-		0.2f
-	);
-}
-
-void EffekseerEffect::PlayComboEffect6(const VECTOR& pos, float rotY)
-{
-	playFinisyu6Handle = PlayEffekseer3DEffect(finisyu6Id);
-
-	SetPosPlayingEffekseer3DEffect(
-		playFinisyu6Handle,
-		pos.x,
-		pos.y,
-		pos.z
-	);
-
-	SetRotationPlayingEffekseer3DEffect(
-		playFinisyu6Handle,
-		0.0f,
-		rotY,
-		0.0f
-	);
-
-	SetScalePlayingEffekseer3DEffect(
-		playFinisyu6Handle,
-		50.0f, 50.0f, 50.0f
-	);
-
-	SetSpeedPlayingEffekseer3DEffect(
-		playFinisyu6Handle,
-		0.2f
-	);
+	int& handle = playHandles_[idx];
+	if (handle != -1) StopEffekseer3DEffect(handle);
+	handle = -1;
 }

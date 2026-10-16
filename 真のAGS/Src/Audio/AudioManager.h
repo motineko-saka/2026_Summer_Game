@@ -1,65 +1,74 @@
-#pragma once
+ï»¿#pragma once
 
+#include <unordered_map>
+#include <unordered_set>
 #include "SoundTable.h"
 
 class AudioManager
 {
 public:
-	// ƒVƒ“ƒOƒ‹ƒgƒ“i¶¬Eæ“¾Eíœj
-	static void CreateInstance(void) { if (instance_ == nullptr) { instance_ = new AudioManager(); } }
+	// ã‚·ãƒ³ã‚°ãƒ«ãƒˆãƒ³ï¼ˆç”Ÿæˆãƒ»å–å¾—ãƒ»å‰Šé™¤ï¼‰
+	static void CreateInstance(void);
 	static AudioManager* GetInstance(void) { return instance_; }
-	static void DeleteInstance(void) { if (instance_ != nullptr) { delete instance_; instance_ = nullptr; } }
+	static void DeleteInstance(void);
+
+	// åˆæœŸåŒ–
+	void Init(void);
+
+	// æŒ‡å®šã—ãŸã‚·ãƒ¼ãƒ³ã®ã‚µã‚¦ãƒ³ãƒ‰ãƒ†ãƒ¼ãƒ–ãƒ«ã‚’èª­ã¿è¾¼ã‚€ / å‰Šé™¤ã™ã‚‹
+	void LoadSceneSound(LoadScene scene);
+	void DeleteSceneSound(LoadScene scene);
+
+	void PlayBGM(SoundID id);	// BGMã‚’å†ç”Ÿ
+	void StopBGM(void);			// BGMã‚’æ­¢ã‚ã‚‹
+	void PlaySE(SoundID id);	// SEã‚’å†ç”Ÿ
+	void LoopSE(SoundID id);	// SEã‚’ãƒ«ãƒ¼ãƒ—å†ç”Ÿ
+	void StopSE(void);			// ãƒ«ãƒ¼ãƒ—SEã‚’æ­¢ã‚ã‚‹
+	void DeleteAll(void);		// å…¨ã¦ã®ã‚µã‚¦ãƒ³ãƒ‰ã‚’å‰Šé™¤
+
+	// éŸ³é‡è¨­å®šï¼ˆ0ã€œ255ï¼‰
+	void SetBgmVolume(int volume);
+	void SetSeVolume(int volume);
+	void SetMasterVolume(int volume);
+
+	int GetBgmVolume(void) const { return bgmVolume_; }
+	int GetSeVolume(void) const { return seVolume_; }
+	int GetMasterVolume(void) const { return masterVolume_; }
 
 private:
-	// Ã“IƒCƒ“ƒXƒ^ƒ“ƒX
-	static AudioManager* instance_;
+	AudioManager(void);
+	~AudioManager(void);
 
-	AudioManager();		// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
-	~AudioManager();	// ƒfƒXƒgƒ‰ƒNƒ^
-
-	// ƒRƒs[Eƒ€[ƒu‘€ì‚ğ‹Ö~
+	// ã‚³ãƒ”ãƒ¼ãƒ»ãƒ ãƒ¼ãƒ–ç¦æ­¢
 	AudioManager(const AudioManager&) = delete;
 	AudioManager& operator=(const AudioManager&) = delete;
 	AudioManager(AudioManager&&) = delete;
 	AudioManager& operator=(AudioManager&&) = delete;
 
-public:
-	// ‰Šú‰»
-	void Init(void);
+	// èª­ã¿è¾¼ã¿æ¸ˆã¿ã‚µã‚¦ãƒ³ãƒ‰
+	struct SoundEntry
+	{
+		int handle = -1;	// DxLibã®ã‚µã‚¦ãƒ³ãƒ‰ãƒãƒ³ãƒ‰ãƒ«
+		int refCount = 0;	// ã“ã®ã‚µã‚¦ãƒ³ãƒ‰ã‚’ä½¿ã£ã¦ã„ã‚‹ã‚·ãƒ¼ãƒ³æ•°
+	};
 
-	// ƒTƒEƒ“ƒh§Œä
-	// w’è‚µ‚½ƒV[ƒ“‚ÌƒTƒEƒ“ƒhƒe[ƒuƒ‹‚ğ“Ç‚İ‚Ş
-	void LoadSceneSound(LoadScene scene);
-	
-	// w’è‚µ‚½ƒV[ƒ“‚ÌƒTƒEƒ“ƒhƒe[ƒuƒ‹‚ğíœ‚·‚é
-	void DeleteSceneSound(LoadScene scene);
+	int  FindHandle(SoundID id) const;						// æœªèª­ã¿è¾¼ã¿ãªã‚‰ -1
+	int  CalcVolume(int categoryVolume) const;				// ãƒã‚¹ã‚¿ãƒ¼éŸ³é‡ã‚’æ›ã‘ãŸå®ŸéŸ³é‡
+	void ApplyVolume(SoundID id, int categoryVolume);		// å†ç”Ÿä¸­ã‚µã‚¦ãƒ³ãƒ‰ã¸éŸ³é‡åæ˜ 
+	void StartLoop(SoundID id, SoundID& current, int categoryVolume);
+	void StopLoop(SoundID& current);
+	void ReleaseSound(SoundID id);							// å‚ç…§ã‚’1ã¤æ¸›ã‚‰ã—ã€0ãªã‚‰å‰Šé™¤
 
-	void PlayBGM(SoundID id);		// BGM‚ğÄ¶
-	void StopBGM(void);				// BGM‚ğ~‚ß‚é
-	void PlaySE(SoundID id);		// SE‚ğÄ¶
-	void LoopSE(SoundID id);		// SE‚ğƒ‹[ƒvÄ¶
-	void StopSE(void);				// SE‚ğ~‚ß‚é
-	void DeleteAll(void);			// ‘S‚Ä‚ÌƒTƒEƒ“ƒhíœ
+	static constexpr int kMaxVolume = 255;
+	static AudioManager* instance_;
 
-	// ‰¹—Êİ’è
-	void SetBgmVolume(int volume);		// 0`255
-	void SetSeVolume(int volume);		// 0`255
-	void SetMasterVolume(int volume);	// 0`255
+	std::unordered_map<SoundID, SoundEntry> sounds_;	// ãƒãƒ³ãƒ‰ãƒ«ç®¡ç†ç”¨
+	std::unordered_set<LoadScene> loadedScenes_;		// èª­ã¿è¾¼ã¿æ¸ˆã¿ã‚·ãƒ¼ãƒ³
 
-	int GetBgmVolume(int volume) const { return bgmVolume_; }
-	int GetSeVolume(int volume) const { return seVolume_; }
-	int GetMasterVolume(int volume) const { return masterVolume_; }
+	SoundID currentBgm_ = SoundID::NONE;	// ç¾åœ¨å†ç”Ÿã•ã‚Œã¦ã„ã‚‹BGM
+	SoundID currentLoopSe_ = SoundID::NONE;	// ç¾åœ¨ã®ãƒ«ãƒ¼ãƒ—SE
 
-private:
-	std::unordered_map<SoundID, int> handles_;	// ƒnƒ“ƒhƒ‹ŠÇ——p
-
-	// Œ»İÄ¶‚³‚ê‚Ä‚¢‚éBGM
-	SoundID currentBgm_;
-
-	// Œ»İ‚Ìƒ‹[ƒvSE
-	SoundID currentLoopSe_;
-
-	int bgmVolume_;		// bgm‰¹—Ê
-	int seVolume_;		// se‰¹—Ê
-	int masterVolume_;	// master‰¹—Ê
+	int bgmVolume_ = kMaxVolume;
+	int seVolume_ = kMaxVolume;
+	int masterVolume_ = kMaxVolume;
 };

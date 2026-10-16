@@ -16,43 +16,38 @@ StageManager::~StageManager(void)
 
 void StageManager::InitStage(void)
 {
-	if (!stages_.empty())
-	{
-		Release();
-	}
+	// ä˘Ç…Ç†ÇÍÇŒçÏÇËíºÇ∑
+	Release();
 
-	int modelID;
-
-	if (scene_ == SceneManager::SCENE::TUTORIAL)
+	for (int i = 0; i < STAGE_NUM; i++)
 	{
-		modelID = ResourceManager::GetInstance().LoadModelDuplicate(ResourceManager::SRC::TUTORIAL_STAGE);
+		StageBase* stage = CreateStage(static_cast<StageBase::STAGE_TYPE>(i));
+		stage->Init();
+		stages_.push_back(stage);
 	}
-	else
-	{
-		modelID = ResourceManager::GetInstance().LoadModelDuplicate(ResourceManager::SRC::MAIN_STAGE);
-	}
+}
 
-	for(int i = 0; i < STAGE_NUM; i++)
+StageBase* StageManager::CreateStage(StageBase::STAGE_TYPE type) const
+{
+	if (type == StageBase::STAGE_TYPE::MAIN_STAGE)
 	{
-		StageBase* s;
-		if (static_cast<StageBase::STAGE_TYPE>(i) == StageBase::STAGE_TYPE::MAIN_STAGE)
-		{
-			s = new Stage(modelID);
-		}
-		else
-		{
-			s = new AnswerStage();
-		}
-		
-		s->Init();
-
-		stages_.push_back(s);
+		return new Stage(LoadStageModel());
 	}
+	return new AnswerStage();
+}
+
+int StageManager::LoadStageModel(void) const
+{
+	const auto src = (scene_ == SceneManager::SCENE::TUTORIAL)
+		? ResourceManager::SRC::TUTORIAL_STAGE
+		: ResourceManager::SRC::MAIN_STAGE;
+
+	return ResourceManager::GetInstance().LoadModelDuplicate(src);
 }
 
 void StageManager::Update(void)
 {
-	for (const auto& stage : stages_)
+	for (StageBase* stage : stages_)
 	{
 		stage->Update();
 	}
@@ -60,12 +55,11 @@ void StageManager::Update(void)
 
 void StageManager::Draw(void)
 {
-	for (const auto& stage : stages_)
+	for (StageBase* stage : stages_)
 	{
 		stage->Draw();
 		stage->DrawDebug();
 	}
-
 }
 
 void StageManager::DrawDebug(void)
@@ -74,13 +68,12 @@ void StageManager::DrawDebug(void)
 
 void StageManager::Release(void)
 {
-	for (auto stage : stages_)
+	for (StageBase* stage : stages_)
 	{
-		if (stage)
-		{
-			stage->Release();
-			delete stage;
-		}
+		if (stage == nullptr) continue;
+
+		stage->Release();
+		delete stage;
 	}
 	stages_.clear();
 }

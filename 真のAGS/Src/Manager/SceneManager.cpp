@@ -1,149 +1,52 @@
 #include "SceneManager.h"
 
 #include <DxLib.h>
-#include <chrono>
 
+#include "../Application.h"
 #include "../Loading/Loading.h"
 #include "../Scene/TitleScene.h"
-#include "../Manager/Camera.h"
 #include "../Scene/SceneTransition.h"
 
 SceneManager* SceneManager::instance_ = nullptr;
 
-// コンストラクタ
-SceneManager::SceneManager(void)
-	:
-	isGameEnd_(false),
-	deltaTime_(1.0f / 60.0f),
-	mainScreen_(-1)
-{
-}
+// unique_ptr<SceneTransition> の破棄に完全型が必要なため cpp で定義
+SceneManager::SceneManager(void) = default;
+SceneManager::~SceneManager(void) = default;
 
-// デストラクタ
-SceneManager::~SceneManager(void)
-{
-}
-
-// 初期化
+// ---------------------------------------------------------------
+// 初期化・解放
+// ---------------------------------------------------------------
 void SceneManager::Init(void)
 {
-	// ロード画面生成
+	// ロード画面
 	Loading::CreateInstance();
 	Loading::GetInstance()->Init();
 	Loading::GetInstance()->Load();
 
-	// 最初はタイトル画面から
+	// メインスクリーン（シーンの読み込みより先に用意する）
+	mainScreen_ = MakeScreen(Application::SCREEN_SIZE_X, Application::SCREEN_SIZE_Y, TRUE);
+
+	// シーン切替演出
+	sceneTransition_ = std::make_unique<SceneTransition>();
+
+	// 最初はタイトル画面
 	ChangeScene(std::make_shared<TitleScene>());
 
-	// メインスクリーン
-	mainScreen_ = MakeScreen(
-		Application::SCREEN_SIZE_X, Application::SCREEN_SIZE_Y, true);
-
-	// デルタタイム
-	preTime_ = std::chrono::system_clock::now();
-
-	sceneTransition_ = std::make_unique<SceneTransition>();
+	ResetDeltaTime();
 }
 
-
-// 更新
-void SceneManager::Update(void)
-{
-	auto nowTime = std::chrono::system_clock::now();
-	deltaTime_ = static_cast<float>(
-		std::chrono::duration_cast<std::chrono::nanoseconds>(nowTime - preTime_).count() / 1000000000.0);
-	preTime_ = nowTime;
-
-	// シーンがなければ終了
-	if (scenes_.empty())
-		return;
-
-	if (isTransition_)
-	{
-		sceneTransition_->Update();
-
-		if (!sceneTransition_->IsPlay())
-		{
-			if (sceneTransition_->GetState() == SceneTransition::STATE::CLOSE)
-			{
-				// シーン変更
-				ChangeScene(nextScene_);
-
-				// 開く演出
-				sceneTransition_->Open();
-			}
-			else if (sceneTransition_->GetState() == SceneTransition::STATE::OPEN)
-			{
-				isTransition_ = false;
-			}
-		}
-		return;
-	}
-
-	// ロード中
-	if (Loading::GetInstance()->IsLoading())
-	{
-		// ロード更新
-		Loading::GetInstance()->Update();
-
-		// ロードの更新が終了していたら
-		if (Loading::GetInstance()->IsLoading() == false)
-		{
-			// ロード後の初期化
-			scenes_.back()->LoadEnd();
-		}
-	}
-	// 通常の更新処理
-	else
-	{
-		// 現在のシーンの更新
-		scenes_.back()->Update();
-	}
-}
-
-// 描画
-void SceneManager::Draw(void)
-{
-	// ロード中ならロード画面を描画
-	if (Loading::GetInstance()->IsLoading())
-	{
-		// ロードの描画
-		Loading::GetInstance()->Draw();
-	}
-	// 通常の更新
-	else
-	{
-		// 積まれているもの全てを描画する
-		for (auto& scene : scenes_)
-		{
-			// シーンの描画
-			scene->Draw();
-		}
-	}
-	
-	if (isTransition_)
-	{
-		sceneTransition_->Draw();
-	}
-}
-
-// 解放
 void SceneManager::Release(void)
 {
-	//全てのシーンの解放・削除
+	// 全てのシーンの解放
 	for (auto& scene : scenes_)
 	{
 		scene->Release();
 	}
 	scenes_.clear();
+	nextScene_.reset();
 
-	// SceneTransition の解放
-	if (sceneTransition_)
-	{
-		sceneTransition_.reset();
-	}
+	sceneTransition_.reset();
 
-	// mainScreen_ の解放
 	if (mainScreen_ != -1)
 	{
 		DeleteGraph(mainScreen_);
@@ -151,91 +54,146 @@ void SceneManager::Release(void)
 	}
 
 	// ロード画面の削除
-	Loading::GetInstance()->Release();
-	Loading::GetInstance()->DeleteInstance();
+	if (Loading::GetInstance() != nullptr)
+	{
+		Loading::GetInstance()->Release();
+		Loading::DeleteInstance();
+	}
 }
 
-// 状態遷移関数
-void SceneManager::ChangeScene(std::shared_ptr<SceneBase> scene)
+// ---------------------------------------------------------------
+// 更新・描画
+// ---------------------------------------------------------------
+void SceneManager::Update(void)
 {
-	// シーンが空か？
-	if (scenes_.empty())
+	UpdateDeltaTime();
+
+	if (scenes_.empty()) return;
+
+	// 切替演出中
+	if (isTransition_)
 	{
-		// 空なので新しく入れる
-		scenes_.push_back(scene);
+		UpdateTransition();
+		return;
+	}
+
+	Loading* loading = Loading::GetInstance();
+
+	// ロード中
+	if (loading->IsLoading())
+	{
+		loading->Update();
+
+		// ロードが終わったらシーン側の後処理
+		if (!loading->IsLoading())
+		{
+			scenes_.back()->LoadEnd();
+		}
+		return;
+	}
+
+	// 通常の更新
+	scenes_.back()->Update();
+}
+
+void SceneManager::Draw(void)
+{
+	if (Loading::GetInstance()->IsLoading())
+	{
+		Loading::GetInstance()->Draw();
 	}
 	else
 	{
-		// もしポーズなどのオーバーレイが積まれているならそれを取り除く（1つ分）
-		// これにより「ポーズ画面が置き換わる」問題を防ぎ、下にある実際のゲームシーンを切替できます。
-		if (scenes_.size() > 1)
+		// 積まれているシーンを下から順に描画
+		for (auto& scene : scenes_)
 		{
-			// 最後に積まれている overlay を削除（shared_ptr の参照が切れれば破棄される）
-			scenes_.pop_back();
+			scene->Draw();
 		}
-
-		// 末尾のものを新しい物に入れ替える
-		scenes_.back() = scene;
 	}
 
-	SetMouseDispFlag(false);
+	if (isTransition_)
+	{
+		sceneTransition_->Draw();
+	}
+}
 
-	// 読み込み(非同期)
-	Loading::GetInstance()->StartAsyncLoad();
+void SceneManager::UpdateTransition(void)
+{
+	sceneTransition_->Update();
+	if (sceneTransition_->IsPlay()) return;
+
+	const auto state = sceneTransition_->GetState();
+
+	if (state == SceneTransition::STATE::CLOSE)
+	{
+		// 閉じ終わったらシーンを切り替えて開く
+		ChangeScene(nextScene_);
+		nextScene_.reset();
+		sceneTransition_->Open();
+	}
+	else if (state == SceneTransition::STATE::OPEN)
+	{
+		isTransition_ = false;
+	}
+}
+
+void SceneManager::UpdateDeltaTime(void)
+{
+	const auto now = Clock::now();
+	deltaTime_ = std::chrono::duration<float>(now - preTime_).count();
+	preTime_ = now;
+}
+
+void SceneManager::ResetDeltaTime(void)
+{
+	deltaTime_ = 1.0f / DEFAULT_FPS;
+	preTime_ = Clock::now();
+}
+
+// ---------------------------------------------------------------
+// シーン操作
+// ---------------------------------------------------------------
+void SceneManager::ChangeScene(std::shared_ptr<SceneBase> scene)
+{
+	// ポーズ画面などのオーバーレイも含めて差し替える
+	scenes_.clear();
+	scenes_.push_back(scene);
+
+	SetMouseDispFlag(FALSE);
+
+	// 非同期で読み込む
+	Loading* loading = Loading::GetInstance();
+	loading->StartAsyncLoad();
 	scenes_.back()->Load();
-	Loading::GetInstance()->EndAsyncLoad();
+	loading->EndAsyncLoad();
 }
 
 void SceneManager::PushScene(std::shared_ptr<SceneBase> scene)
 {
-	//新しく積むのでもともと入っている奴はまだ削除されない
+	// 元のシーンは残したまま上に積む
 	scene->Init();
 	scenes_.push_back(scene);
 }
 
 void SceneManager::PopScene(void)
 {
-	//積んであるものを消して、もともとあったものを末尾にする
-	if (scenes_.size() > 1)
-	{
-		SetMouseDispFlag(false);
-		scenes_.pop_back();
-	}
+	if (scenes_.size() <= 1) return;
+
+	SetMouseDispFlag(FALSE);
+	scenes_.pop_back();
 }
 
 void SceneManager::JumpScene(std::shared_ptr<SceneBase> scene)
 {
-	// 全て解放
 	scenes_.clear();
-
-	// 新しく積む
 	scenes_.push_back(scene);
-}
-
-float SceneManager::GetDeltaTime(void) const
-{
-	return deltaTime_;
-}
-
-int SceneManager::GetMainScreen(void) const
-{
-	return mainScreen_;
-}
-
-void SceneManager::ResetDeltaTime(void)
-{
-	deltaTime_ = 0.016f;
-	preTime_ = std::chrono::system_clock::now();
 }
 
 void SceneManager::ChangeSceneTransition(std::shared_ptr<SceneBase> scene)
 {
-	if (isTransition_)
-		return;
+	if (isTransition_) return;
 
 	nextScene_ = scene;
-
 	isTransition_ = true;
-
 	sceneTransition_->Start();
 }

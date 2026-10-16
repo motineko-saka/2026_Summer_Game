@@ -1,25 +1,26 @@
-#pragma once
+ï»¿#pragma once
+#include <array>
 #include <map>
-#include <Dxlib.h>
+#include <DxLib.h>
 #include "../Common/Vector2.h"
 
 class InputManager
 {
 public:
-	// ƒQ[ƒ€ƒRƒ“ƒgƒ[ƒ‰[‚Ì”F¯”Ô†
-	// DxLib’è”ADX_INPUT_PAD1“™‚É‘Î‰
+	// ã‚²ãƒ¼ãƒ ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ãƒ¼ã®èªè­˜ç•ªå·
+	// DxLibå®šæ•°ã€DX_INPUT_PAD1ç­‰ã«å¯¾å¿œ
 	enum class JOYPAD_NO
 	{
-		KEY_PAD1,			// ƒL[“ü—Í‚Æƒpƒbƒh‚P“ü—Í
-		PAD1,				// ƒpƒbƒh‚P“ü—Í
-		PAD2,				// ƒpƒbƒh‚Q“ü—Í
-		PAD3,				// ƒpƒbƒh‚R“ü—Í
-		PAD4,				// ƒpƒbƒh‚S“ü—Í
-		INPUT_KEY = 4096	// ƒL[“ü—Í
+		KEY_PAD1,			// ã‚­ãƒ¼å…¥åŠ›ã¨ãƒ‘ãƒƒãƒ‰ï¼‘å…¥åŠ›
+		PAD1,				// ãƒ‘ãƒƒãƒ‰ï¼‘å…¥åŠ›
+		PAD2,				// ãƒ‘ãƒƒãƒ‰ï¼’å…¥åŠ›
+		PAD3,				// ãƒ‘ãƒƒãƒ‰ï¼“å…¥åŠ›
+		PAD4,				// ãƒ‘ãƒƒãƒ‰ï¼”å…¥åŠ›
+		INPUT_KEY = 4096	// ã‚­ãƒ¼å…¥åŠ›
 	};
 
-	// ƒQ[ƒ€ƒRƒ“ƒgƒ[ƒ‰[ƒ^ƒCƒv
-	// DxLib’è”ADX_OTHER“™‚É‘Î‰
+	// ã‚²ãƒ¼ãƒ ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ãƒ¼ã‚¿ã‚¤ãƒ—
+	// DxLibå®šæ•°ã€DX_OTHERç­‰ã«å¯¾å¿œ
 	enum class JOYPAD_TYPE
 	{
 		OTHER = 0,
@@ -33,7 +34,7 @@ public:
 		MAX
 	};
 
-	// ƒQ[ƒ€ƒRƒ“ƒgƒ[ƒ‰[ƒ{ƒ^ƒ“
+	// ã‚²ãƒ¼ãƒ ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ãƒ¼ãƒœã‚¿ãƒ³
 	enum class JOYPAD_BTN
 	{
 		LEFT = 0,
@@ -48,152 +49,150 @@ public:
 		MAX
 	};
 
-	// ƒQ[ƒ€ƒRƒ“ƒgƒ[ƒ‰[‚Ì“ü—Íî•ñ
+	static constexpr int BTN_NUM = static_cast<int>(JOYPAD_BTN::MAX);
+
+	// ã‚²ãƒ¼ãƒ ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ãƒ¼ã®å…¥åŠ›æƒ…å ±
 	struct JOYPAD_IN_STATE
 	{
-		unsigned char ButtonsOld[static_cast<int>(JOYPAD_BTN::MAX)];
-		unsigned char ButtonsNew[static_cast<int>(JOYPAD_BTN::MAX)];
-		bool IsOld[static_cast<int>(JOYPAD_BTN::MAX)];
-		bool IsNew[static_cast<int>(JOYPAD_BTN::MAX)];
-		bool IsTrgDown[static_cast<int>(JOYPAD_BTN::MAX)];
-		bool IsTrgUp[static_cast<int>(JOYPAD_BTN::MAX)];
-		int AKeyLX;
-		int AKeyLY;
-		int AKeyRX;
-		int AKeyRY;
+		unsigned char ButtonsOld[BTN_NUM] = {};
+		unsigned char ButtonsNew[BTN_NUM] = {};
+		bool IsOld[BTN_NUM] = {};
+		bool IsNew[BTN_NUM] = {};
+		bool IsTrgDown[BTN_NUM] = {};
+		bool IsTrgUp[BTN_NUM] = {};
+		int AKeyLX = 0;
+		int AKeyLY = 0;
+		int AKeyRX = 0;
+		int AKeyRY = 0;
 	};
 
-	// ƒAƒiƒƒOƒL[‚ÌÅ‘å’l
+	// ã‚¢ãƒŠãƒ­ã‚°ã‚­ãƒ¼ã®æœ€å¤§å€¤
 	static constexpr float AKEY_VAL_MAX = 1000.0f;
 
-	// ƒAƒiƒƒOƒL[‚Ì“ü—Íó•t‚µ‚«‚¢’l(0.0`1.0)
+	// ã‚¢ãƒŠãƒ­ã‚°ã‚­ãƒ¼ã®å…¥åŠ›å—ä»˜ã—ãã„å€¤(0.0ã€œ1.0)
 	static constexpr float THRESHOLD = 0.35f;
 
-public:
-	// ƒVƒ“ƒOƒ‹ƒgƒ“i¶¬Eæ“¾Eíœj
-	static void CreateInstance(void) { if (instance_ == nullptr) { instance_ = new InputManager(); } };
-	static InputManager* GetInstance(void) { return instance_; };
-	static void DeleteInstance(void) { if (instance_ != nullptr) { delete instance_; instance_ = nullptr; } }
+	// ã‚·ãƒ³ã‚°ãƒ«ãƒˆãƒ³ï¼ˆç”Ÿæˆãƒ»å–å¾—ãƒ»å‰Šé™¤ï¼‰
+	static void CreateInstance(void) { if (instance_ == nullptr) instance_ = new InputManager(); }
+	static InputManager* GetInstance(void) { return instance_; }
+	static void DeleteInstance(void) { delete instance_; instance_ = nullptr; }
 
-public:
-	void Init(void);	// ‰Šú‰»
-	void Update(void);	// XV
+	void Init(void);	// åˆæœŸåŒ–
+	void Update(void);	// æ›´æ–°
 
-	// ”»’è‚ğs‚¤ƒL[‚ğ’Ç‰Á
+	// åˆ¤å®šã‚’è¡Œã†ã‚­ãƒ¼ã‚’è¿½åŠ 
 	void Add(int key);
 
-	// ”»’è‚ğs‚¤ƒL[‚ğƒNƒŠƒA
+	// åˆ¤å®šã‚’è¡Œã†ã‚­ãƒ¼ã‚’ã‚¯ãƒªã‚¢
 	void Clear(void);
 
-	// ƒL[‚Ì‰Ÿ‰º”»’è
+	// ã‚­ãƒ¼ã®æŠ¼ä¸‹åˆ¤å®š
 	bool IsNew(int key) const;
 
-	// ƒL[‚Ì‰Ÿ‰º”»’è(‰Ÿ‚µ‚Á‚Ï‚È‚µ‚ÍNG)
+	// ã‚­ãƒ¼ã®æŠ¼ä¸‹åˆ¤å®š(æŠ¼ã—ã£ã±ãªã—ã¯NG)
 	bool IsTrgDown(int key) const;
 
-	// ƒL[‚ğ—£‚µ‚½‚Ì”»’è
+	// ã‚­ãƒ¼ã‚’é›¢ã—ãŸæ™‚ã®åˆ¤å®š
 	bool IsTrgUp(int key) const;
 
-	// ƒ}ƒEƒXÀ•W‚Ìæ“¾
-	Vector2 GetMousePos(void) const;
+	// ãƒã‚¦ã‚¹åº§æ¨™ã®å–å¾—
+	Vector2 GetMousePos(void) const { return mousePos_; }
 
-	// ƒ}ƒEƒX‚ÌƒNƒŠƒbƒNó‘Ô‚ğæ“¾(MOUSE_INPUT_LEFTARIGHT)
-	int GetMouse(void) const;
+	// ãƒã‚¦ã‚¹ã®ã‚¯ãƒªãƒƒã‚¯çŠ¶æ…‹ã‚’å–å¾—(MOUSE_INPUT_LEFTã€RIGHT ã®ãƒ“ãƒƒãƒˆã®çµ„ã¿åˆã‚ã›)
+	int GetMouse(void) const { return mouseInput_; }
 
-	// ƒ}ƒEƒX‚ª¶ƒNƒŠƒbƒN‚³‚ê‚½‚©
+	// ãƒã‚¦ã‚¹ãŒå·¦ã‚¯ãƒªãƒƒã‚¯ã•ã‚Œã¦ã„ã‚‹ã‹
 	bool IsClickMouseLeft(void) const;
 
-	// ƒ}ƒEƒX‚ª‰EƒNƒŠƒbƒN‚³‚ê‚½‚©
+	// ãƒã‚¦ã‚¹ãŒå³ã‚¯ãƒªãƒƒã‚¯ã•ã‚Œã¦ã„ã‚‹ã‹
 	bool IsClickMouseRight(void) const;
 
-	// ƒ}ƒEƒX‚ª¶ƒNƒŠƒbƒN‚³‚ê‚½‚©(‰Ÿ‚µ‚Á‚Ï‚È‚µ‚ÍNG)
+	// ãƒã‚¦ã‚¹ãŒå·¦ã‚¯ãƒªãƒƒã‚¯ã•ã‚ŒãŸã‹(æŠ¼ã—ã£ã±ãªã—ã¯NG)
 	bool IsTrgMouseLeft(void) const;
 
-	// ƒ}ƒEƒX‚ª‰EƒNƒŠƒbƒN‚³‚ê‚½‚©(‰Ÿ‚µ‚Á‚Ï‚È‚µ‚ÍNG)
+	// ãƒã‚¦ã‚¹ãŒå³ã‚¯ãƒªãƒƒã‚¯ã•ã‚ŒãŸã‹(æŠ¼ã—ã£ã±ãªã—ã¯NG)
 	bool IsTrgMouseRight(void) const;
 
-	// ƒRƒ“ƒgƒ[ƒ‰‚Ì“ü—Íî•ñ‚ğæ“¾‚·‚é
+	// ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ã®å…¥åŠ›æƒ…å ±ã‚’å–å¾—ã™ã‚‹
 	JOYPAD_IN_STATE GetJPadInputState(JOYPAD_NO no);
 
-	// ƒ{ƒ^ƒ“‚ª‰Ÿ‚³‚ê‚½
+	// ãƒœã‚¿ãƒ³ãŒæŠ¼ã•ã‚ŒãŸ
 	bool IsPadBtnNew(JOYPAD_NO no, JOYPAD_BTN btn) const;
 	bool IsPadBtnTrgDown(JOYPAD_NO no, JOYPAD_BTN btn) const;
 	bool IsPadBtnTrgUp(JOYPAD_NO no, JOYPAD_BTN btn) const;
 
-	// ƒAƒiƒƒOƒL[‚Ì“ü—Í’l‚©‚ç•ûŒü(³‹K‰»Ï‚İ)‚ğæ“¾
+	// ã‚¢ãƒŠãƒ­ã‚°ã‚­ãƒ¼ã®å…¥åŠ›å€¤ã‹ã‚‰æ–¹å‘(æ­£è¦åŒ–æ¸ˆã¿)ã‚’å–å¾—
 	VECTOR GetDirectionXZAKey(int aKeyX, int aKeyY) const;
 
 private:
 
-	// ƒL[î•ñ
+	// ã‚­ãƒ¼ãƒ»ãƒã‚¦ã‚¹ãƒœã‚¿ãƒ³ã®å…¥åŠ›æƒ…å ±
 	struct Info
 	{
-		int key;			// ƒL[ID
-		bool keyOld;		// 1ƒtƒŒ[ƒ€‘O‚Ì‰Ÿ‰ºó‘Ô
-		bool keyNew;		// Œ»ƒtƒŒ[ƒ€‚Ì‰Ÿ‰ºó‘Ô
-		bool keyTrgDown;	// Œ»ƒtƒŒ[ƒ€‚Åƒ{ƒ^ƒ“‚ª‰Ÿ‚³‚ê‚½‚©
-		bool keyTrgUp;		// Œ»ƒtƒŒ[ƒ€‚Åƒ{ƒ^ƒ“‚ª—£‚³‚ê‚½‚©
+		int key = -1;			// ã‚­ãƒ¼ID
+		bool keyOld = false;	// 1ãƒ•ãƒ¬ãƒ¼ãƒ å‰ã®æŠ¼ä¸‹çŠ¶æ…‹
+		bool keyNew = false;	// ç¾ãƒ•ãƒ¬ãƒ¼ãƒ ã®æŠ¼ä¸‹çŠ¶æ…‹
+		bool keyTrgDown = false;// ç¾ãƒ•ãƒ¬ãƒ¼ãƒ ã§ãƒœã‚¿ãƒ³ãŒæŠ¼ã•ã‚ŒãŸã‹
+		bool keyTrgUp = false;	// ç¾ãƒ•ãƒ¬ãƒ¼ãƒ ã§ãƒœã‚¿ãƒ³ãŒé›¢ã•ã‚ŒãŸã‹
 	};
+	using MouseInfo = Info;
 
-	// ƒ}ƒEƒX
-	struct MouseInfo
-	{
-		int key;			// ƒL[ID
-		bool keyOld;		// 1ƒtƒŒ[ƒ€‘O‚Ì‰Ÿ‰ºó‘Ô
-		bool keyNew;		// Œ»ƒtƒŒ[ƒ€‚Ì‰Ÿ‰ºó‘Ô
-		bool keyTrgDown;	// Œ»ƒtƒŒ[ƒ€‚Åƒ{ƒ^ƒ“‚ª‰Ÿ‚³‚ê‚½‚©
-		bool keyTrgUp;		// Œ»ƒtƒŒ[ƒ€‚Åƒ{ƒ^ƒ“‚ª—£‚³‚ê‚½‚©
-	};
+	// ãƒ‘ãƒƒãƒ‰æƒ…å ±ã®æ•°ï¼ˆKEY_PAD1 ã€œ PAD4ï¼‰
+	static constexpr int PAD_NUM = 5;
 
-private:
-	// ƒRƒ“ƒgƒ[ƒ‰î•ñ
-	DINPUT_JOYSTATE joyDInState_;
-
-	// ƒRƒ“ƒgƒ[ƒ‰î•ñ(XBOX)
-	XINPUT_STATE joyXInState_;
-
-	// ƒVƒ“ƒOƒ‹ƒgƒ“—pƒCƒ“ƒXƒ^ƒ“ƒX
+	// ã‚·ãƒ³ã‚°ãƒ«ãƒˆãƒ³ç”¨ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹
 	static InputManager* instance_;
 
-	// ƒL[î•ñ
-	std::map<int, InputManager::Info> keyInfos_;
-	InputManager::Info infoEmpty_;
+	// ã‚­ãƒ¼æƒ…å ±
+	std::map<int, Info> keyInfos_;
+	Info infoEmpty_;
 
-	// ƒ}ƒEƒXî•ñ
-	std::map<int, InputManager::MouseInfo> mouseInfos_;
-	InputManager::MouseInfo mouseInfoEmpty_;
+	// ãƒã‚¦ã‚¹æƒ…å ±
+	std::map<int, MouseInfo> mouseInfos_;
+	MouseInfo mouseInfoEmpty_;
 
-	// ƒ}ƒEƒXƒJ[ƒ\ƒ‹‚ÌˆÊ’u
+	// ãƒã‚¦ã‚¹ã‚«ãƒ¼ã‚½ãƒ«ã®ä½ç½®
 	Vector2 mousePos_;
 
-	// ƒ}ƒEƒXƒ{ƒ^ƒ“‚Ì“ü—Íó‘Ô
-	int mouseInput_;
+	// ãƒã‚¦ã‚¹ãƒœã‚¿ãƒ³ã®å…¥åŠ›çŠ¶æ…‹
+	int mouseInput_ = 0;
 
-	// ƒpƒbƒhî•ñ
-	JOYPAD_IN_STATE padInfos_[5];
+	// ãƒ‘ãƒƒãƒ‰æƒ…å ±
+	std::array<JOYPAD_IN_STATE, PAD_NUM> padInfos_{};
 
-	// ƒfƒtƒHƒ‹ƒgƒRƒ“ƒXƒgƒ‰ƒNƒ^‚ğprivate‚É‚µ‚ÄA
-	// ŠO•”‚©‚ç¶¬‚Å‚«‚È‚¢—l‚É‚·‚é
-	InputManager(void);
-	InputManager(const InputManager& manager);
-	~InputManager(void);
+	InputManager(void) = default;
+	~InputManager(void) = default;
 
-	// ”z—ñ‚Ì’†‚©‚çƒL[î•ñ‚ğæ“¾‚·‚é
-	const InputManager::Info& Find(int key) const;
+	// ã‚³ãƒ”ãƒ¼ãƒ»ãƒ ãƒ¼ãƒ–ç¦æ­¢
+	InputManager(const InputManager&) = delete;
+	InputManager& operator=(const InputManager&) = delete;
+	InputManager(InputManager&&) = delete;
+	InputManager& operator=(InputManager&&) = delete;
 
-	// ”z—ñ‚Ì’†‚©‚çƒ}ƒEƒXî•ñ‚ğæ“¾‚·‚é
-	const InputManager::MouseInfo& FindMouse(int key) const;
+	// åˆ¤å®šã‚’è¡Œã†ãƒã‚¦ã‚¹ãƒœã‚¿ãƒ³ã‚’è¿½åŠ 
+	void AddMouse(int button);
 
-	// Ú‘±‚³‚ê‚½ƒRƒ“ƒgƒ[ƒ‰‚Ìí•Ê‚ğæ“¾‚·‚é
-	JOYPAD_TYPE GetJPadType(JOYPAD_NO no);
+	// æŠ¼ä¸‹çŠ¶æ…‹ã‹ã‚‰å‰ãƒ•ãƒ¬ãƒ¼ãƒ ãƒ»ãƒˆãƒªã‚¬ãƒ¼ã‚’æ›´æ–°
+	static void UpdateInfo(Info& info, bool isPressed);
 
-	// ƒRƒ“ƒgƒ[ƒ‰‚Ì“ü—Íî•ñ‚ğæ“¾‚·‚é
-	DINPUT_JOYSTATE GetJPadDInputState(JOYPAD_NO no);
+	// é…åˆ—ã®ä¸­ã‹ã‚‰ã‚­ãƒ¼æƒ…å ±ã‚’å–å¾—ã™ã‚‹
+	const Info& Find(int key) const;
 
-	// ƒRƒ“ƒgƒ[ƒ‰(XBOX)‚Ì“ü—Íî•ñ‚ğæ“¾‚·‚é
-	XINPUT_STATE GetJPadXInputState(JOYPAD_NO no);
+	// é…åˆ—ã®ä¸­ã‹ã‚‰ãƒã‚¦ã‚¹æƒ…å ±ã‚’å–å¾—ã™ã‚‹
+	const MouseInfo& FindMouse(int key) const;
 
-	// ƒRƒ“ƒgƒ[ƒ‰‚Ì“ü—Íî•ñ‚ğXV‚·‚é
+	// ãƒ‘ãƒƒãƒ‰æƒ…å ±ã‚’å–å¾—ã™ã‚‹ï¼ˆç¯„å›²å¤–ãªã‚‰ nullptrï¼‰
+	const JOYPAD_IN_STATE* FindPad(JOYPAD_NO no) const;
+
+	// æ¥ç¶šã•ã‚ŒãŸã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ã®ç¨®åˆ¥ã‚’å–å¾—ã™ã‚‹
+	JOYPAD_TYPE GetJPadType(JOYPAD_NO no) const;
+
+	// ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ã®å…¥åŠ›æƒ…å ±ã‚’å–å¾—ã™ã‚‹
+	DINPUT_JOYSTATE GetJPadDInputState(JOYPAD_NO no) const;
+
+	// ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©(XBOX)ã®å…¥åŠ›æƒ…å ±ã‚’å–å¾—ã™ã‚‹
+	XINPUT_STATE GetJPadXInputState(JOYPAD_NO no) const;
+
+	// ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ã®å…¥åŠ›æƒ…å ±ã‚’æ›´æ–°ã™ã‚‹
 	void SetJPadInState(JOYPAD_NO jpNo);
-
 };

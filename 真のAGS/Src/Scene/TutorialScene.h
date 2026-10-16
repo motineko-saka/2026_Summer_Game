@@ -175,7 +175,7 @@ private:
 	void DrawAnswerPreview(void);
 	void DrawObjects(void);
 	void DrawInteractLabels(size_t playerIdx);
-	void DrawHint(void);
+	void DrawHint(void)const;
 	void DrawSplitScreen(void);
 	void DrawDebugInfo(void);
 };
