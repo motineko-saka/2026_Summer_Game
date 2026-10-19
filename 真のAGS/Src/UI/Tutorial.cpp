@@ -236,7 +236,7 @@ void Tutorial::Draw() const
 	int visible = revealIndex_;
 	if (visible > static_cast<int>(splitText_.size())) visible = static_cast<int>(splitText_.size());
 	std::string sub;
-	sub.reserve(visible * 3);
+	sub.reserve(static_cast<std::basic_string<char, std::char_traits<char>, std::allocator<char>>::size_type>(visible) * 3);
 	for (int i = 0; i < visible; ++i) sub += splitText_[i];
 
 	int textX = l.bubbleX + 16, textY = l.bubbleY + 12; // ã—]”’‚ð­‚µŒ¸‚ç‚·

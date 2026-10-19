@@ -50,17 +50,6 @@ void SceneBase::CreateWall(StageManager& stageM)
 		// 真ん中
 		walls_.push_back(std::make_unique<Wall>(VECTOR(centerX, 0, centerZ)));
 
-		//walls_.push_back(std::make_unique<Wall>(VECTOR(stageCutPos, 0, bb.minPos.z), true));
-		//walls_.push_back(std::make_unique<Wall>(VECTOR(centerX, 0, bb.maxPos.z), true));
-
-		 //// 奥手前（Z固定、Xはステージ中央）
-		 //walls_.push_back(std::make_unique<Wall>(VECTOR(centerX, 0, bb.minPos.z), true));
-		 //walls_.push_back(std::make_unique<Wall>(VECTOR(centerX, 0, bb.maxPos.z), true));
-
-		 //// 左右（X固定、Zはステージ中央）
-		 //walls_.push_back(std::make_unique<Wall>(VECTOR(bb.minPos.x, 0, centerZ)));
-		 //walls_.push_back(std::make_unique<Wall>(VECTOR(bb.maxPos.x, 0, centerZ)));
-
 		isWallCreate = true;
 	}
 
@@ -97,16 +86,6 @@ void SceneBase::CreateWallGame(StageManager& stageM)
 			walls_.push_back(std::make_unique<Wall>(
 				VECTOR(stageCutPos[i].x + -1500, stageCutPos[i].y, stageCutPos[i].z), true, true));
 		}
-		//walls_.push_back(std::make_unique<Wall>(VECTOR(stageCutPos, 0, bb.minPos.z), true));
-		//walls_.push_back(std::make_unique<Wall>(VECTOR(centerX, 0, bb.maxPos.z), true));
-
-		 //// 奥手前（Z固定、Xはステージ中央）
-		 //walls_.push_back(std::make_unique<Wall>(VECTOR(centerX, 0, bb.minPos.z), true));
-		 //walls_.push_back(std::make_unique<Wall>(VECTOR(centerX, 0, bb.maxPos.z), true));
-
-		 //// 左右（X固定、Zはステージ中央）
-		 //walls_.push_back(std::make_unique<Wall>(VECTOR(bb.minPos.x, 0, centerZ)));
-		 //walls_.push_back(std::make_unique<Wall>(VECTOR(bb.maxPos.x, 0, centerZ)));
 
 		isWallCreate = true;
 	}

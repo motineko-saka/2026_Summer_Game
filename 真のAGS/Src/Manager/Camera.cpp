@@ -40,7 +40,7 @@ void Camera::Update(void)
 	case MODE::FIXED_POINT:	SetBeforeDrawFixedPoint();	break;
 	case MODE::FREE:		SetBeforeDrawFree();		break;
 	case MODE::FOLLOW:		SetBeforeDrawFollow();		break;
-	default:												break;
+	default:											break;
 	}
 }
 

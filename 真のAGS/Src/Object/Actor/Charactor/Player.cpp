@@ -516,7 +516,7 @@ void Player::DropHeldObject(void)
 	heldPrevFollow_ = nullptr;
 }
 
-void Player::DrawDebug(void)
+void Player::DrawDebug(void)const
 {
 	int offsetX = (playerNo_ == PLAYER_NO::PLAYER2) ? 400 : 15;
 }

@@ -15,7 +15,7 @@ namespace
 		float speed;		// Ä¶‘¬“x
 	};
 
-	// EFFECT ‚Ì•À‚Ñ‡‚Æˆê’v‚³‚¹‚é‚±‚Æ
+	// EFFECT‚Ì•À‚Ñ‡‚Æˆê’v‚³‚¹‚é
 	constexpr EffectInfo EFFECT_INFOS[] =
 	{
 		{ "slashu.efkefc",     1.0f,  1.0f },	// SLASH
@@ -98,7 +98,7 @@ void EffekseerEffect::Release(void)
 		id = -1;
 	}
 
-	// ¦ Effekseer‘¤‚ÌŠÖ”–¼‚ª Effkseer_Endi’Ô‚è‚Í‚±‚ê‚Å³‚µ‚¢j
+	// Effekseer‘¤‚ÌŠÖ”–¼‚ª Effkseer_End
 	Effkseer_End();
 }
 

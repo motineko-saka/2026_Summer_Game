@@ -93,7 +93,7 @@ void Resource::Release(void)
 		break;
 	}
 
-	// ‰ğ•úÏ‚İ‚Ìó‘Ô‚É–ß‚·i“ñd‰ğ•ú–h~j
+	// ‰ğ•úÏ‚İ‚Ìó‘Ô‚É–ß‚·
 	handleId_ = -1;
 	handleIds_.clear();
 	duplicateModelIds_.clear();

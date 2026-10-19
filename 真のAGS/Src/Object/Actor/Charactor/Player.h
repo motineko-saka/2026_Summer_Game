@@ -149,7 +149,7 @@ private:
 	void CollisionReserve(void) override;
 
 	// デバッグ描画
-	void DrawDebug(void);
+	void DrawDebug(void)const;
 
 	// 掴んでいるコライダ
 	ColliderBase* heldCollider_{ nullptr };

@@ -66,11 +66,6 @@ void TitleScene::LoadEnd(void)
 
 void TitleScene::Update(void)
 {
-	// ポーズ画面に遷移
-	//if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_ESCAPE))
-	//{
-	//	SceneManager::GetInstance()->PushScene(std::make_shared<PauseScene>());
-	//}
 
 	if (InputManager::GetInstance()->IsTrgDown(KEY_INPUT_Q))
 	{
@@ -182,11 +177,6 @@ void TitleScene::Draw(void)
 	DrawRotaGraph(static_cast<int>(posStartX), static_cast<int>(posY - (uiSelect_ == 0 ? 10 : 0)), scaleStart, 0.0f, imgUIStart_, true);
 	DrawRotaGraph(static_cast<int>(posTutorialX), static_cast<int>(posY - (uiSelect_ == 1 ? 10 : 0)), scaleTutorial, 0.0f, imgUITutorial_, true);
 	DrawRotaGraph(static_cast<int>(posExitX), static_cast<int>(posY - (uiSelect_ == 2 ? 10 : 0)), scaleExit, 0.0f, imgUIExit_, true);
-
-	// --------------------------------------------
-	//DrawFormatString(0, 0, GetColor(0, 0, 0), "ゲームスタート");
-
-	//DrawExtendGraph(0, 0, screenX, screenY, movTitle_, FALSE);
 
 	// 2D描画（ムービーの上にUIを重ねる）
 	DrawRotaGraph(IMG_TITLE_POS_X, IMG_TITLE_POS_Y, 0.45f, 0.0f, imgTitle_, true);
