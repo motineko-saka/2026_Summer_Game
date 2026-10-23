@@ -26,16 +26,16 @@
 
 namespace
 {
-	// UI / 入力距離しきい値
+	// 定数
 	constexpr float kInteractDistance = TutorialScene::INTERACT_DISTANCE;
 	constexpr float kButtonInteractDistance = 180.0f;
 	constexpr float kHintNearDistance = 60.0f;
 	constexpr float kPickupDistance = 90.0f;
 
-	// プレビュー描画色 (DiffColorScale)
+	// プレビュー描画色
 	static const auto kPreviewColor = COLOR_F(0.0, 0.5, 1.0, 0.5);
 
-	// 該当なしなら nullptr を返す
+	// 該当なしならnullptrを返す
 	const char* GetInteractLabel(ObjectBase::OBJECT_TYPE type)
 	{
 		switch (type)
@@ -188,7 +188,7 @@ void TutorialScene::Init(void)
 		}
 	}
 
-	// 初期アクティブ状態（プレイヤー1）
+	// 初期アクティブ状態
 	activePlayer_ = Player::PLAYER_NO::PLAYER1;
 	for (size_t i = 0; i < players_.size(); ++i)
 	{
@@ -202,8 +202,7 @@ void TutorialScene::Init(void)
 
 	TutorialInit();
 
-	// オーディオマネージャーはアプリ側で管理している想定
-	// シーンのサウンドを読み込み、BGM を再生
+	// シーンのサウンドを読み込み、BGMを再生
 	if (auto am = AudioManager::GetInstance())
 	{
 		am->LoadSceneSound(LoadScene::GAME_TUTORIAL);
@@ -286,7 +285,7 @@ void TutorialScene::CheckCollisions(void)
 			// 入力が無ければ次へ
 			if (!isE && !isPadLeft) continue;
 
-			// どちらかのプレイヤーが近いか確認
+			// どちらのプレイヤーが近いか確認
 			bool isNearPlayer = false;
 			for (auto& p : players_)
 			{
@@ -311,7 +310,7 @@ void TutorialScene::CheckCollisions(void)
 				EffekseerEffect::GetInstance()->PlayTutorialEffect(TutorialScene::EFFECT_POS, 0.0f);
 			}
 
-			// AKEG を再度操作可能にする
+			// AKEGを再度操作可能にする
 			for (auto& ao : objects_)
 			{
 				if (ao && ao->GetObjectType() == ObjectBase::OBJECT_TYPE::AKEG)
@@ -324,7 +323,7 @@ void TutorialScene::CheckCollisions(void)
 			// CHESTを削除対象
 			removeIndices.push_back(static_cast<int>(i));
 
-			// 生成後はフラグをリセット
+			// フラグをリセット
 			butcount_ = false;
 
 			// ボタン関連の進行リセット
@@ -363,12 +362,12 @@ void TutorialScene::CheckCollisions(void)
 					}
 					for (auto& otherObj : objects_)
 					{
-						if (!otherObj || otherObj == objects_[idx]) continue;  // unique_ptr 同士の比較は可
+						if (!otherObj || otherObj == objects_[idx]) continue;
 						otherObj->RemoveHitCollider(col);
 					}
 				}
 			}
-			// erase で unique_ptr が破棄され、delete も自動で行われる
+
 			objects_.erase(objects_.begin() + idx);
 		}
 	}
@@ -380,7 +379,7 @@ void TutorialScene::ButtonProcess(ObjectBase& obj, std::vector<std::unique_ptr<O
 {
 	const VECTOR objectPos = obj.GetTransform().pos;
 
-	// キー／パッド入力を判定（パッドは単一：PAD1 を想定）
+	// キー／パッド入力を判
 	const bool isKeyPush = InputManager::GetInstance()->IsTrgDown(KEY_INPUT_F);
 	const bool isPadPush = InputManager::GetInstance()->IsPadBtnTrgDown(
 		InputManager::JOYPAD_NO::PAD1,
@@ -392,10 +391,10 @@ void TutorialScene::ButtonProcess(ObjectBase& obj, std::vector<std::unique_ptr<O
 		return;
 	}
 
-	// 押したプレイヤーは「現在アクティブなプレイヤー」を基準にする
+	// 押したプレイヤー
 	int playerNo = (activePlayer_ == Player::PLAYER_NO::PLAYER1) ? 0 : 1;
 
-	// ボタンとの距離チェック（アクティブプレイヤー基準）
+	// ボタンとの距離チェック
 	const float distance = VSize(VSub(
 		players_[playerNo].player_->GetTransform().pos,
 		objectPos));
@@ -464,7 +463,7 @@ void TutorialScene::Update(void)
 	{
 		isEndTutorial_ = false;
 
-		// 先にオーディオを停止／削除してからシーン切替
+		
 		if (auto am = AudioManager::GetInstance())
 		{
 			am->StopBGM();
@@ -522,7 +521,7 @@ void TutorialScene::Update(void)
 
 	lightPillar_->Update();
 
-	// 衝突判定（Object更新前）
+	// 衝突判定
 	CheckCollisions();
 
 	// 全オブジェクトの更新

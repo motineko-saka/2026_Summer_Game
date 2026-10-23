@@ -4,8 +4,7 @@
 
 namespace
 {
-	// 最低でもロード画面を表示する時間(フレーム)
-	// 60fps なら 30 フレーム = 0.5 秒
+	// 60fps
 	constexpr int MIN_LOAD_FRAME = 30;
 
 	// 背景色
@@ -23,8 +22,7 @@ void Loading::Init(void)
 
 void Loading::Load(void)
 {
-	// ロード画面用の画像があればここで読み込む
-	// 例) handle_ = LoadGraph("Data/Image/Loading.png");
+
 }
 
 void Loading::Update(void)
@@ -40,7 +38,6 @@ void Loading::Update(void)
 		return;
 	}
 
-	// ロード画面を動かす処理はここに記述
 }
 
 void Loading::Draw(void) const
@@ -55,7 +52,7 @@ void Loading::Draw(void) const
 		1.0,		// 拡大率
 		0.0,		// 回転角
 		handle_,
-		TRUE);		// 透過
+		true);		// 透過
 }
 
 void Loading::Release(void)
@@ -70,13 +67,13 @@ void Loading::StartAsyncLoad(void)
 {
 	isLoading_ = true;
 	loadTimer_ = 0;
-	SetUseASyncLoadFlag(TRUE);
+	SetUseASyncLoadFlag(true);
 }
 
 void Loading::EndAsyncLoad(void)
 {
-	// 以降の読み込みを同期に戻す（読み込み中のものは継続）
-	SetUseASyncLoadFlag(FALSE);
+	// 以降の読み込みを同期に戻す
+	SetUseASyncLoadFlag(false);
 }
 
 void Loading::FinishLoad(void)

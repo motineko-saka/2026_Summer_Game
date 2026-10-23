@@ -113,7 +113,7 @@ void Tutorial::Update()
 		if (userNextKey) { revealIndex_ = static_cast<int>(splitText_.size()); inputDelay_ = DELAY_MAX; return; }
 	}
 
-	// 条件付きならcondResultが真で進む。
+	// 条件付きなら真で進む。
 	bool ready = condResult || (revealIndex_ >= static_cast<int>(splitText_.size()) && userNextKey);
 
 	if (ready && inputDelay_ == 0)
@@ -138,7 +138,7 @@ void Tutorial::Update()
 // Layoutの計算
 Tutorial::Layout Tutorial::ComputeLayout() const
 {
-	Layout l;
+	Layout l{};
 	l.screenW = Application::SCREEN_SIZE_X;
 	l.screenH = Application::SCREEN_SIZE_Y;
 	l.margin = 24;
@@ -155,7 +155,7 @@ Tutorial::Layout Tutorial::ComputeLayout() const
 	if (bubbleH < minBubbleH_) bubbleH = minBubbleH_;
 	if (bubbleH > maxBubbleH_) bubbleH = maxBubbleH_;
 
-	// 全体ボックス高さは顔領域＋吹き出し（既存の見た目を保つため +40）
+	// 全体ボックス高さは顔領域＋吹き出し
 	l.boxH = bubbleH + 40;
 
 	l.x0 = l.margin;
@@ -239,8 +239,10 @@ void Tutorial::Draw() const
 	sub.reserve(static_cast<std::basic_string<char, std::char_traits<char>, std::allocator<char>>::size_type>(visible) * 3);
 	for (int i = 0; i < visible; ++i) sub += splitText_[i];
 
-	int textX = l.bubbleX + 16, textY = l.bubbleY + 12; // 上余白を少し減らす
-	// Yu Gothic UIフォントを使って描画
+	// 上余白を少し減らす
+	int textX = l.bubbleX + 16, textY = l.bubbleY + 12;
+
+	// YuGothicUIフォントを使って描画
 	if (fontHandle_ != -1)
 	{
 		DrawStringToHandle(textX, textY, sub.c_str(), GetColor(235, 235, 235), fontHandle_);

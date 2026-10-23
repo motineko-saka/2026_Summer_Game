@@ -27,7 +27,7 @@ private:
 	Loading(void) = default;
 	~Loading(void) = default;
 
-	// コピー・ムーブ禁止
+	// コピー禁止
 	Loading(const Loading&) = delete;
 	Loading& operator=(const Loading&) = delete;
 	Loading(Loading&&) = delete;

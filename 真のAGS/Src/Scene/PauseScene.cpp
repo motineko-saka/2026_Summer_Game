@@ -129,7 +129,7 @@ void PauseScene::Update(void)
 		default:
 			break;
 		}
-		};
+	};
 
 	// マウスクリックで決定（ホバーと同じ当たり判定を使用）
 	if (InputManager::GetInstance()->IsTrgMouseLeft())
