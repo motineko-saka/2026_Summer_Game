@@ -133,7 +133,7 @@ void TutorialScene::Init(void)
 			o->SetScale(scl);
 			if (placed) o->SetPlaced(true);
 			objects_.push_back(std::move(o));
-		};
+	};
 
 	// ボタンを左右両方に配置
 	pushObject(SceneBase::WORLD::LEFT, ANSWER_VECTOR_LENGTH[0], ObjectBase::OBJECT_TYPE::BUTTON, TutorialScene::BUTTON_LEFT_POS, ObjectScale, true);
@@ -170,13 +170,6 @@ void TutorialScene::Init(void)
 		{
 			players_[p].player_->AddHitCollider(objCaps);
 		}
-	}
-
-	// プレイヤーのラインコライダをButtonに登録
-	for (auto& player : players_)
-	{
-		const ColliderBase* playerCollider = player.player_->GetOwnCollider(static_cast<int>(Player::COLLIDER_TYPE::LINE));
-		(void)playerCollider;
 	}
 
 	for (auto& wall : walls_)
@@ -307,7 +300,10 @@ void TutorialScene::CheckCollisions(void)
 			// エフェクト
 			if (EffekseerEffect::GetInstance())
 			{
-				EffekseerEffect::GetInstance()->PlayTutorialEffect(TutorialScene::EFFECT_POS, 0.0f);
+				EffekseerEffect::GetInstance()->Play(
+					EffekseerEffect::EFFECT::OPEN_CHEST,
+					TutorialScene::EFFECT_POS,
+					0.0f);
 			}
 
 			// AKEGを再度操作可能にする
@@ -627,11 +623,11 @@ void TutorialScene::Release(void)
 		pinID_ = -1;
 	}
 
+	// プレイヤーを先に解放する
+	players_.clear();
+
 	// 全オブジェクト解放
 	objects_.clear();
-
-	// プレイヤー配列をクリア
-	players_.clear();
 
 	// スクリーンハンドルの削除
 	if (screenHandle1_ != -1) { DeleteGraph(screenHandle1_); screenHandle1_ = -1; }

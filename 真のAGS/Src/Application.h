@@ -14,6 +14,9 @@ public:
 	// 固定FPS
 	static constexpr int FRAME_RATE = 60;
 
+	// Effekseerで同時に表示できる最大パーティクル数
+	static constexpr int EFFEKSEER_MAX_PARTICLE = 8000;
+
 	// 重力
 	static constexpr float GRAVITY = 9.81f * 100.0f;
 	static constexpr float GRAVITY_SCALE = 0.7f;
@@ -90,7 +93,7 @@ private:
 	// デストラクタも同様
 	~Application(void) = default;
 
-	// エフェクシアの初期化
-	void InitEffekseer(void);
+	// エフェクシアの初期化(失敗したら false）
+	bool InitEffekseer(void);
 
 };

@@ -53,7 +53,11 @@ void Application::Init(void)
 	}
 
 	// Effekseerの初期化
-	InitEffekseer();
+	if (!InitEffekseer())
+	{
+		isInitFail_ = true;
+		return;
+	}
 
 	// EffekseerEffect（ラッパー）の生成・初期化
 	EffekseerEffect::CreateInstance();
@@ -183,19 +187,22 @@ void Application::Destroy(void)
 	SceneManager::GetInstance()->Release();
 	SceneManager::DeleteInstance();
 
+	// サウンド管理解放
+	AudioManager::DeleteInstance();
+
 	ResourceManager::GetInstance().Destroy();
 
-	// EffekseerEffect の解放（内部で Effkseer_End を呼ぶ）
+	// EffekseerEffect の解放
 	if (EffekseerEffect::GetInstance()) {
 		EffekseerEffect::GetInstance()->Release();
 		EffekseerEffect::DeleteInstance();
 	}
 
+	// Effekseer終了
+	Effkseer_End();
+
 	// DxLib終了
 	if (DxLib_End() == -1)
-	{
-		isReleaseFail_ = true;
-	}
 
 	// インスタンスのメモリ解放
 	delete instance_;
@@ -220,14 +227,14 @@ Application::Application(void)
 {
 }
 
-void Application::InitEffekseer(void)
+bool Application::InitEffekseer(void)
 {
-	if (Effekseer_Init(8000) == -1)
+	if (Effekseer_Init(EFFEKSEER_MAX_PARTICLE) == -1)
 	{
-		DxLib_End();
+		return false;
 	}
 
 	SetChangeScreenModeGraphicsSystemResetFlag(FALSE);
-
 	Effekseer_SetGraphicsDeviceLostCallbackFunctions();
+	return true;
 }

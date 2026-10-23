@@ -15,17 +15,10 @@ namespace
 		float speed;		// 再生速度
 	};
 
-	// EFFECTの並び順と一致させる
+	// EFFECTのファイル名と設定の配列
 	constexpr EffectInfo EFFECT_INFOS[] =
 	{
-		{ "slashu.efkefc",     1.0f,  1.0f },	// SLASH
-		{ "nomotoaren.efkefc", 50.0f, 0.2f },	// TUTORIAL
-		{ "Fiyaer.efkefc",     5.0f,  0.2f },	// FIRE
-		{ "mizu.efkefc",       50.0f, 0.2f },	// WATER
-		{ "kori.efkefc",       50.0f, 0.2f },	// ICE
-		{ "bakuhatu.efkefc",   50.0f, 0.2f },	// EXPLOSION
-		{ "comboLast.efkefc",  50.0f, 0.2f },	// COMBO_LAST
-		{ "meteo.efkefc",      50.0f, 0.2f },	// METEOR
+		{ "open_chest.efkefc", 50.0f, 0.2f },	// OPEN_CHEST
 	};
 
 	static_assert(
@@ -49,17 +42,6 @@ EffekseerEffect::EffekseerEffect(void)
 
 void EffekseerEffect::Init(void)
 {
-	SetUseDirect3DVersion(DX_DIRECT3D_11);
-
-	if (Effekseer_Init(MAX_PARTICLE) == -1)
-	{
-		DxLib_End();
-		return;
-	}
-
-	SetChangeScreenModeGraphicsSystemResetFlag(FALSE);
-	Effekseer_SetGraphicsDeviceLostCallbackFunctions();
-
 	// 全エフェクトを読み込む
 	for (int i = 0; i < EFFECT_NUM; i++)
 	{
@@ -97,14 +79,6 @@ void EffekseerEffect::Release(void)
 		if (id != -1) DeleteEffekseerEffect(id);
 		id = -1;
 	}
-
-	// Effekseer側の関数名が Effkseer_End
-	Effkseer_End();
-}
-
-void EffekseerEffect::Delete(void)
-{
-	Stop(EFFECT::TUTORIAL);
 }
 
 void EffekseerEffect::Play(EFFECT type, const VECTOR& pos, float rotY)

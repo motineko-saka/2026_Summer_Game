@@ -16,7 +16,6 @@ enum class SoundID
 	SE_MENU_OPEN,
 
 	SE_WALK,
-	SE_RUN,
 	SE_HAVE_IRON,
 	SE_HAVE_WOOD,
 	SE_PUT_WOOD,
@@ -27,8 +26,6 @@ enum class SoundID
 	SE_GAME_CLEAR,
 
 	SE_GAME_OVER,
-
-	SE_TUTORIAL_WALK,
 };
 
 // ì«Ç›çûÇﬁÉVÅ[Éì

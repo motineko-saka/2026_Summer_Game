@@ -9,28 +9,36 @@
 #define KEY_TUTORIAL_NEXT KEY_INPUT_Z
 #endif
 
-static std::vector<std::string> SplitUTF8(const std::string& s)
+namespace
 {
-	std::vector<std::string> out;
-	for (size_t i = 0; i < s.size();)
-	{
-		unsigned char c = static_cast<unsigned char>(s[i]);
+	// Shift-JIS の2バイト文字の先頭バイトの範囲
+	constexpr unsigned char SJIS_LEAD_RANGE1_MIN = 0x81;
+	constexpr unsigned char SJIS_LEAD_RANGE1_MAX = 0x9F;
+	constexpr unsigned char SJIS_LEAD_RANGE2_MIN = 0xE0;
+	constexpr unsigned char SJIS_LEAD_RANGE2_MAX = 0xFC;
 
-		// Shift-JISの先頭バイト判定
-		if ((0x81 <= c && c <= 0x9F) || (0xE0 <= c && c <= 0xFC))
-		{
-			// 2バイト文字
-			out.push_back(s.substr(i, 2));
-			i += 2;
-		}
-		else
-		{
-			// 1バイト文字
-			out.push_back(s.substr(i, 1));
-			i += 1;
-		}
+	// Shift-JIS の2バイト文字の先頭バイトか
+	bool IsSJISLeadByte(unsigned char c)
+	{
+		return (SJIS_LEAD_RANGE1_MIN <= c && c <= SJIS_LEAD_RANGE1_MAX)
+			|| (SJIS_LEAD_RANGE2_MIN <= c && c <= SJIS_LEAD_RANGE2_MAX);
 	}
-	return out;
+
+	// Shift-JIS の文字列を1文字ずつに分割する
+	std::vector<std::string> SplitSJIS(const std::string& s)
+	{
+		std::vector<std::string> out;
+		for (size_t i = 0; i < s.size();)
+		{
+			const unsigned char c = static_cast<unsigned char>(s[i]);
+
+			// 先頭バイトなら2バイト文字、それ以外は1バイト文字
+			const size_t charBytes = IsSJISLeadByte(c) ? 2 : 1;
+			out.push_back(s.substr(i, charBytes));
+			i += charBytes;
+		}
+		return out;
+	}
 }
 
 Tutorial::Tutorial()
@@ -88,7 +96,7 @@ void Tutorial::Start()
 	animCounter_ = 0;
 	revealIndex_ = 0;
 	typeTick_ = 0;
-	splitText_ = SplitUTF8(steps_[0].text);
+	splitText_ = SplitSJIS(steps_[0].text);
 
 	if (steps_[0].onEnter) steps_[0].onEnter();
 }
@@ -129,7 +137,7 @@ void Tutorial::Update()
 		{
 			revealIndex_ = 0;
 			typeTick_ = 0;
-			splitText_ = SplitUTF8(steps_[currentIndex_].text);
+			splitText_ = SplitSJIS(steps_[currentIndex_].text);
 			if (steps_[currentIndex_].onEnter) steps_[currentIndex_].onEnter();
 		}
 	}
@@ -235,8 +243,9 @@ void Tutorial::Draw() const
 
 	int visible = revealIndex_;
 	if (visible > static_cast<int>(splitText_.size())) visible = static_cast<int>(splitText_.size());
+	// Shift-JISの文字列を結合して描画する
 	std::string sub;
-	sub.reserve(static_cast<std::basic_string<char, std::char_traits<char>, std::allocator<char>>::size_type>(visible) * 3);
+	sub.reserve(static_cast<size_t>(visible) * 2);
 	for (int i = 0; i < visible; ++i) sub += splitText_[i];
 
 	// 上余白を少し減らす

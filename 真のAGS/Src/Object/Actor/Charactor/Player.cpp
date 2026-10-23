@@ -298,13 +298,10 @@ void Player::ProcessMove(void)
 		// 移動量を計算
 		movePow_ = VScale(moveDir_, moveSpeed_);
 
-		// 歩行中ループSE開始（ジャンプ中は除外）
+		// 歩行ループSE開始（ジャンプ中は除外）
 		if (!isJump_ && !isWalkSePlaying_)
 		{
 			if (AudioManager::GetInstance()) AudioManager::GetInstance()->LoopSE(SoundID::SE_WALK);
-			isWalkSePlaying_ = true;
-
-			if (AudioManager::GetInstance()) AudioManager::GetInstance()->LoopSE(SoundID::SE_TUTORIAL_WALK);
 			isWalkSePlaying_ = true;
 		}
 	}

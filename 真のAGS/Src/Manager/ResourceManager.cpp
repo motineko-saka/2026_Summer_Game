@@ -26,20 +26,20 @@ namespace
 		{ SRC::TITLE_IMG,        RES_T::IMG,   "Title.png" },
 		{ SRC::TITLE_PUSH_SPACE, RES_T::IMG,   "PushSpace.png" },
 		{ SRC::TITLE_MOV,        RES_T::MOVIE, "Title.mp4" },
-		{ SRC::HONDANA_IMG,      RES_T::IMG,   "hondanaTitle.png" },
+		{ SRC::HONDANA_IMG,      RES_T::IMG,   "bookshelf_title.png" },
 
 		// UI
-		{ SRC::UI_GAMESTART, RES_T::IMG, "GameStart.png" },
-		{ SRC::UI_TUTORIAL,  RES_T::IMG, "Tyutoriar.png" },
-		{ SRC::UI_EXIT,      RES_T::IMG, "End.png" },
+		{ SRC::UI_GAMESTART, RES_T::IMG, "game_start.png" },
+		{ SRC::UI_TUTORIAL,  RES_T::IMG, "tutorial.png" },
+		{ SRC::UI_EXIT,      RES_T::IMG, "exit.png" },
 		{ SRC::GAME_CLEAR,   RES_T::IMG, "GameClear.png" },
 		{ SRC::GAME_OVER,    RES_T::IMG, "GameOver.png" },
 
 		// ステージ
-		{ SRC::PIT_FALL_PLANET, RES_T::MODEL, "Stage/PitfallPlanet/PitfallPlanet.mv1" },
-		{ SRC::SPHERE_PLANET,   RES_T::MODEL, "Stage/SpherePlanet/SpherePlanet.mv1" },
-		{ SRC::TUTORIAL_STAGE,  RES_T::MODEL, "Stage/NOMOTOAREN 1.mv1" },
-		{ SRC::MAIN_STAGE,      RES_T::MODEL, "Stage/nomotoarena.mv1" },
+		{ SRC::PIT_FALL_PLANET, RES_T::MODEL, "stage/PitfallPlanet/PitfallPlanet.mv1" },
+		{ SRC::SPHERE_PLANET,   RES_T::MODEL, "stage/SpherePlanet/SpherePlanet.mv1" },
+		{ SRC::TUTORIAL_STAGE,  RES_T::MODEL, "stage/tutorial_stage.mv1" },
+		{ SRC::MAIN_STAGE,      RES_T::MODEL, "stage/main_stage.mv1" },
 		{ SRC::SKY_DOME,        RES_T::MODEL, "SkyDome/Skydome.mv1" },
 
 		// プレイヤー
@@ -52,32 +52,32 @@ namespace
 		{ SRC::VIEW_RANGE,  RES_T::MODEL, "Enemy/Robot/Cone.mv1" },
 
 		// オブジェクト
-		{ SRC::BARREL,       RES_T::MODEL, "Object/barrel.mv1" },
-		{ SRC::CUBE,         RES_T::MODEL, "Object/mokuba.mv1" },
+		{ SRC::BARREL,       RES_T::MODEL, "object/barrel.mv1" },
+		{ SRC::CUBE,         RES_T::MODEL, "object/rocking_horse.mv1" },
 		{ SRC::WALL,         RES_T::MODEL, "Cube.mv1" },
-		{ SRC::WOODBOX,      RES_T::MODEL, "Object/wooden_box.mv1" },
+		{ SRC::WOODBOX,      RES_T::MODEL, "object/wooden_box.mv1" },
 		{ SRC::BUTTON,       RES_T::MODEL, "Cube.mv1" },
-		{ SRC::PRESS_BUTTON, RES_T::MODEL, "Object/mokuba.mv1" },
-		{ SRC::GEAR,         RES_T::MODEL, "Object/Gear.mv1" },
-		{ SRC::ROCK,         RES_T::MODEL, "Object/tree01.mv1" },
-		{ SRC::AXE,          RES_T::MODEL, "Object/Axe.mv1" },
-		{ SRC::GATE,         RES_T::MODEL, "Object/Gate/GateMist.mv1" },
-		{ SRC::Chest,        RES_T::MODEL, "Object/Chest.mv1" },
-		{ SRC::OPENCHEST,    RES_T::MODEL, "Object/ChestOpen.mv1" },
+		{ SRC::PRESS_BUTTON, RES_T::MODEL, "object/rocking_horse.mv1" },
+		{ SRC::GEAR,         RES_T::MODEL, "object/Gear.mv1" },
+		{ SRC::ROCK,         RES_T::MODEL, "object/tree.mv1" },
+		{ SRC::AXE,          RES_T::MODEL, "object/Axe.mv1" },
+		{ SRC::GATE,         RES_T::MODEL, "object/Gate/GateMist.mv1" },
+		{ SRC::Chest,        RES_T::MODEL, "object/Chest.mv1" },
+		{ SRC::OPENCHEST,    RES_T::MODEL, "object/ChestOpen.mv1" },
 
 		// 絵の具
-		{ SRC::ENOGU1, RES_T::IMG, "enogu/tewofutu.png" },
-		{ SRC::ENOGU2, RES_T::IMG, "enogu/kakunin.png" },
-		{ SRC::ENOGU3, RES_T::IMG, "enogu/yubisasi.png" },
-		{ SRC::ENOGU4, RES_T::IMG, "enogu/gimon.png" },
-		{ SRC::ENOGU5, RES_T::IMG, "enogu/2.png" },
-		{ SRC::ENOGU6, RES_T::IMG, "enogu/tarumoti.png" },
-		{ SRC::ENOGU7, RES_T::IMG, "enogu/happy2.png" },
-		{ SRC::ENOGU8, RES_T::IMG, "enogu/clir.png" },
+		{ SRC::ENOGU1, RES_T::IMG, "paint/wave_hand.png" },
+		{ SRC::ENOGU2, RES_T::IMG, "paint/check.png" },
+		{ SRC::ENOGU3, RES_T::IMG, "paint/point.png" },
+		{ SRC::ENOGU4, RES_T::IMG, "paint/question.png" },
+		{ SRC::ENOGU5, RES_T::IMG, "paint/ここに名前.png" },	// ← 2.png の新しい名前
+		{ SRC::ENOGU6, RES_T::IMG, "paint/hold_barrel.png" },
+		{ SRC::ENOGU7, RES_T::IMG, "paint/happy.png" },
+		{ SRC::ENOGU8, RES_T::IMG, "paint/clear.png" },
 
 		// ヒント
-		{ SRC::HINTO,  RES_T::IMG, "enogu/Hinto3.png" },
-		{ SRC::HINTO2, RES_T::IMG, "enogu/Hinto4.png" },
+		{ SRC::HINTO,  RES_T::IMG, "paint/hint_button.png" },
+		{ SRC::HINTO2, RES_T::IMG, "paint/hint_chest.png" },
 	};
 
 	// 種類ごとの基準フォルダ

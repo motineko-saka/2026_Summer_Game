@@ -59,7 +59,12 @@ void AudioManager::LoadSceneSound(LoadScene scene)
 		}
 
 		const int handle = LoadSoundMem(path.c_str());
-		if (handle == -1) continue;	// “Ç‚İ‚İ¸”s
+		if (handle == -1)
+		{
+			// “Ç‚İ‚İ¸”s
+			OutputDebugStringA(("AudioManagerƒTƒEƒ“ƒh‚Ì“Ç‚İ‚İ‚É¸”s: " + path + "\n").c_str());
+			continue;
+		}
 
 		sounds_.emplace(id, SoundEntry{ handle, 1 });
 	}

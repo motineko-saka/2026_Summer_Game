@@ -105,4 +105,7 @@ private:
 
 	// 切替演出の更新
 	void UpdateTransition(void);
+
+	// 積まれている全シーンをReleaseしてから取り除く
+	void ReleaseAllScenes(void);
 };

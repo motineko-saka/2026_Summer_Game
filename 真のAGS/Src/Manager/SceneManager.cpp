@@ -37,12 +37,9 @@ void SceneManager::Init(void)
 
 void SceneManager::Release(void)
 {
+
 	// 全てのシーンの解放
-	for (auto& scene : scenes_)
-	{
-		scene->Release();
-	}
-	scenes_.clear();
+	ReleaseAllScenes();
 	nextScene_.reset();
 
 	sceneTransition_.reset();
@@ -93,7 +90,8 @@ void SceneManager::Update(void)
 	}
 
 	// 通常の更新
-	scenes_.back()->Update();
+	const std::shared_ptr<SceneBase> current = scenes_.back();
+	current->Update();
 }
 
 void SceneManager::Draw(void)
@@ -137,6 +135,16 @@ void SceneManager::UpdateTransition(void)
 	}
 }
 
+void SceneManager::ReleaseAllScenes(void)
+{
+	// 上に積まれているものから順に解放する
+	for (auto it = scenes_.rbegin(); it != scenes_.rend(); ++it)
+	{
+		(*it)->Release();
+	}
+	scenes_.clear();
+}
+
 void SceneManager::UpdateDeltaTime(void)
 {
 	const auto now = Clock::now();
@@ -156,7 +164,7 @@ void SceneManager::ResetDeltaTime(void)
 void SceneManager::ChangeScene(std::shared_ptr<SceneBase> scene)
 {
 	// ポーズ画面などのオーバーレイも含めて差し替える
-	scenes_.clear();
+	ReleaseAllScenes();
 	scenes_.push_back(scene);
 
 	SetMouseDispFlag(FALSE);
@@ -180,12 +188,13 @@ void SceneManager::PopScene(void)
 	if (scenes_.size() <= 1) return;
 
 	SetMouseDispFlag(FALSE);
+	scenes_.back()->Release();
 	scenes_.pop_back();
 }
 
 void SceneManager::JumpScene(std::shared_ptr<SceneBase> scene)
 {
-	scenes_.clear();
+	ReleaseAllScenes();
 	scenes_.push_back(scene);
 }
 
