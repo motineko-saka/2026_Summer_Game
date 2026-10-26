@@ -53,8 +53,8 @@ namespace
 
 		// オブジェクト
 		{ SRC::BARREL,       RES_T::MODEL, "object/barrel.mv1" },
-		{ SRC::CUBE,         RES_T::MODEL, "object/rocking_horse.mv1" },
-		{ SRC::WALL,         RES_T::MODEL, "Cube.mv1" },
+		{ SRC::CUBE,         RES_T::MODEL, "object/Cube.mv1" },
+		{ SRC::WALL,         RES_T::MODEL, "object/Cube.mv1" },
 		{ SRC::WOODBOX,      RES_T::MODEL, "object/wooden_box.mv1" },
 		{ SRC::BUTTON,       RES_T::MODEL, "Cube.mv1" },
 		{ SRC::PRESS_BUTTON, RES_T::MODEL, "object/rocking_horse.mv1" },
@@ -68,16 +68,15 @@ namespace
 		// 絵の具
 		{ SRC::ENOGU1, RES_T::IMG, "paint/wave_hand.png" },
 		{ SRC::ENOGU2, RES_T::IMG, "paint/check.png" },
-		{ SRC::ENOGU3, RES_T::IMG, "paint/point.png" },
+		{ SRC::ENOGU3, RES_T::IMG, "paint/!!!.png" },
 		{ SRC::ENOGU4, RES_T::IMG, "paint/question.png" },
-		{ SRC::ENOGU5, RES_T::IMG, "paint/ここに名前.png" },	// ← 2.png の新しい名前
+		{ SRC::ENOGU5, RES_T::IMG, "paint/point.png" },
 		{ SRC::ENOGU6, RES_T::IMG, "paint/hold_barrel.png" },
 		{ SRC::ENOGU7, RES_T::IMG, "paint/happy.png" },
 		{ SRC::ENOGU8, RES_T::IMG, "paint/clear.png" },
 
 		// ヒント
 		{ SRC::HINTO,  RES_T::IMG, "paint/hint_button.png" },
-		{ SRC::HINTO2, RES_T::IMG, "paint/hint_chest.png" },
 	};
 
 	// 種類ごとの基準フォルダ
